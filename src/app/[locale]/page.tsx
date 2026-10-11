@@ -1,6 +1,7 @@
 import {getTranslations, setRequestLocale} from 'next-intl/server';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Link } from '@/i18n/routing';
 
 export default async function HomePage({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params;
@@ -24,10 +25,10 @@ export default async function HomePage({ params }: { params: Promise<{ locale: s
             <CardHeader>
               <CardTitle>{t('moduleTitle')}</CardTitle>
             </CardHeader>
-            <CardContent>
-              <div className="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 bg-secondary text-secondary-foreground">
-                {t('status')}
-              </div>
+            <CardContent className="flex flex-col gap-4">
+              <Link href="/questions/new" className="text-sm font-medium text-primary hover:underline underline-offset-4">
+                {t('enterQuestion')} →
+              </Link>
             </CardContent>
           </Card>
         </div>

@@ -2,6 +2,34 @@
   "HomePage": {
     "tagline": "See the motion. Think through the problem.",
     "moduleTitle": "Uniform velocity",
-    "status": "Coming soon"
+    "status": "Coming soon",
+    "enterQuestion": "Enter a question"
+  },
+  "QuestionInput": {
+    "title": "Enter a Question",
+    "lesson": "Lesson",
+    "lesson_mechanics": "Mechanics",
+    "topic": "Topic",
+    "topic_straight_line_motion": "Straight-line motion",
+    "subtopic": "Subtopic",
+    "subtopic_uniform_velocity": "Uniform velocity",
+    "scopeDescription": "For one object moving along a straight line at constant velocity.",
+    "questionLanguage": "Question Language",
+    "english": "English",
+    "sinhala": "සිංහල",
+    "questionText": "Question Text",
+    "questionPlaceholder": "Type or paste your question here...",
+    "questionGuidance": "Include the full wording, numbers, units, and any stated direction.",
+    "useExample": "Use example",
+    "useExampleConfirm": "Replace current text with the example question?",
+    "saveDraft": "Save draft",
+    "clearReset": "Clear",
+    "clearConfirm": "Are you sure you want to clear your current work?",
+    "draftSaved": "Draft saved in this tab.",
+    "draftExplanation": "The draft is kept for this browser-tab session.",
+    "characterCount": "{count} / 4000",
+    "errorEmpty": "Question text cannot be empty or whitespace only.",
+    "errorTooLong": "Question exceeds the maximum length of 4000 characters.",
+    "errorStorageUnavailable": "Browser storage is unavailable. Your draft could not be saved."
   }
 }

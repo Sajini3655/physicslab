@@ -3,8 +3,10 @@
 PhysicsLab is a Sinhala/English learning application for Sri Lankan A/L Physics. Its purpose is to help students visualize the situation described in a physics question while preserving their independent thinking.
 
 ## Current Implementation Status
-**STEP 1 Complete**: Project foundation established with Next.js 16 (App Router), React 19, Tailwind CSS 4, shadcn/ui, and next-intl for localization. A minimal working starter page for the "Uniform velocity" module has been implemented with an English/Sinhala language switcher.
+## Current Implementation Status
+**STEP 1 Complete**: Project foundation established with Next.js 16 (App Router), React 19, Tailwind CSS 4, shadcn/ui, and next-intl for localization.
 **STEP 2 Complete**: Shared scenario data contract established for uniform velocity. See [Uniform Motion Contract](docs/uniform-motion-contract.md).
+**STEP 3 Complete**: Bilingual topic-selection and question-input screen added. Uses `QuestionSubmissionInputSchema` to define the raw-input boundary. Implements robust draft saving via sessionStorage, preserving data through interface language switches and refreshes.
 
 ## Prerequisites
 - Node.js 24 LTS (e.g. v24.12.0+)
@@ -36,4 +38,4 @@ This project is built collaboratively by two developers:
 - **Developer 2 (Sajini)**: Physics engine, SVG simulation, playback controls, and physics tests.
 
 ## Next Steps
-**STEP 3**: Implementation of the user-facing interpretation editing forms and simulation integration.
+**STEP 4**: Implementation of the user-facing interpretation editing forms and simulation integration.

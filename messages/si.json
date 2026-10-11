@@ -2,6 +2,34 @@
   "HomePage": {
     "tagline": "චලිතය නිරීක්ෂණය කරන්න. ප්රශ්නය ගැන සිතන්න.",
     "moduleTitle": "ඒකාකාර ප්රවේගය",
-    "status": "ළඟදීම"
+    "status": "ළඟදීම",
+    "enterQuestion": "ප්‍රශ්නයක් ඇතුළත් කරන්න"
+  },
+  "QuestionInput": {
+    "title": "ප්‍රශ්නයක් ඇතුළත් කරන්න",
+    "lesson": "පාඩම",
+    "lesson_mechanics": "යාන්ත්‍ර විද්‍යාව",
+    "topic": "මාතෘකාව",
+    "topic_straight_line_motion": "සරල රේඛීය චලිතය",
+    "subtopic": "අනු මාතෘකාව",
+    "subtopic_uniform_velocity": "ඒකාකාර ප්‍රවේගය",
+    "scopeDescription": "තනි වස්තුවක් සරල රේඛාවක් ඔස්සේ නියත ප්‍රවේගයකින් ගමන් කිරීම සඳහා.",
+    "questionLanguage": "ප්‍රශ්නයේ භාෂාව",
+    "english": "English",
+    "sinhala": "සිංහල",
+    "questionText": "ප්‍රශ්නය",
+    "questionPlaceholder": "ඔබේ ප්‍රශ්නය මෙහි ඇතුළත් කරන්න...",
+    "questionGuidance": "සම්පූර්ණ ප්‍රශ්නය, සංඛ්‍යා, ඒකක සහ දිශාවන් ඇතුළත් කරන්න.",
+    "useExample": "උදාහරණයක් භාවිතා කරන්න",
+    "useExampleConfirm": "වත්මන් ප්‍රශ්නය උදාහරණ ප්‍රශ්නයකින් ප්‍රතිස්ථාපනය කිරීමට අවශ්‍ය බව විශ්වාසද?",
+    "saveDraft": "කෙටුම්පත සුරකින්න",
+    "clearReset": "මකන්න",
+    "clearConfirm": "ඔබට ඔබගේ වත්මන් කාර්යය මකා දැමීමට අවශ්‍ය බව විශ්වාසද?",
+    "draftSaved": "කෙටුම්පත මෙම tab එකේ සුරකින ලදී.",
+    "draftExplanation": "කෙටුම්පත මෙම බ්‍රවුසර ටැබ් එක සඳහා පමණක් තබා ඇත.",
+    "characterCount": "{count} / 4000",
+    "errorEmpty": "ප්‍රශ්නය හිස් විය නොහැක.",
+    "errorTooLong": "ප්‍රශ්නය අක්ෂර 4000 සීමාව ඉක්මවයි.",
+    "errorStorageUnavailable": "බ්‍රවුසර මතකය ලබාගත නොහැක. ඔබේ කෙටුම්පත සුරැකිය නොහැකි විය."
   }
 }
