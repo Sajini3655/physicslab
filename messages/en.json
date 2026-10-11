@@ -2,7 +2,7 @@
   "HomePage": {
     "tagline": "See the motion. Think through the problem.",
     "moduleTitle": "Uniform velocity",
-    "status": "Coming soon",
+    "status": "Interactive",
     "enterQuestion": "Enter a question"
   },
   "QuestionInput": {
@@ -31,5 +31,70 @@
     "errorEmpty": "Question text cannot be empty or whitespace only.",
     "errorTooLong": "Question exceeds the maximum length of 4000 characters.",
     "errorStorageUnavailable": "Browser storage is unavailable. Your draft could not be saved."
+  },
+  "Simulation": {
+    "title": "Uniform Motion Simulation",
+    "subtitle": "Visualize constant-velocity motion along a straight track",
+    "scenarioDetails": "Scenario Overview",
+    "question": "Problem Statement",
+    "object": "Object",
+    "axis": "Resolved Axis",
+    "givenValues": "Given Quantities",
+    "targetUnknown": "Target to Find",
+    "displacement": "Displacement (s)",
+    "velocity": "Velocity (u)",
+    "time": "Time (t)",
+    "unknownValue": "Unknown (?)",
+    "origin": "Origin",
+    "startPoint": "Start",
+    "endPoint": "Destination",
+    "controls": {
+      "play": "Play",
+      "pause": "Pause",
+      "resume": "Resume",
+      "replay": "Replay",
+      "reset": "Reset",
+      "speed": "Playback Speed",
+      "progress": "Progress",
+      "completed": "Simulation Completed",
+      "ready": "Ready to Simulate"
+    },
+    "visibilityNotice": "Calculated target answer is hidden to support independent problem solving.",
+    "devHarness": {
+      "title": "Module Lifecycle & Development Harness",
+      "subtitle": "Test the Draft → Candidate → Validation → Confirmation → Simulation workflow",
+      "selectPreset": "Select a Scenario Preset",
+      "validateBtn": "Validate Physical Rules",
+      "confirmBtn": "Confirm Validated Scenario",
+      "editDraftBtn": "Edit Scenario / Modify Values",
+      "statusValid": "Physical Validation Passed",
+      "statusInvalid": "Physical Validation Failed",
+      "statusConfirmed": "Scenario Confirmed",
+      "statusDraft": "Draft / Candidate Revision",
+      "presets": {
+        "standardCar": "Standard Car Motion (Find s)",
+        "negativeVelocity": "Opposite Direction (Find u)",
+        "unitConversion": "Units in km/h & min (Find s)",
+        "findTime": "Negative Displacement & Velocity (Find t)",
+        "stationary": "Stationary Object (u = 0 m/s)",
+        "invalidSign": "Sign Mismatch Error Test",
+        "indeterminate": "Indeterminate Zero Test"
+      }
+    }
+  },
+  "Validation": {
+    "targetMustBeUnknown": "The target quantity must be unknown and cannot have a given value.",
+    "missingDisplacement": "Displacement must be provided.",
+    "missingVelocity": "Velocity must be provided.",
+    "missingTime": "Time must be provided.",
+    "invalidTarget": "Invalid target quantity selected.",
+    "nonFiniteValue": "Values must be finite numbers.",
+    "negativeTime": "Elapsed time cannot be negative.",
+    "unsupportedUnit": "Unsupported unit provided.",
+    "signMismatch": "Displacement and velocity have opposite directions, which would imply negative time.",
+    "indeterminateTime": "When velocity and displacement are both zero, duration is indeterminate.",
+    "indeterminateVelocity": "When elapsed time and displacement are both zero, velocity is indeterminate.",
+    "impossibleStationaryDisplacement": "An object with zero velocity cannot undergo non-zero displacement.",
+    "impossibleZeroDurationDisplacement": "An object cannot travel non-zero displacement in zero duration."
   }
 }
