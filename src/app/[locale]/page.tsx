@@ -115,13 +115,22 @@ export default async function HomePage({
             </p>
           </div>
 
-          <Link
-            href="/units/mechanics/rectilinear-motion-uniform-velocity"
-            className="shrink-0 inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#0F766E] hover:bg-[#0D655E] text-white text-xs sm:text-sm font-semibold shadow-xs transition-colors"
-          >
-            <BookOpen className="w-4 h-4" />
-            <span>{tHome('featuredModuleAction')}</span>
-          </Link>
+          <div className="shrink-0 flex flex-wrap items-center gap-2.5">
+            <Link
+              href="/questions/new"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#F0FDFA] dark:bg-[#042F2E] hover:bg-[#CCFBF1] dark:hover:bg-[#115E59] text-[#0F766E] dark:text-[#14B8A6] border border-[#99F6E4] dark:border-[#115E59] text-xs sm:text-sm font-semibold transition-colors"
+            >
+              <span>{tHome('enterQuestion')}</span>
+              <span aria-hidden="true">→</span>
+            </Link>
+            <Link
+              href="/units/mechanics/rectilinear-motion-uniform-velocity"
+              className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-[#0F766E] hover:bg-[#0D655E] text-white text-xs sm:text-sm font-semibold shadow-xs transition-colors"
+            >
+              <BookOpen className="w-4 h-4" />
+              <span>{tHome('featuredModuleAction')}</span>
+            </Link>
+          </div>
         </section>
 
         {/* ============================================================ */}
