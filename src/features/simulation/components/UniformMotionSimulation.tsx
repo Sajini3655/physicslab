@@ -9,6 +9,7 @@ import { ScenarioInfoPanel } from './ScenarioInfoPanel';
 
 export interface UniformMotionSimulationProps {
   scenario: ConfirmedUniformMotionScenario;
+  showInfoPanel?: boolean;
   labels: {
     title: string;
     subtitle: string;
@@ -42,6 +43,7 @@ export interface UniformMotionSimulationProps {
 
 export const UniformMotionSimulation: React.FC<UniformMotionSimulationProps> = ({
   scenario,
+  showInfoPanel = false,
   labels,
 }) => {
   const [isPlaying, setIsPlaying] = useState(false);
@@ -206,9 +208,9 @@ export const UniformMotionSimulation: React.FC<UniformMotionSimulationProps> = (
 
   if (!isValidSnapshot || !physical) {
     return (
-      <div className="p-6 bg-red-950/40 border border-red-800 rounded-xl text-red-200">
-        <p className="font-semibold">Invalid Scenario Snapshot</p>
-        <p className="text-xs text-red-400 mt-1">
+      <div className="p-6 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-800 dark:text-rose-200">
+        <p className="font-semibold text-sm">Invalid Scenario Snapshot</p>
+        <p className="text-xs text-rose-600 dark:text-rose-400 mt-1">
           Simulation requires an explicitly confirmed scenario snapshot.
         </p>
       </div>
@@ -216,7 +218,7 @@ export const UniformMotionSimulation: React.FC<UniformMotionSimulationProps> = (
   }
 
   return (
-    <div className="w-full flex flex-col gap-5">
+    <div className="w-full flex flex-col gap-4">
       {/* SVG Motion Canvas */}
       <SimulationTrack
         scenario={scenario}
@@ -246,23 +248,25 @@ export const UniformMotionSimulation: React.FC<UniformMotionSimulationProps> = (
         labels={labels.controls}
       />
 
-      {/* Scenario Info Panel */}
-      <ScenarioInfoPanel
-        scenario={scenario}
-        labels={{
-          scenarioDetails: labels.scenarioDetails,
-          question: labels.question,
-          object: labels.object,
-          axis: labels.axis,
-          givenValues: labels.givenValues,
-          targetUnknown: labels.targetUnknown,
-          displacement: labels.displacement,
-          velocity: labels.velocity,
-          time: labels.time,
-          unknownValue: labels.unknownValue,
-          visibilityNotice: labels.visibilityNotice,
-        }}
-      />
+      {/* Optional Standalone Scenario Info Panel */}
+      {showInfoPanel && (
+        <ScenarioInfoPanel
+          scenario={scenario}
+          labels={{
+            scenarioDetails: labels.scenarioDetails,
+            question: labels.question,
+            object: labels.object,
+            axis: labels.axis,
+            givenValues: labels.givenValues,
+            targetUnknown: labels.targetUnknown,
+            displacement: labels.displacement,
+            velocity: labels.velocity,
+            time: labels.time,
+            unknownValue: labels.unknownValue,
+            visibilityNotice: labels.visibilityNotice,
+          }}
+        />
+      )}
     </div>
   );
 };
