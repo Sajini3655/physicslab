@@ -48,6 +48,9 @@ export default async function HomePage({
     candidateMeta: tSim('candidateMeta'),
     revisionLabel: tSim('revisionLabel'),
     candidateIdLabel: tSim('candidateIdLabel'),
+    step1Validate: tSim('step1Validate'),
+    step2Confirm: tSim('step2Confirm'),
+    stepFixIssues: tSim('stepFixIssues'),
     controls: {
       play: tSim('controls.play'),
       pause: tSim('controls.pause'),
@@ -156,13 +159,17 @@ export default async function HomePage({
               {tHome('description')}
             </p>
 
-            {/* Functional Primary Action pointing to actual simulation */}
+            {/* Functional Primary Action pointing to actual workspace section */}
             <div className="pt-2 flex flex-wrap items-center gap-3">
               <a
                 href="#simulation-workspace"
                 className="inline-flex items-center justify-center gap-2 px-5 py-2.5 rounded-xl bg-[#0F766E] hover:bg-[#0D655E] active:bg-[#115E59] text-white text-sm font-semibold shadow-xs transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 cursor-pointer"
               >
-                <span>{tHome('heroCta') || 'Open Simulation'}</span>
+                <span>
+                  {isDevelopment
+                    ? (tHome('heroCta') || 'Open Simulation')
+                    : (tHome('heroCtaProduction') || 'Explore Module')}
+                </span>
                 <ArrowDownRight className="w-4 h-4" />
               </a>
 
@@ -230,12 +237,15 @@ export default async function HomePage({
                   </div>
                 </CardHeader>
                 <CardContent className="p-6 space-y-4">
-                  <p className="text-xs sm:text-sm text-[#475569] dark:text-[#94A3B8] leading-relaxed">
+                  <p className="text-sm text-[#475569] dark:text-[#94A3B8] leading-relaxed font-normal">
                     {tHome('tagline')}
                   </p>
-                  <p className="text-xs text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
+                  <p className="text-xs sm:text-sm text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
                     {tHome('description')}
                   </p>
+                  <div className="p-3 bg-[#F6FAFD] dark:bg-[#0B131E] rounded-xl border border-[#DFE8EF] dark:border-[#1E334D] text-xs text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
+                    {tHome('productionStudentFlowNotice') || 'Interactive student question review and simulation unlock are currently being integrated.'}
+                  </div>
                   <div className="pt-1 flex items-center justify-between">
                     <span className="inline-flex items-center rounded-full border border-[#99F6E4] bg-[#F0FDFA] dark:bg-[#042F2E] px-3 py-0.5 text-xs font-semibold text-[#0F766E] dark:text-[#14B8A6]">
                       {tHome('status')}
