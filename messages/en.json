@@ -2,7 +2,8 @@
   "HomePage": {
     "tagline": "See the motion. Think through the problem.",
     "moduleTitle": "Uniform velocity",
-    "status": "Interactive"
+    "status": "Interactive",
+    "description": "Explore straight-line motion at constant velocity (s = u × t). Observe position, direction, and speed in real-time."
   },
   "Simulation": {
     "title": "Uniform Motion Simulation",
@@ -20,6 +21,21 @@
     "origin": "Origin",
     "startPoint": "Start",
     "endPoint": "Destination",
+    "visibilityNotice": "Calculated target answer is hidden to support independent problem solving.",
+    "placeholderTitle": "Interactive Physics Canvas",
+    "placeholderDesc": "Validate physical rules and confirm the scenario candidate to launch motion playback.",
+    "awaitingValidation": "Awaiting Validation",
+    "readyToConfirm": "Ready to Confirm",
+    "confirmed": "Scenario Confirmed",
+    "failed": "Validation Issues",
+    "confirmationDisabledHint": "Physical validation must pass before confirmation.",
+    "confirmedHint": "Scenario confirmed. Motion simulation is active.",
+    "resetLifecycle": "Reset / Re-validate",
+    "devToolsTitle": "Developer tools & testing fixtures",
+    "devToolsSubtitle": "Preset fixtures, revision tracking, and editable candidates",
+    "candidateMeta": "Candidate Metadata",
+    "revisionLabel": "Revision",
+    "candidateIdLabel": "ID",
     "controls": {
       "play": "Play",
       "pause": "Pause",
@@ -31,14 +47,13 @@
       "completed": "Simulation Completed",
       "ready": "Ready to Simulate"
     },
-    "visibilityNotice": "Calculated target answer is hidden to support independent problem solving.",
     "devHarness": {
-      "title": "Module Lifecycle & Development Harness",
-      "subtitle": "Test the Draft → Candidate → Validation → Confirmation → Simulation workflow",
+      "title": "Scenario Lifecycle & Dev Harness",
+      "subtitle": "Draft → Candidate → Physical Validation → Confirmation → Simulation",
       "selectPreset": "Select a Scenario Preset",
       "validateBtn": "Validate Physical Rules",
-      "confirmBtn": "Confirm Validated Scenario",
-      "editDraftBtn": "Edit Scenario / Modify Values",
+      "confirmBtn": "Confirm Scenario",
+      "editDraftBtn": "Edit Scenario Candidate",
       "statusValid": "Physical Validation Passed",
       "statusInvalid": "Physical Validation Failed",
       "statusConfirmed": "Scenario Confirmed",

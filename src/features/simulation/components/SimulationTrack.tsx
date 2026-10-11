@@ -34,8 +34,8 @@ export const SimulationTrack: React.FC<SimulationTrackProps> = ({
 
   // Viewbox dimensions
   const svgWidth = 800;
-  const svgHeight = 220;
-  const trackY = 140;
+  const svgHeight = 230;
+  const trackY = 145;
   const paddingX = 90;
   const availableTrackWidth = svgWidth - paddingX * 2;
 
@@ -98,11 +98,12 @@ export const SimulationTrack: React.FC<SimulationTrackProps> = ({
   const isScreenMovingRight = isScreenPositiveRight ? velocity > 0 : velocity < 0;
 
   return (
-    <div className="w-full bg-slate-900/90 rounded-xl p-4 border border-slate-800 shadow-inner overflow-hidden">
+    <div className="w-full bg-slate-950 rounded-xl p-3 sm:p-4 border border-slate-800 shadow-md overflow-hidden relative">
       <svg
         viewBox={`0 0 ${svgWidth} ${svgHeight}`}
-        className="w-full h-auto select-none"
+        className="w-full h-auto select-none block"
         aria-label={`Simulation canvas for ${objectName}`}
+        role="img"
       >
         <defs>
           {/* Arrowhead marker for axis and vectors */}
@@ -128,30 +129,38 @@ export const SimulationTrack: React.FC<SimulationTrackProps> = ({
           >
             <path d="M 0 1 L 10 5 L 0 9 z" fill="#38bdf8" />
           </marker>
+          {/* Gradients */}
           <linearGradient id="trackGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#334155" stopOpacity="0.2" />
-            <stop offset="50%" stopColor="#475569" stopOpacity="0.8" />
-            <stop offset="100%" stopColor="#334155" stopOpacity="0.2" />
+            <stop offset="0%" stopColor="#1e293b" stopOpacity="0.4" />
+            <stop offset="50%" stopColor="#334155" stopOpacity="0.9" />
+            <stop offset="100%" stopColor="#1e293b" stopOpacity="0.4" />
           </linearGradient>
-          <linearGradient id="pathGrad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.1" />
-            <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.4" />
+          <linearGradient id="trajectoryGlow" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#38bdf8" stopOpacity="0.2" />
+            <stop offset="100%" stopColor="#38bdf8" stopOpacity="0.8" />
           </linearGradient>
+          {/* Pattern for background grid */}
+          <pattern id="canvasGrid" width="40" height="40" patternUnits="userSpaceOnUse">
+            <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1e293b" strokeWidth="0.7" opacity="0.3" />
+          </pattern>
         </defs>
 
+        {/* Subtle engineering background grid */}
+        <rect width={svgWidth} height={svgHeight} fill="url(#canvasGrid)" />
+
         {/* Top Axis Coordinate Line */}
-        <g className="axis-header" opacity="0.85">
+        <g className="axis-header" opacity="0.9">
           <line
             x1={isScreenPositiveRight ? paddingX : svgWidth - paddingX}
             y1={32}
             x2={isScreenPositiveRight ? svgWidth - paddingX : paddingX}
             y2={32}
             stroke="#64748b"
-            strokeWidth="1.5"
+            strokeWidth="1.75"
             markerEnd="url(#axis-arrow)"
           />
           <text
-            x={isScreenPositiveRight ? svgWidth - paddingX + 10 : paddingX - 10}
+            x={isScreenPositiveRight ? svgWidth - paddingX + 12 : paddingX - 12}
             y={36}
             fill="#94a3b8"
             fontSize="12"
@@ -163,8 +172,9 @@ export const SimulationTrack: React.FC<SimulationTrackProps> = ({
           <text
             x={originPixelX}
             y={20}
-            fill="#cbd5e1"
+            fill="#94a3b8"
             fontSize="11"
+            fontWeight="500"
             textAnchor="middle"
           >
             {`${labels.origin} (0)`}
@@ -173,18 +183,18 @@ export const SimulationTrack: React.FC<SimulationTrackProps> = ({
 
         {/* Main Track Highway */}
         <rect
-          x={paddingX - 20}
+          x={paddingX - 25}
           y={trackY - 14}
-          width={availableTrackWidth + 40}
+          width={availableTrackWidth + 50}
           height="28"
           rx="6"
           fill="url(#trackGrad)"
         />
         {/* Track center dash line */}
         <line
-          x1={paddingX - 10}
+          x1={paddingX - 15}
           y1={trackY}
-          x2={svgWidth - paddingX + 10}
+          x2={svgWidth - paddingX + 15}
           y2={trackY}
           stroke="#475569"
           strokeWidth="2"
@@ -197,16 +207,17 @@ export const SimulationTrack: React.FC<SimulationTrackProps> = ({
           y1={trackY}
           x2={currentPixelX}
           y2={trackY}
-          stroke="#38bdf8"
-          strokeWidth="5"
+          stroke="url(#trajectoryGlow)"
+          strokeWidth="6"
           strokeLinecap="round"
         />
 
         {/* Origin (Start) Marker */}
         <g transform={`translate(${originPixelX}, ${trackY})`}>
           <circle r="6" fill="#10b981" />
-          <line x1="0" y1="-24" x2="0" y2="24" stroke="#10b981" strokeWidth="1.5" strokeDasharray="3 3" />
-          <text y="38" fill="#10b981" fontSize="11" fontWeight="600" textAnchor="middle">
+          <circle r="10" fill="#10b981" opacity="0.2" />
+          <line x1="0" y1="-26" x2="0" y2="26" stroke="#10b981" strokeWidth="1.5" strokeDasharray="3 3" />
+          <text y="42" fill="#10b981" fontSize="11" fontWeight="600" textAnchor="middle">
             {labels.startPoint} (0)
           </text>
         </g>
@@ -215,8 +226,9 @@ export const SimulationTrack: React.FC<SimulationTrackProps> = ({
         {Math.abs(targetDisplacement) > 0.001 && (
           <g transform={`translate(${targetPixelX}, ${trackY})`}>
             <circle r="6" fill="#f59e0b" />
-            <line x1="0" y1="-24" x2="0" y2="24" stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="3 3" />
-            <text y="38" fill="#f59e0b" fontSize="11" fontWeight="600" textAnchor="middle">
+            <circle r="10" fill="#f59e0b" opacity="0.2" />
+            <line x1="0" y1="-26" x2="0" y2="26" stroke="#f59e0b" strokeWidth="1.5" strokeDasharray="3 3" />
+            <text y="42" fill="#f59e0b" fontSize="11" fontWeight="600" textAnchor="middle">
               {endpointDisplayLabel}
             </text>
           </g>
@@ -226,9 +238,9 @@ export const SimulationTrack: React.FC<SimulationTrackProps> = ({
         <g transform={`translate(${currentPixelX}, ${trackY - 26})`}>
           {/* Object vehicle / sphere body */}
           <rect
-            x="-24"
+            x="-26"
             y="-14"
-            width="48"
+            width="52"
             height="26"
             rx="6"
             fill="#0284c7"
@@ -236,29 +248,31 @@ export const SimulationTrack: React.FC<SimulationTrackProps> = ({
             strokeWidth="2"
             className="filter drop-shadow-md"
           />
-          {/* Object wheels / detail */}
-          <circle cx="-14" cy="12" r="5" fill="#0f172a" stroke="#64748b" strokeWidth="1.5" />
-          <circle cx="14" cy="12" r="5" fill="#0f172a" stroke="#64748b" strokeWidth="1.5" />
+          {/* Windshield / accent */}
+          <rect x="-14" y="-10" width="28" height="8" rx="2" fill="#bae6fd" opacity="0.4" />
+          {/* Object wheels */}
+          <circle cx="-16" cy="12" r="5" fill="#0f172a" stroke="#64748b" strokeWidth="1.5" />
+          <circle cx="16" cy="12" r="5" fill="#0f172a" stroke="#64748b" strokeWidth="1.5" />
 
           {/* Object Name Label */}
           <text
             x="0"
-            y="3"
+            y="4"
             fill="#ffffff"
             fontSize="10"
             fontWeight="bold"
             textAnchor="middle"
           >
-            {objectName.slice(0, 8)}
+            {objectName.slice(0, 9)}
           </text>
 
           {/* Velocity Vector Arrow */}
           {isMoving && (
-            <g transform="translate(0, -22)">
+            <g transform="translate(0, -24)">
               <line
-                x1={isScreenMovingRight ? -15 : 15}
+                x1={isScreenMovingRight ? -16 : 16}
                 y1="0"
-                x2={isScreenMovingRight ? 25 : -25}
+                x2={isScreenMovingRight ? 26 : -26}
                 y2="0"
                 stroke="#38bdf8"
                 strokeWidth="2.5"

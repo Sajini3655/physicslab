@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Play, Pause, RotateCcw } from 'lucide-react';
+import { Play, Pause, RotateCcw, Gauge } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ScenarioTarget, getAnswerVisibilityPolicy } from '@/shared/scenarios/uniform-motion';
 
@@ -51,99 +51,111 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   const speeds: PlaybackSpeed[] = [0.25, 0.5, 1];
   const visibilityPolicy = getAnswerVisibilityPolicy(target);
 
-  // Answer visibility policy for progress label:
-  // If target === 't', do NOT show duration in seconds to prevent revealing the unknown answer!
+  // Answer visibility policy for progress readout:
+  // If target === 't', do NOT show duration in seconds to avoid leaking the answer!
   let progressText = `${Math.round(progressRatio * 100)}%`;
   if (!visibilityPolicy.hideDurationTimer) {
     progressText = `${currentElapsedSeconds.toFixed(1)}s / ${totalDurationSeconds.toFixed(1)}s (${Math.round(progressRatio * 100)}%)`;
   }
 
   return (
-    <div className="w-full bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex flex-col gap-3 shadow-md">
+    <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-xl p-4 flex flex-col gap-3.5 shadow-sm">
       {/* Top row: Progress bar / Scrubber */}
-      <div className="flex items-center gap-3 w-full">
-        <span className="text-xs font-medium text-slate-400 min-w-[60px]">
-          {labels.progress}
-        </span>
-        <input
-          type="range"
-          min="0"
-          max="1"
-          step="0.001"
-          value={progressRatio}
-          onChange={(e) => onSeek(parseFloat(e.target.value))}
-          className="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-sky-500 focus:outline-none focus:ring-2 focus:ring-sky-400"
-          aria-label={labels.progress}
-          aria-valuemin={0}
-          aria-valuemax={1}
-          aria-valuenow={Math.round(progressRatio * 100) / 100}
-          aria-valuetext={progressText}
-        />
-        <span className="text-xs font-mono font-medium text-sky-400 min-w-[70px] text-right">
-          {progressText}
-        </span>
+      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 w-full">
+        <label htmlFor="playback-scrubber" className="text-xs font-semibold text-slate-600 dark:text-slate-400 min-w-[65px] shrink-0">
+          {labels.progress}:
+        </label>
+        <div className="flex items-center gap-3 w-full">
+          <input
+            id="playback-scrubber"
+            type="range"
+            min="0"
+            max="1"
+            step="0.001"
+            value={progressRatio}
+            onChange={(e) => onSeek(parseFloat(e.target.value))}
+            className="w-full h-2.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 touch-manipulation"
+            aria-label={labels.progress}
+            aria-valuemin={0}
+            aria-valuemax={1}
+            aria-valuenow={Math.round(progressRatio * 100) / 100}
+            aria-valuetext={progressText}
+          />
+          <span className="text-xs font-mono font-semibold text-indigo-600 dark:text-indigo-400 min-w-[70px] text-right shrink-0">
+            {progressText}
+          </span>
+        </div>
       </div>
 
-      {/* Bottom row: Control buttons and speed switcher */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
+      {/* Bottom row: Control buttons and speed selector */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-slate-100 dark:border-slate-800/80">
         <div className="flex items-center gap-2">
-          {/* Play / Pause Toggle */}
+          {/* Prominent Play / Pause Toggle */}
           {isPlaying ? (
             <Button
-              variant="secondary"
-              size="sm"
+              type="button"
+              variant="default"
+              size="default"
               onClick={onPause}
-              className="flex items-center gap-1.5 bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/30"
+              className="min-h-[44px] px-5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium shadow-sm flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 transition-colors cursor-pointer"
               aria-label={labels.pause}
             >
-              <Pause className="w-4 h-4" />
+              <Pause className="w-4 h-4 fill-current" />
               <span>{labels.pause}</span>
             </Button>
           ) : (
             <Button
+              type="button"
               variant="default"
-              size="sm"
+              size="default"
               onClick={onPlay}
-              className="flex items-center gap-1.5 bg-sky-600 text-white hover:bg-sky-500 shadow-sm"
+              className="min-h-[44px] px-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium shadow-sm flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 transition-colors cursor-pointer"
               aria-label={isComplete ? labels.replay : labels.play}
             >
-              <Play className="w-4 h-4" />
+              <Play className="w-4 h-4 fill-current" />
               <span>{isComplete ? labels.replay : labels.play}</span>
             </Button>
           )}
 
           {/* Replay Button */}
           <Button
+            type="button"
             variant="outline"
-            size="sm"
+            size="default"
             onClick={onReplay}
-            className="flex items-center gap-1.5 text-slate-300 border-slate-700 hover:bg-slate-800"
+            className="min-h-[44px] px-4 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg flex items-center gap-2 transition-colors cursor-pointer"
             aria-label={labels.replay}
           >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>{labels.replay}</span>
+            <RotateCcw className="w-4 h-4" />
+            <span className="hidden xs:inline">{labels.replay}</span>
           </Button>
         </div>
 
         {/* Playback Speed Multipliers */}
-        <div className="flex items-center gap-1.5">
-          <span className="text-xs text-slate-400 mr-1">{labels.speed}:</span>
-          {speeds.map((s) => (
-            <button
-              key={s}
-              type="button"
-              onClick={() => onSpeedChange(s)}
-              className={`px-2 py-1 text-xs font-mono rounded transition-colors ${
-                speed === s
-                  ? 'bg-sky-600 text-white font-bold'
-                  : 'bg-slate-800 text-slate-400 hover:bg-slate-700 hover:text-slate-200'
-              }`}
-              aria-label={`${labels.speed} ${s}x`}
-              aria-pressed={speed === s}
-            >
-              {s}x
-            </button>
-          ))}
+        <div className="flex items-center gap-1.5" role="group" aria-label={labels.speed}>
+          <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 mr-1">
+            <Gauge className="w-3.5 h-3.5" />
+            <span className="hidden sm:inline">{labels.speed}:</span>
+          </span>
+          {speeds.map((s) => {
+            const isSelected = speed === s;
+            return (
+              <button
+                key={s}
+                type="button"
+                onClick={() => onSpeedChange(s)}
+                className={`min-h-[44px] min-w-[44px] px-2.5 py-1 text-xs font-mono font-semibold rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 outline-none ${
+                  isSelected
+                    ? 'bg-indigo-600 text-white shadow-xs'
+                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100'
+                }`}
+                aria-label={`${labels.speed} ${s}x`}
+                aria-pressed={isSelected}
+              >
+                {s}x
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
