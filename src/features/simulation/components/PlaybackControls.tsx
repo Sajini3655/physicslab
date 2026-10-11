@@ -59,10 +59,10 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
   }
 
   return (
-    <div className="w-full bg-white dark:bg-slate-900 border border-slate-200/90 dark:border-slate-800 rounded-xl p-4 flex flex-col gap-3.5 shadow-sm">
+    <div className="w-full bg-[#FFFFFF] dark:bg-[#111D2D] border border-[#DFE8EF] dark:border-[#1E334D] rounded-2xl p-4 sm:p-5 flex flex-col gap-4 shadow-xs">
       {/* Top row: Progress bar / Scrubber */}
       <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4 w-full">
-        <label htmlFor="playback-scrubber" className="text-xs font-semibold text-slate-600 dark:text-slate-400 min-w-[65px] shrink-0">
+        <label htmlFor="playback-scrubber" className="text-xs font-semibold text-[#14243A] dark:text-[#E2E8F0] min-w-[70px] shrink-0">
           {labels.progress}:
         </label>
         <div className="flex items-center gap-3 w-full">
@@ -74,30 +74,30 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
             step="0.001"
             value={progressRatio}
             onChange={(e) => onSeek(parseFloat(e.target.value))}
-            className="w-full h-2.5 bg-slate-200 dark:bg-slate-700 rounded-lg appearance-none cursor-pointer accent-indigo-600 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 touch-manipulation"
+            className="w-full h-2.5 bg-[#DFE8EF] dark:bg-[#1E334D] rounded-lg appearance-none cursor-pointer accent-[#0F766E] focus:outline-none focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 touch-manipulation"
             aria-label={labels.progress}
             aria-valuemin={0}
             aria-valuemax={1}
             aria-valuenow={Math.round(progressRatio * 100) / 100}
             aria-valuetext={progressText}
           />
-          <span className="text-xs font-mono font-semibold text-indigo-600 dark:text-indigo-400 min-w-[70px] text-right shrink-0">
+          <span className="text-xs font-mono font-bold text-[#0F766E] dark:text-[#14B8A6] min-w-[75px] text-right shrink-0">
             {progressText}
           </span>
         </div>
       </div>
 
       {/* Bottom row: Control buttons and speed selector */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pt-1 border-t border-slate-100 dark:border-slate-800/80">
-        <div className="flex items-center gap-2">
-          {/* Prominent Play / Pause Toggle */}
+      <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-[#DFE8EF] dark:border-[#1E334D]">
+        <div className="flex items-center gap-2.5">
+          {/* Prominent Play / Pause Toggle (Primary action in teal) */}
           {isPlaying ? (
             <Button
               type="button"
               variant="default"
               size="default"
               onClick={onPause}
-              className="min-h-[44px] px-5 bg-amber-600 hover:bg-amber-700 text-white rounded-lg font-medium shadow-sm flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 transition-colors cursor-pointer"
+              className="min-h-[44px] px-5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl font-semibold shadow-xs flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-amber-500 focus-visible:ring-offset-2 transition-colors cursor-pointer"
               aria-label={labels.pause}
             >
               <Pause className="w-4 h-4 fill-current" />
@@ -109,7 +109,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
               variant="default"
               size="default"
               onClick={onPlay}
-              className="min-h-[44px] px-5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg font-medium shadow-sm flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 transition-colors cursor-pointer"
+              className="min-h-[44px] px-5 bg-[#0F766E] hover:bg-[#0D655E] active:bg-[#115E59] text-white rounded-xl font-semibold shadow-xs flex items-center justify-center gap-2 focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 transition-colors cursor-pointer"
               aria-label={isComplete ? labels.replay : labels.play}
             >
               <Play className="w-4 h-4 fill-current" />
@@ -123,7 +123,7 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
             variant="outline"
             size="default"
             onClick={onReplay}
-            className="min-h-[44px] px-4 border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-lg flex items-center gap-2 transition-colors cursor-pointer"
+            className="min-h-[44px] px-4 border border-[#DFE8EF] dark:border-[#1E334D] hover:bg-[#F0F6FA] dark:hover:bg-[#17273C] text-[#14243A] dark:text-[#CBD5E1] rounded-xl flex items-center gap-2 transition-colors cursor-pointer"
             aria-label={labels.replay}
           >
             <RotateCcw className="w-4 h-4" />
@@ -133,8 +133,8 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
 
         {/* Playback Speed Multipliers */}
         <div className="flex items-center gap-1.5" role="group" aria-label={labels.speed}>
-          <span className="text-xs text-slate-500 dark:text-slate-400 flex items-center gap-1 mr-1">
-            <Gauge className="w-3.5 h-3.5" />
+          <span className="text-xs text-[#64748B] dark:text-[#94A3B8] flex items-center gap-1 mr-1">
+            <Gauge className="w-3.5 h-3.5 text-[#0F766E] dark:text-[#14B8A6]" />
             <span className="hidden sm:inline">{labels.speed}:</span>
           </span>
           {speeds.map((s) => {
@@ -144,10 +144,10 @@ export const PlaybackControls: React.FC<PlaybackControlsProps> = ({
                 key={s}
                 type="button"
                 onClick={() => onSpeedChange(s)}
-                className={`min-h-[44px] min-w-[44px] px-2.5 py-1 text-xs font-mono font-semibold rounded-lg transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-indigo-500 focus-visible:ring-offset-2 outline-none ${
+                className={`min-h-[44px] min-w-[44px] px-2.5 py-1 text-xs font-mono font-bold rounded-xl transition-colors cursor-pointer focus-visible:ring-2 focus-visible:ring-[#0F766E] focus-visible:ring-offset-2 outline-none ${
                   isSelected
-                    ? 'bg-indigo-600 text-white shadow-xs'
-                    : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 hover:bg-slate-200 dark:hover:bg-slate-700 hover:text-slate-900 dark:hover:text-slate-100'
+                    ? 'bg-[#0F766E] text-white shadow-xs'
+                    : 'bg-[#F0F6FA] dark:bg-[#17273C] text-[#475569] dark:text-[#CBD5E1] hover:bg-[#DFE8EF] dark:hover:bg-[#1E334D] hover:text-[#14243A] dark:hover:text-[#FFFFFF]'
                 }`}
                 aria-label={`${labels.speed} ${s}x`}
                 aria-pressed={isSelected}

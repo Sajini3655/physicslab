@@ -3,7 +3,13 @@
     "tagline": "See the motion. Think through the problem.",
     "moduleTitle": "Uniform velocity",
     "status": "Interactive",
-    "description": "Explore straight-line motion at constant velocity (s = u × t). Observe position, direction, and speed in real-time."
+    "description": "Explore straight-line motion at constant velocity (s = u × t). Observe position, direction, and speed in real-time.",
+    "heroBadge": "G.C.E. A/L Physics",
+    "heroHeadline": "Understand physics.\nSee it in motion.",
+    "heroSubtitle": "Explore motion step by step, in English or Sinhala.",
+    "heroCta": "Open Simulation",
+    "featuredHeading": "Featured Interactive Simulation",
+    "featuredSubtitle": "Real-time kinematic simulation with physical validation and explicit confirmation."
   },
   "Simulation": {
     "title": "Uniform Motion Simulation",
