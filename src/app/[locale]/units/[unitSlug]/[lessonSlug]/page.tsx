@@ -184,7 +184,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
           </Link>
           <ChevronRight className="w-3.5 h-3.5 text-[#CBD5E1]" />
           <Link href={`/units/${unit.slug}`} className="hover:text-[#0F766E] dark:hover:text-[#14B8A6]">
-            {tCurriculum('unitLabel').replace('{number}', String(unit.syllabusOrder))}: {unit.title[loc]}
+            {tCurriculum('unitLabel', { number: unit.syllabusOrder })}: {unit.title[loc]}
           </Link>
           <ChevronRight className="w-3.5 h-3.5 text-[#CBD5E1]" />
           <span className="font-semibold text-[#14243A] dark:text-[#F8FAFC] truncate max-w-xs">

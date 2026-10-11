@@ -75,7 +75,7 @@ export default async function UnitPage({ params }: UnitPageProps) {
           </Link>
           <ChevronRight className="w-3.5 h-3.5 text-[#CBD5E1]" />
           <span className="font-semibold text-[#14243A] dark:text-[#F8FAFC]">
-            {tCurriculum('unitLabel').replace('{number}', String(unit.syllabusOrder))}
+            {tCurriculum('unitLabel', { number: unit.syllabusOrder })}
           </span>
         </nav>
 
@@ -84,10 +84,10 @@ export default async function UnitPage({ params }: UnitPageProps) {
           <div className="flex flex-wrap items-center justify-between gap-2">
             <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#F0FDFA] dark:bg-[#042F2E] text-[#0F766E] dark:text-[#14B8A6] border border-[#99F6E4] dark:border-[#115E59]">
               <Layers className="w-3.5 h-3.5" />
-              {tCurriculum('unitLabel').replace('{number}', String(unit.syllabusOrder))} • {unit.competencyRange}
+              {tCurriculum('unitLabel', { number: unit.syllabusOrder })} • {unit.competencyRange}
             </span>
             <span className="text-xs font-medium text-[#64748B] dark:text-[#94A3B8]">
-              {tCurriculum('lessonsCount').replace('{count}', String(unit.lessons.length))}
+              {tCurriculum('lessonsCount', { count: unit.lessons.length })}
             </span>
           </div>
 
