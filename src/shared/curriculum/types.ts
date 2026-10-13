@@ -21,6 +21,22 @@ export interface PracticeQuestion {
     en: string;
     si: string;
   };
+  options?: Array<{
+    id: string;
+    text: {
+      en: string;
+      si: string;
+    };
+  }>;
+  correctOptionId?: string;
+  numericalExpected?: number;
+  numericalTolerance?: number;
+  unit?: {
+    en: string;
+    si: string;
+  };
+  competencyRef?: string;
+  difficulty?: 'foundation' | 'intermediate' | 'advanced';
 }
 
 export interface LessonContent {
@@ -74,7 +90,12 @@ export interface LessonDefinition {
   }>;
   status: LessonStatus;
   hasSimulation: boolean;
-  simulationType?: 'uniform-motion';
+  simulationType?:
+    | 'uniform-motion'
+    | 'measurement-instruments'
+    | 'measurement-practicals'
+    | 'vector-canvas'
+    | 'unit-assessment';
   content?: LessonContent;
 }
 
