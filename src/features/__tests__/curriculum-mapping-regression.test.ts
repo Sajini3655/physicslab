@@ -62,12 +62,14 @@ describe('Curriculum Topic Mapping Regression Checks (Units 2, 7, 8)', () => {
     it('verifies representative mechanics lessons and syllabusRef mappings', () => {
       const lessonMap = new Map(MECHANICS_LESSONS.map((l) => [l.id, l]));
       expect(lessonMap.get('lesson-2-1')?.syllabusRef).toBe('Competency 2.1');
-      expect(lessonMap.get('lesson-2-4')?.syllabusRef).toBe('Competency 2.3');
-      expect(lessonMap.get('lesson-2-5')?.syllabusRef).toBe('Competency 2.4');
-      expect(lessonMap.get('lesson-2-6')?.syllabusRef).toBe('Competency 2.2');
-      expect(lessonMap.get('lesson-2-7')?.syllabusRef).toBe('Competency 2.5');
-      expect(lessonMap.get('lesson-2-8')?.syllabusRef).toBe('Competency 2.6');
-      expect(lessonMap.get('lesson-2-10')?.syllabusRef).toBe('Competency 2.7 & 2.8');
+      expect(lessonMap.get('lesson-2-4')?.syllabusRef).toBe('Competency 2.1');
+      expect(lessonMap.get('lesson-2-5')?.syllabusRef).toBe('Competency 2.3');
+      expect(lessonMap.get('lesson-2-6')?.syllabusRef).toBe('Competency 2.4');
+      expect(lessonMap.get('lesson-2-7')?.syllabusRef).toBe('Competency 2.2');
+      expect(lessonMap.get('lesson-2-8')?.syllabusRef).toBe('Competency 2.5');
+      expect(lessonMap.get('lesson-2-9')?.syllabusRef).toBe('Competency 2.6');
+      expect(lessonMap.get('lesson-2-10')?.syllabusRef).toBe('Competency 2.6');
+      expect(lessonMap.get('lesson-2-11')?.syllabusRef).toBe('Competency 2.7 & 2.8');
     });
   });
 
