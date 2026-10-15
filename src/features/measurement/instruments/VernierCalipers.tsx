@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Locale } from '@/shared/curriculum';
 import { Button } from '@/components/ui/button';
 import { ZoomIn, RotateCcw, Eye, EyeOff } from 'lucide-react';
+import { applyZeroCorrection } from '../physics/calculations';
 
 interface VernierCalipersProps {
   locale?: Locale;
@@ -32,12 +33,12 @@ export const VernierCalipers: React.FC<VernierCalipersProps> = ({
   };
 
   const clampedReading = Math.max(0, Math.min(120, roundToLc(readingMm)));
-  const correctedReading = Math.max(0, Number((clampedReading - zeroErrorMm).toFixed(2)));
+  const correctedReading = Math.max(0, applyZeroCorrection(clampedReading, zeroErrorMm));
 
   const handleReadingChange = (newVal: number) => {
     const rounded = roundToLc(Math.max(0, Math.min(120, newVal)));
     setReadingMm(rounded);
-    const corr = Math.max(0, Number((rounded - zeroErrorMm).toFixed(2)));
+    const corr = Math.max(0, applyZeroCorrection(rounded, zeroErrorMm));
     onReadingChange?.(rounded, corr);
     setGuessFeedback('idle');
   };

@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { MicrometerScrewGauge } from '../instruments/MicrometerScrewGauge';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Printer, RotateCcw, Database } from 'lucide-react';
+import { applyZeroCorrection, calculateCoinVolumeAndUncertainty } from '../physics/calculations';
 
 interface MicrometerCoinPracticalProps {
   locale?: Locale;
@@ -24,15 +25,18 @@ export const MicrometerCoinPractical: React.FC<MicrometerCoinPracticalProps> = (
     en: {
       title: 'Practical 2: Diameter & Thickness of a Coin',
       aim: 'Aim: To measure the diameter and thickness of a coin accurately using a micrometer screw gauge and determine its volume and fractional uncertainty.',
-      apparatus: 'Apparatus: Micrometer Screw Gauge (Least Count 0.01 mm), Standard Coin (e.g. 10 Rupee coin).',
+      apparatus: 'Apparatus: Micrometer Screw Gauge (0–25 mm range, Least Count 0.01 mm), Standard Coin (e.g. 10 Rupee coin).',
       theoryTitle: 'Theory & Experimental Precautions',
-      theoryText: 'The ratchet must always be used when tightening the spindle onto the coin to prevent deformation and avoid false pitch advancement. Measurements of diameter are taken across multiple perpendicular directions to account for slight non-circularity. Volume V = π(D/2)²t. Maximum fractional uncertainty is ΔV/V = 2(ΔD/D) + (Δt/t), where ΔD = Δt = 0.01 mm.',
-      procedure: 'Procedure: 1. Determine least count and check zero error using the ratchet. 2. Measure diameter along 3 mutually perpendicular diameters. 3. Measure thickness at 3 distinct points along the rim. 4. Correct for signed zero error. 5. Compute mean dimensions, volume, and percentage uncertainty.',
+      theoryText: 'The ratchet clutch must always be used when tightening the spindle onto the coin to prevent deformation and avoid false pitch advancement. To account for non-circularity, diameter is measured across three coplanar diameter orientations (at 0°, 60°, and 120° across the face of the coin). Thickness is measured separately at three distinct positions along the outer rim. Since the standard micrometer has a measuring range of 0–25.00 mm, specimens must have diameter < 25 mm; for larger specimens, a 25–50 mm micrometer or Vernier caliper is selected. Volume V = π(D/2)²t. Maximum fractional uncertainty is ΔV/V = 2(ΔD/D) + (Δt/t), where ΔD = Δt = 0.01 mm.',
+      procedure: 'Procedure: 1. Determine least count and check zero error using the ratchet. 2. Measure diameter along 3 distinct diameter orientations (0°, 60°, 120°). 3. Measure thickness at 3 distinct positions along the rim. 4. Correct for signed zero error. 5. Compute mean dimensions, volume, and percentage uncertainty.',
       obsTable: 'Observation & Measurement Table',
       param: 'Parameter',
-      trial1: 'Trial 1 (mm)',
-      trial2: 'Trial 2 (mm)',
-      trial3: 'Trial 3 (mm)',
+      dia1: 'Orientation 0° (mm)',
+      dia2: 'Orientation 60° (mm)',
+      dia3: 'Orientation 120° (mm)',
+      thick1: 'Rim Pos 1 (mm)',
+      thick2: 'Rim Pos 2 (mm)',
+      thick3: 'Rim Pos 3 (mm)',
       meanObs: 'Mean Observed (mm)',
       correctedVal: 'Corrected Value (mm)',
       coinDia: 'Coin Diameter (D)',
@@ -42,6 +46,7 @@ export const MicrometerCoinPractical: React.FC<MicrometerCoinPracticalProps> = (
       volumeLabel: 'Coin Volume (V):',
       fractionalUncertainty: 'Fractional Uncertainty (ΔV/V):',
       percentageUncertainty: 'Percentage Uncertainty (%):',
+      rangeWarning: 'Note: Readings > 25.0 mm exceed the 0–25 mm micrometer gauge range; in a laboratory, use a 25–50 mm micrometer or Vernier caliper.',
       loadSample: 'Load Sample Data',
       clearTable: 'Clear Table',
       printSheet: 'Print Laboratory Record',
@@ -49,15 +54,18 @@ export const MicrometerCoinPractical: React.FC<MicrometerCoinPracticalProps> = (
     si: {
       title: 'ප්‍රායෝගික පරීක්ෂණය 2: කාසියක විෂ්කම්භය සහ ඝනකම නිර්ණය කිරීම',
       aim: 'අරමුණ: මයික්‍රොමීටර් ඉස්කුරුප්පු ආමානය භාවිතයෙන් කාසියක විෂ්කම්භය සහ ඝනකම නිරවද්‍යව මැන, එහි පරිමාව සහ භාගික අවිනිශ්චිතතාව ගණනය කිරීම.',
-      apparatus: 'උපකරණ: මයික්‍රොමීටර් ඉස්කුරුප්පු ආමානය (කුඩාම මිනුම 0.01 mm), සම්මත කාසියක් (උදා: රුපියල් 10 කාසිය).',
+      apparatus: 'උපකරණ: මයික්‍රොමීටර් ඉස්කුරුප්පු ආමානය (0–25 mm පරාසය, කුඩාම මිනුම 0.01 mm), සම්මත කාසියක් (උදා: රුපියල් 10 කාසිය).',
       theoryTitle: 'මූලධර්මය සහ පූර්වෝපාය',
-      theoryText: 'කාසිය සිරකිරීමේදී විරූපණය වැළැක්වීමට සහ නිරවද්‍ය තෙරපුමක් පවත්වා ගැනීමට සෑම විටම රැචට් හිස භාවිත කළ යුතුය. කාසියේ සුළු අණ්ඩාකාර දෝෂ වැළැක්වීමට විෂ්කම්භය විවිධ දිශා ඔස්සේ මනිනු ලැබේ. පරිමාව V = π(D/2)²t වේ. උපරිම භාගික අවිනිශ්චිතතාව ΔV/V = 2(ΔD/D) + (Δt/t) වේ (මෙහි ΔD = Δt = 0.01 mm).',
-      procedure: 'ක්‍රමවේදය: 1. කුඩාම මිනුම සහ ශූන්‍ය දෝෂය පරීක්ෂා කිරීම. 2. විෂ්කම්භය විවිධ දිශා 3කින් මැනීම. 3. කාසියේ දාරයේ විවිධ ස්ථාන 3කින් ඝනකම මැනීම. 4. ශූන්‍ය දෝෂ ශෝධනය යෙදීම. 5. පරිමාව සහ ප්‍රතිශත අවිනිශ්චිතතාව ගණනය කිරීම.',
+      theoryText: 'කාසිය සිරකිරීමේදී විරූපණය වැළැක්වීමට සහ නිරවද්‍ය තෙරපුමක් පවත්වා ගැනීමට සෑම විටම රැචට් හිස භාවිත කළ යුතුය. කාසියේ අණ්ඩාකාර විකෘතිතා මඟහරවා ගැනීමට විෂ්කම්භය එකම තලයේ කෝණික දිශා 3ක් ඔස්සේ (0°, 60°, සහ 120° ඔස්සේ) මනිනු ලැබේ. ඝනකම වෙනමම කාසියේ දාරයේ වෙනස් ස්ථාන 3කින් මනිනු ලැබේ. සම්මත මයික්‍රොමීටරයේ පරාසය 0–25.0 mm බැවින් 25 mm ට අඩු මාන පමණක් මැනිය හැක (විශාල කාසි සඳහා 25–50 mm ආමානයක් හෝ වර්නියර් කැලිපරයක් තෝරා ගනී). පරිමාව V = π(D/2)²t වේ. උපරිම භාගික අවිනිශ්චිතතාව ΔV/V = 2(ΔD/D) + (Δt/t) වේ (මෙහි ΔD = Δt = 0.01 mm).',
+      procedure: 'ක්‍රමවේදය: 1. කුඩාම මිනුම සහ ශූන්‍ය දෝෂය පරීක්ෂා කිරීම. 2. විෂ්කම්භය කෝණික දිශා 3කින් (0°, 60°, 120°) මැනීම. 3. කාසියේ දාරයේ විවිධ ස්ථාන 3කින් ඝනකම මැනීම. 4. ශූන්‍ය දෝෂ ශෝධනය යෙදීම. 5. පරිමාව සහ ප්‍රතිශත අවිනිශ්චිතතාව ගණනය කිරීම.',
       obsTable: 'නිරීක්ෂණ හා මිනුම් සටහන් වගුව',
       param: 'රාශිය',
-      trial1: 'වාරය 1 (mm)',
-      trial2: 'වාරය 2 (mm)',
-      trial3: 'වාරය 3 (mm)',
+      dia1: '0° දිශාව (mm)',
+      dia2: '60° දිශාව (mm)',
+      dia3: '120° දිශාව (mm)',
+      thick1: 'දාරයේ ස්ථානය 1 (mm)',
+      thick2: 'දාරයේ ස්ථානය 2 (mm)',
+      thick3: 'දාරයේ ස්ථානය 3 (mm)',
       meanObs: 'මධ්‍යන්‍ය නිරීක්ෂිත (mm)',
       correctedVal: 'ශෝධිත අගය (mm)',
       coinDia: 'කාසියේ විෂ්කම්භය (D)',
@@ -67,6 +75,7 @@ export const MicrometerCoinPractical: React.FC<MicrometerCoinPracticalProps> = (
       volumeLabel: 'කාසියේ පරිමාව (V):',
       fractionalUncertainty: 'භාගික අවිනිශ්චිතතාව (ΔV/V):',
       percentageUncertainty: 'ප්‍රතිශත අවිනිශ්චිතතාව (%):',
+      rangeWarning: 'සටහන: 25.0 mm ට වැඩි අගයන් 0–25 mm ආමාන පරාසය ඉක්මවයි; රසායනාගාරයේදී 25–50 mm ආමානයක් හෝ වර්නියර් කැලිපරය යොදා ගන්න.',
       loadSample: 'ආදර්ශ දත්ත පුරවන්න',
       clearTable: 'වගුව හිස් කරන්න',
       printSheet: 'වාර්තාව මුද්‍රණය කරන්න',
@@ -96,21 +105,17 @@ export const MicrometerCoinPractical: React.FC<MicrometerCoinPracticalProps> = (
   const meanDia = parseMean(diaTrials);
   const meanThick = parseMean(thickTrials);
 
-  const corrDia = meanDia !== null ? Number((meanDia - ze).toFixed(2)) : null;
-  const corrThick = meanThick !== null ? Number((meanThick - ze).toFixed(2)) : null;
+  const corrDia = meanDia !== null ? applyZeroCorrection(meanDia, ze) : null;
+  const corrThick = meanThick !== null ? applyZeroCorrection(meanThick, ze) : null;
 
-  const volume = corrDia !== null && corrThick !== null
-    ? Number((Math.PI * Math.pow(corrDia / 2, 2) * corrThick).toFixed(2))
+  const analysis = corrDia !== null && corrThick !== null
+    ? calculateCoinVolumeAndUncertainty(corrDia, corrThick, leastCount)
     : null;
 
-  // Uncertainty: dV/V = 2*(0.01/D) + (0.01/t)
-  const fracUncertainty = corrDia !== null && corrThick !== null
-    ? Number((2 * (leastCount / corrDia) + (leastCount / corrThick)).toFixed(4))
-    : null;
-
-  const pctUncertainty = fracUncertainty !== null
-    ? Number((fracUncertainty * 100).toFixed(2))
-    : null;
+  const volume = analysis ? analysis.volumeMm3 : null;
+  const fracUncertainty = analysis ? analysis.fractionalUncertainty : null;
+  const pctUncertainty = analysis ? analysis.percentageUncertainty : null;
+  const hasRangeWarning = diaTrials.some((t) => parseFloat(t) > 25.0);
 
   return (
     <div className="space-y-6">
@@ -193,9 +198,9 @@ export const MicrometerCoinPractical: React.FC<MicrometerCoinPracticalProps> = (
               <thead>
                 <tr className="border-b border-[#DFE8EF] dark:border-[#1E334D] bg-[#F6FAFD] dark:bg-[#0B131E] text-[#64748B] dark:text-[#94A3B8]">
                   <th className="p-3 font-semibold">{t.param}</th>
-                  <th className="p-3 font-semibold">{t.trial1}</th>
-                  <th className="p-3 font-semibold">{t.trial2}</th>
-                  <th className="p-3 font-semibold">{t.trial3}</th>
+                  <th className="p-3 font-semibold">1: 0° / Rim 1</th>
+                  <th className="p-3 font-semibold">2: 60° / Rim 2</th>
+                  <th className="p-3 font-semibold">3: 120° / Rim 3</th>
                   <th className="p-3 font-semibold">{t.meanObs}</th>
                   <th className="p-3 font-semibold text-[#0F766E]">{t.correctedVal}</th>
                 </tr>
@@ -265,6 +270,12 @@ export const MicrometerCoinPractical: React.FC<MicrometerCoinPracticalProps> = (
               </tbody>
             </table>
           </div>
+
+          {hasRangeWarning && (
+            <div className="p-3 rounded-xl bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-900 text-xs text-amber-800 dark:text-amber-300">
+              {t.rangeWarning}
+            </div>
+          )}
 
           {/* Derived Quantities & Uncertainty */}
           <div className="p-4 rounded-xl bg-[#F0FDFA] dark:bg-[#042F2E] border border-[#99F6E4] dark:border-[#115E59] space-y-3">

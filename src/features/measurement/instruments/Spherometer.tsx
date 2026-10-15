@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Locale } from '@/shared/curriculum';
 import { Button } from '@/components/ui/button';
 import { RotateCcw, Calculator } from 'lucide-react';
+import { calculateSpherometerCurvature } from '../physics/calculations';
 
 interface SpherometerProps {
   locale?: Locale;
@@ -29,30 +30,23 @@ export const Spherometer: React.FC<SpherometerProps> = ({
   const leastCount = pitchMm / circularDivisions; // 0.01 mm
 
   const roundToLc = (v: number) => Math.round(v / leastCount) * leastCount;
-  const clampedH = Math.max(0, Math.min(10, roundToLc(hMm)));
+  const clampedH = Math.max(-5, Math.min(10, roundToLc(hMm)));
 
-  // Radius of curvature R = (a^2 / 6h) + (h / 2)
-  const calculateRadius = (a: number, h: number): number | null => {
-    if (h <= 0.001) return null; // Infinite / plane surface
-    const term1 = (a * a) / (6 * h);
-    const term2 = h / 2;
-    return Number((term1 + term2).toFixed(1));
-  };
-
-  const currentRadius = calculateRadius(legSeparationMm, clampedH);
+  const curvatureResult = calculateSpherometerCurvature(legSeparationMm, clampedH, leastCount);
+  const currentRadius = curvatureResult.radiusMm;
 
   const handleHeightChange = (newH: number) => {
-    const rounded = roundToLc(Math.max(0, Math.min(10, newH)));
+    const rounded = roundToLc(Math.max(-5, Math.min(10, newH)));
     setHMm(rounded);
-    const r = calculateRadius(legSeparationMm, rounded);
-    onCalculationChange?.(rounded, r);
+    const res = calculateSpherometerCurvature(legSeparationMm, rounded, leastCount);
+    onCalculationChange?.(rounded, res.radiusMm);
   };
 
   const handleLegChange = (newA: number) => {
     const clampedA = Math.max(20, Math.min(60, Number(newA.toFixed(1))));
     setLegSeparationMm(clampedA);
-    const r = calculateRadius(clampedA, clampedH);
-    onCalculationChange?.(clampedH, r);
+    const res = calculateSpherometerCurvature(clampedA, clampedH, leastCount);
+    onCalculationChange?.(clampedH, res.radiusMm);
   };
 
   const t = {
@@ -146,7 +140,7 @@ export const Spherometer: React.FC<SpherometerProps> = ({
             onClick={() => {
               setSelectedSurface('concave_mirror');
               setLegSeparationMm(45.0);
-              handleHeightChange(1.69);
+              handleHeightChange(-1.69);
             }}
           >
             {t.concaveMirror}
@@ -190,10 +184,18 @@ export const Spherometer: React.FC<SpherometerProps> = ({
               stroke="#0284C7"
               strokeWidth="1.5"
             />
-          ) : (
+          ) : clampedH > 0 ? (
             /* Convex Curvature Surface */
             <path
               d="M 80 230 Q 270 195 460 230 L 460 240 L 80 240 Z"
+              fill="url(#curvedGlass)"
+              stroke="#0284C7"
+              strokeWidth="1.5"
+            />
+          ) : (
+            /* Concave Curvature Surface (depressed center) */
+            <path
+              d="M 80 210 Q 270 232 460 210 L 460 240 L 80 240 Z"
               fill="url(#curvedGlass)"
               stroke="#0284C7"
               strokeWidth="1.5"
@@ -321,7 +323,7 @@ export const Spherometer: React.FC<SpherometerProps> = ({
 
           <input
             type="range"
-            min="0"
+            min="-4"
             max="6"
             step={leastCount}
             value={clampedH}
@@ -419,16 +421,20 @@ export const Spherometer: React.FC<SpherometerProps> = ({
             </div>
           </div>
 
-          <div className="text-xs text-[#0F766E] dark:text-[#14B8A6] font-mono bg-[#FFFFFF]/70 dark:bg-[#111D2D]/70 p-3 rounded-xl border border-[#99F6E4]/50 space-y-1">
+          <div className="text-xs text-[#0F766E] dark:text-[#14B8A6] font-mono bg-[#FFFFFF]/70 dark:bg-[#111D2D]/70 p-3 rounded-xl border border-[#99F6E4]/50 space-y-1.5">
             <div className="flex justify-between">
+              <span>Orientation:</span>
+              <span className="font-sans font-semibold">{curvatureResult.description[locale]}</span>
+            </div>
+            <div className="flex justify-between border-t border-[#99F6E4]/40 pt-1">
               <span>Formula:</span>
-              <span>R = (a² / 6h) + (h / 2)</span>
+              <span>R = (a² / 6|h|) + (|h| / 2)</span>
             </div>
             {currentRadius !== null && (
               <div className="flex justify-between text-[#042F2E] dark:text-[#CCFBF1] font-semibold pt-1 border-t border-[#99F6E4]/40">
                 <span>Calculation:</span>
                 <span>
-                  ({legSeparationMm.toFixed(1)}² / (6 × {clampedH.toFixed(2)})) + ({clampedH.toFixed(2)} / 2) = {currentRadius} mm
+                  ({legSeparationMm.toFixed(1)}² / (6 × {Math.abs(clampedH).toFixed(2)})) + ({Math.abs(clampedH).toFixed(2)} / 2) = {currentRadius} mm
                 </span>
               </div>
             )}

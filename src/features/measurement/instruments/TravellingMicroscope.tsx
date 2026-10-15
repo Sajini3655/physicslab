@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Locale } from '@/shared/curriculum';
 import { Button } from '@/components/ui/button';
 import { RotateCcw, Target } from 'lucide-react';
+import { calculateTravellingMicroscopeDimensions } from '../physics/calculations';
 
 interface TravellingMicroscopeProps {
   locale?: Locale;
@@ -60,19 +61,16 @@ export const TravellingMicroscope: React.FC<TravellingMicroscopeProps> = ({
     setRecordedX(updated);
 
     if (updated.x1 !== undefined && updated.x2 !== undefined && updated.x3 !== undefined && updated.x4 !== undefined) {
-      const dInt = Number((updated.x3 - updated.x2).toFixed(2));
-      const dExt = Number((updated.x4 - updated.x1).toFixed(2));
-      const rInt = Number((dInt / 2).toFixed(2));
-      const rExt = Number((dExt / 2).toFixed(2));
+      const dims = calculateTravellingMicroscopeDimensions(updated.x1, updated.x2, updated.x3, updated.x4);
       onReadingsRecorded?.({
         x1: updated.x1,
         x2: updated.x2,
         x3: updated.x3,
         x4: updated.x4,
-        dInt,
-        dExt,
-        rInt,
-        rExt,
+        dInt: dims.internalDiameter,
+        dExt: dims.externalDiameter,
+        rInt: dims.internalRadius,
+        rExt: dims.externalRadius,
       });
     }
   };

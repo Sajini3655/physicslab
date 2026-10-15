@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Locale } from '@/shared/curriculum';
 import { Button } from '@/components/ui/button';
 import { ZoomIn, RotateCcw, Eye, EyeOff } from 'lucide-react';
+import { applyZeroCorrection, getMicrometerScaleBreakdown } from '../physics/calculations';
 
 interface MicrometerScrewGaugeProps {
   locale?: Locale;
@@ -29,26 +30,23 @@ export const MicrometerScrewGauge: React.FC<MicrometerScrewGaugeProps> = ({
   const circularDivisions = 50;
   const leastCount = pitchMm / circularDivisions; // 0.01 mm
 
-  const roundToLc = (val: number) => {
-    return Math.round(val / leastCount) * leastCount;
-  };
+  const {
+    clampedReading,
+    sleeveMainMm,
+    hasHalfMm,
+    sleeveReading,
+    circularDivision,
+  } = getMicrometerScaleBreakdown(readingMm, leastCount);
 
-  const clampedReading = Math.max(0, Math.min(25, roundToLc(readingMm)));
-  const correctedReading = Math.max(0, Number((clampedReading - zeroErrorMm).toFixed(2)));
+  const correctedReading = Math.max(0, applyZeroCorrection(clampedReading, zeroErrorMm));
 
   const handleReadingChange = (newVal: number) => {
-    const rounded = roundToLc(Math.max(0, Math.min(25, newVal)));
-    setReadingMm(rounded);
-    const corr = Math.max(0, Number((rounded - zeroErrorMm).toFixed(2)));
-    onReadingChange?.(rounded, corr);
+    const breakdown = getMicrometerScaleBreakdown(newVal, leastCount);
+    setReadingMm(breakdown.clampedReading);
+    const corr = Math.max(0, applyZeroCorrection(breakdown.clampedReading, zeroErrorMm));
+    onReadingChange?.(breakdown.clampedReading, corr);
     setGuessFeedback('idle');
   };
-
-  // Sleeve scale breakdown: integer mm, half-mm sub-division
-  const sleeveMainMm = Math.floor(clampedReading);
-  const hasHalfMm = clampedReading - sleeveMainMm >= 0.5;
-  const sleeveReading = sleeveMainMm + (hasHalfMm ? 0.5 : 0.0);
-  const circularDivision = Math.round((clampedReading - sleeveReading) / leastCount) % circularDivisions;
 
   const t = {
     en: {

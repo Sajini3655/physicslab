@@ -22,6 +22,52 @@ import {
   TravellingMicroscope,
   InteractiveVectorCanvas,
 } from '@/features/measurement';
+import {
+  MechanicsPracticalsHub,
+  ProjectilesSimulation,
+  MechanicsAssessment,
+} from '@/features/mechanics';
+import {
+  WaveSuperpositionSimulation,
+  WavesPracticalsHub,
+  WavesAssessment,
+} from '@/features/waves';
+import {
+  IdealGasThermodynamicsSimulation,
+  ThermalPracticalsHub,
+  ThermalAssessment,
+} from '@/features/thermal';
+import {
+  OrbitalMechanicsSimulation,
+  GravitationAssessment,
+} from '@/features/gravitation';
+import {
+  ElectrostaticsSimulation,
+  ElectrostaticsAssessment,
+} from '@/features/electrostatics';
+import {
+  MagneticFieldSimulation,
+  MagneticFieldAssessment,
+} from '@/features/magnetism';
+import {
+  ElectricityCircuitSimulation,
+  CurrentElectricityAssessment,
+  ElectricityPracticalsHub,
+} from '@/features/electricity';
+import {
+  ElectronicsSimulation,
+  ElectronicsAssessment,
+  ElectronicsPracticalsHub,
+} from '@/features/electronics';
+import {
+  MatterPropertiesSimulation,
+  MatterPropertiesPracticalsHub,
+  MatterPropertiesAssessment,
+} from '@/features/matter-properties';
+import {
+  QuantumNuclearSimulation,
+  QuantumNuclearAssessment,
+} from '@/features/quantum-nuclear';
 import { Link } from '@/i18n/routing';
 import { routing } from '@/i18n/routing';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -490,9 +536,139 @@ export default async function LessonPage({ params }: LessonPageProps) {
               <InteractiveVectorCanvas locale={loc} />
             )}
 
+            {/* 2D PROJECTILES SIMULATION */}
+            {lesson.simulationType === 'projectiles-simulation' && (
+              <ProjectilesSimulation locale={loc} />
+            )}
+
+            {/* MECHANICS PRACTICALS HUB (5 NIE investigations) */}
+            {lesson.simulationType === 'mechanics-practicals' && (
+              <MechanicsPracticalsHub locale={loc} />
+            )}
+
+            {/* MECHANICS COMPREHENSIVE ASSESSMENT */}
+            {lesson.simulationType === 'mechanics-assessment' && (
+              <MechanicsAssessment locale={loc} />
+            )}
+
             {/* UNIT 1 COMPREHENSIVE ASSESSMENT */}
             {lesson.simulationType === 'unit-assessment' && (
               <UnitAssessment locale={loc} />
+            )}
+
+            {/* WAVE SUPERPOSITION & STANDING WAVES */}
+            {lesson.simulationType === 'wave-superposition' && (
+              <WaveSuperpositionSimulation locale={loc} />
+            )}
+
+            {/* WAVES PRACTICALS HUB (5 NIE investigations) */}
+            {lesson.simulationType === 'waves-practicals' && (
+              <WavesPracticalsHub locale={loc} />
+            )}
+
+            {/* WAVES COMPREHENSIVE ASSESSMENT */}
+            {lesson.simulationType === 'waves-assessment' && (
+              <WavesAssessment locale={loc} />
+            )}
+
+            {/* IDEAL GAS & THERMODYNAMICS SIMULATION */}
+            {lesson.simulationType === 'ideal-gas-simulation' && (
+              <IdealGasThermodynamicsSimulation locale={loc} />
+            )}
+
+            {/* THERMAL PRACTICALS HUB (6 NIE investigations) */}
+            {lesson.simulationType === 'thermal-practicals' && (
+              <ThermalPracticalsHub locale={loc} />
+            )}
+
+            {/* THERMAL COMPREHENSIVE ASSESSMENT */}
+            {lesson.simulationType === 'thermal-assessment' && (
+              <ThermalAssessment locale={loc} />
+            )}
+
+            {/* ORBITAL MECHANICS & ESCAPE VELOCITY SIMULATION */}
+            {lesson.simulationType === 'orbital-mechanics-simulation' && (
+              <OrbitalMechanicsSimulation locale={loc} />
+            )}
+
+            {/* GRAVITATIONAL FIELD COMPREHENSIVE ASSESSMENT */}
+            {lesson.simulationType === 'gravitation-assessment' && (
+              <GravitationAssessment locale={loc} />
+            )}
+
+            {/* ELECTROSTATICS & CAPACITOR SIMULATION */}
+            {lesson.simulationType === 'electrostatics-simulation' && (
+              <ElectrostaticsSimulation locale={loc} />
+            )}
+
+            {/* ELECTROSTATICS COMPREHENSIVE ASSESSMENT */}
+            {lesson.simulationType === 'electrostatics-assessment' && (
+              <ElectrostaticsAssessment locale={loc} />
+            )}
+
+            {/* MAGNETIC FIELD & CYCLOTRON SIMULATION */}
+            {lesson.simulationType === 'magnetic-field-simulation' && (
+              <MagneticFieldSimulation locale={loc} />
+            )}
+
+            {/* MAGNETIC FIELD COMPREHENSIVE ASSESSMENT */}
+            {lesson.simulationType === 'magnetism-assessment' && (
+              <MagneticFieldAssessment locale={loc} />
+            )}
+
+            {/* CURRENT ELECTRICITY & TRANSFORMER SIMULATION */}
+            {lesson.simulationType === 'electricity-circuit-simulation' && (
+              <ElectricityCircuitSimulation locale={loc} />
+            )}
+
+            {/* CURRENT ELECTRICITY COMPREHENSIVE ASSESSMENT */}
+            {lesson.simulationType === 'electricity-assessment' && (
+              <CurrentElectricityAssessment locale={loc} />
+            )}
+
+            {/* CURRENT ELECTRICITY PRACTICALS HUB (6 NIE investigations) */}
+            {lesson.simulationType === 'electricity-practicals' && (
+              <ElectricityPracticalsHub locale={loc} />
+            )}
+
+            {/* ELECTRONICS & OP-AMP SIMULATION */}
+            {lesson.simulationType === 'electronics-simulation' && (
+              <ElectronicsSimulation locale={loc} />
+            )}
+
+            {/* ELECTRONICS COMPREHENSIVE ASSESSMENT */}
+            {lesson.simulationType === 'electronics-assessment' && (
+              <ElectronicsAssessment locale={loc} />
+            )}
+
+            {/* ELECTRONICS PRACTICALS HUB (3 NIE investigations) */}
+            {lesson.simulationType === 'electronics-practicals' && (
+              <ElectronicsPracticalsHub locale={loc} />
+            )}
+
+            {/* MATTER PROPERTIES PRACTICALS HUB */}
+            {lesson.simulationType === 'matter-properties-practicals' && (
+              <MatterPropertiesPracticalsHub locale={loc} />
+            )}
+
+            {/* MATTER PROPERTIES SIMULATION */}
+            {lesson.simulationType === 'matter-properties-simulation' && (
+              <MatterPropertiesSimulation locale={loc} />
+            )}
+
+            {/* MATTER PROPERTIES COMPREHENSIVE ASSESSMENT */}
+            {lesson.simulationType === 'matter-properties-assessment' && (
+              <MatterPropertiesAssessment locale={loc} />
+            )}
+
+            {/* QUANTUM & NUCLEAR PHENOMENA SIMULATION */}
+            {lesson.simulationType === 'quantum-nuclear-simulation' && (
+              <QuantumNuclearSimulation locale={loc} />
+            )}
+
+            {/* QUANTUM & NUCLEAR COMPREHENSIVE ASSESSMENT */}
+            {lesson.simulationType === 'quantum-nuclear-assessment' && (
+              <QuantumNuclearAssessment locale={loc} />
             )}
           </section>
         )}

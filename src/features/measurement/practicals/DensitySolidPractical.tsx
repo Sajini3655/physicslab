@@ -5,6 +5,7 @@ import { Locale } from '@/shared/curriculum';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Printer, RotateCcw, Database, Scale, Box, Circle } from 'lucide-react';
+import { convertDensity, propagateDensityUncertainty } from '@/features/measurement/physics/calculations';
 
 interface DensitySolidPracticalProps {
   locale?: Locale;
@@ -36,7 +37,7 @@ export const DensitySolidPractical: React.FC<DensitySolidPracticalProps> = ({
       aim: 'Aim: To select suitable measuring instruments, determine the mass and volume of a regular solid, and calculate its density with unit conversions and error propagation.',
       apparatus: 'Apparatus: Triple beam / electronic balance (LC 0.01 g), Vernier calipers (LC 0.01 cm), Micrometer screw gauge (LC 0.001 cm), Regular solids (Brass block, Steel cylinder, Glass sphere).',
       theoryTitle: 'Instrument Selection & Error Theory',
-      theoryText: 'Instrument selection depends on dimension magnitude: Vernier calipers are chosen for lengths > 2 cm, whereas micrometer screw gauges are necessary for small dimensions (< 2 cm) to keep fractional error Δx/x small. Density ρ = m / V. To convert from g cm⁻³ to SI units kg m⁻³, multiply by 10³: ρ (kg m⁻³) = ρ (g cm⁻³) × 1000.',
+      theoryText: 'Instrument selection is determined by measuring range, instrument resolution, specimen geometry, and target fractional uncertainty (Δx/x). For small dimensions (< 25 mm) such as wire diameters or sheet thicknesses, a micrometer screw gauge (LC 0.01 mm) is selected to keep fractional error small. For dimensions exceeding 25 mm or internal cavities/depths, Vernier calipers (LC 0.1 mm / 0.02 mm) provide the required range and specialized jaws. Density ρ = m / V. To convert from CGS units (g cm⁻³) to coherent SI units (kg m⁻³), multiply by 1000: ρ (kg m⁻³) = ρ (g cm⁻³) × 1000. Maximum fractional uncertainty accumulates as Δρ/ρ = Δm/m + ΔV/V.',
       procedure: 'Procedure: 1. Select solid shape. 2. Measure mass on the balance. 3. Measure dimensions using appropriate instrument. 4. Calculate volume V. 5. Compute density in g cm⁻³ and convert to kg m⁻³. 6. Propagate fractional uncertainties.',
       selectSolid: 'Specimen Geometry:',
       block: 'Rectangular Block',
@@ -64,7 +65,7 @@ export const DensitySolidPractical: React.FC<DensitySolidPracticalProps> = ({
       aim: 'අරමුණ: සුදුසු මිනුම් උපකරණ තෝරාගෙන, ක්‍රමවත් ඝන වස්තුවක ස්කන්ධය සහ පරිමාව මැන, ඒකක පරිවර්තනය සහ දෝෂ ප්‍රචාරණය සහිතව ඝනත්වය ගණනය කිරීම.',
       apparatus: 'උපකරණ: විද්‍යුත් හෝ තුලා තුලාව (කුඩාම මිනුම 0.01 g), වර්නියර් කැලිපරය (කුඩාම මිනුම 0.01 cm), මයික්‍රොමීටර් ඉස්කුරුප්පු ආමානය (කුඩාම මිනුම 0.001 cm), ක්‍රමවත් ඝන වස්තු.',
       theoryTitle: 'උපකරණ තේරීම සහ දෝෂ න්‍යාය',
-      theoryText: 'භාගික දෝෂය Δx/x අවම කර ගැනීමට මනින දිග අනුව උපකරණය තෝරා ගනී: 2 cm ට වැඩි දිග සඳහා වර්නියර් කැලිපරයද, 2 cm ට අඩු සියුම් මාන සඳහා මයික්‍රොමීටර් ඉස්කුරුප්පු ආමානයද යොදා ගනී. ඝනත්වය ρ = m / V වේ. g cm⁻³ සිට සම්මත SI ඒකකය වන kg m⁻³ බවට පත් කිරීමට 10³ න් ගුණ කරනු ලැබේ: ρ (kg m⁻³) = ρ (g cm⁻³) × 1000.',
+      theoryText: 'උපකරණය තෝරාගනු ලබන්නේ මිනුම් පරාසය, උපකරණයේ කුඩාම මිනුම, වස්තුවේ ජ්‍යාමිතිය සහ ඉලක්කගත භාගික අවිනිශ්චිතතාව (Δx/x) අනුව ය. 25 mm ට වඩා කුඩා සියුම් මාන (කම්බි විෂ්කම්භ, තහඩු ඝනකම) සඳහා භාගික දෝෂය අවම කිරීමට මයික්‍රොමීටර් ඉස්කුරුප්පු ආමානය (LC 0.01 mm) තෝරා ගනී. 25 mm ඉක්මවන මාන හෝ අභ්‍යන්තර කුහර/ගැඹුරු මිනුම් සඳහා වර්නියර් කැලිපරය (LC 0.1 mm / 0.02 mm) අවශ්‍ය පරාසය සහ විශේෂිත හනු ලබා දෙයි. ඝනත්වය ρ = m / V වේ. CGS ඒකක (g cm⁻³) සිට සම්මත SI ඒකකය වන kg m⁻³ බවට පත් කිරීමට 1000 න් ගුණ කරනු ලැබේ: ρ (kg m⁻³) = ρ (g cm⁻³) × 1000. උපරිම භාගික අවිනිශ්චිතතාවය Δρ/ρ = Δm/m + ΔV/V ලෙස එකතු වේ.',
       procedure: 'ක්‍රමවේදය: 1. වස්තුවේ ජ්‍යාමිතිය තේරීම. 2. තුලාවෙන් ස්කන්ධය මැනීම. 3. සුදුසු උපකරණයෙන් මාන මැනීම. 4. පරිමාව V සෙවීම. 5. ඝනත්වය g cm⁻³ හා kg m⁻³ වලින් ගණනය කිරීම.',
       selectSolid: 'වස්තුවේ ජ්‍යාමිතිය:',
       block: 'සෘජුකෝණාස්‍රාකාර කුට්ටිය',
@@ -119,6 +120,8 @@ export const DensitySolidPractical: React.FC<DensitySolidPracticalProps> = ({
 
   let volumeCm3: number | null = null;
   let fracUncertainty: number | null = null;
+  let densityCgs: number | null = null;
+  let densitySi: number | null = null;
 
   if (solidType === 'block') {
     const l = parseFloat(lengthCm);
@@ -126,9 +129,12 @@ export const DensitySolidPractical: React.FC<DensitySolidPracticalProps> = ({
     const h = parseFloat(heightCm);
     if (!isNaN(l) && !isNaN(w) && !isNaN(h) && l > 0 && w > 0 && h > 0) {
       volumeCm3 = Number((l * w * h).toFixed(3));
-      // Δm = 0.01 g, Δl=Δw=Δh=0.01 cm
       if (!isNaN(m) && m > 0) {
-        fracUncertainty = Number(((0.01 / m) + (0.01 / l) + (0.01 / w) + (0.01 / h)).toFixed(4));
+        const deltaVOverV = (0.01 / l) + (0.01 / w) + (0.01 / h);
+        const res = propagateDensityUncertainty(m, 0.01, volumeCm3, deltaVOverV * volumeCm3);
+        fracUncertainty = Number(res.fractionalUncertainty.toFixed(4));
+        densityCgs = Number(res.density.toFixed(3));
+        densitySi = Number(convertDensity(res.density, 'g/cm^3', 'kg/m^3').toFixed(1));
       }
     }
   } else if (solidType === 'cylinder') {
@@ -137,7 +143,11 @@ export const DensitySolidPractical: React.FC<DensitySolidPracticalProps> = ({
     if (!isNaN(d) && !isNaN(h) && d > 0 && h > 0) {
       volumeCm3 = Number((Math.PI * Math.pow(d / 2, 2) * h).toFixed(3));
       if (!isNaN(m) && m > 0) {
-        fracUncertainty = Number(((0.01 / m) + 2 * (0.01 / d) + (0.01 / h)).toFixed(4));
+        const deltaVOverV = 2 * (0.01 / d) + (0.01 / h);
+        const res = propagateDensityUncertainty(m, 0.01, volumeCm3, deltaVOverV * volumeCm3);
+        fracUncertainty = Number(res.fractionalUncertainty.toFixed(4));
+        densityCgs = Number(res.density.toFixed(3));
+        densitySi = Number(convertDensity(res.density, 'g/cm^3', 'kg/m^3').toFixed(1));
       }
     }
   } else {
@@ -145,18 +155,19 @@ export const DensitySolidPractical: React.FC<DensitySolidPracticalProps> = ({
     if (!isNaN(d) && d > 0) {
       volumeCm3 = Number(((4 / 3) * Math.PI * Math.pow(d / 2, 3)).toFixed(3));
       if (!isNaN(m) && m > 0) {
-        fracUncertainty = Number(((0.01 / m) + 3 * (0.01 / d)).toFixed(4));
+        const deltaVOverV = 3 * (0.01 / d);
+        const res = propagateDensityUncertainty(m, 0.01, volumeCm3, deltaVOverV * volumeCm3);
+        fracUncertainty = Number(res.fractionalUncertainty.toFixed(4));
+        densityCgs = Number(res.density.toFixed(3));
+        densitySi = Number(convertDensity(res.density, 'g/cm^3', 'kg/m^3').toFixed(1));
       }
     }
   }
 
-  const densityCgs = !isNaN(m) && volumeCm3 !== null && volumeCm3 > 0
-    ? Number((m / volumeCm3).toFixed(3))
-    : null;
-
-  const densitySi = densityCgs !== null
-    ? Number((densityCgs * 1000).toFixed(1))
-    : null;
+  if (densityCgs === null && !isNaN(m) && volumeCm3 !== null && volumeCm3 > 0) {
+    densityCgs = Number((m / volumeCm3).toFixed(3));
+    densitySi = Number(convertDensity(densityCgs, 'g/cm^3', 'kg/m^3').toFixed(1));
+  }
 
   return (
     <div className="space-y-6">

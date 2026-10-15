@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { TravellingMicroscope } from '../instruments/TravellingMicroscope';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Printer, RotateCcw, Database } from 'lucide-react';
+import { calculateTravellingMicroscopeDimensions } from '../physics/calculations';
 
 interface TravellingMicroscopePracticalProps {
   locale?: Locale;
@@ -87,11 +88,12 @@ export const TravellingMicroscopePractical: React.FC<TravellingMicroscopePractic
 
   const isValid = !isNaN(nX1) && !isNaN(nX2) && !isNaN(nX3) && !isNaN(nX4);
 
-  const dInt = isValid ? Number((nX3 - nX2).toFixed(2)) : null;
-  const dExt = isValid ? Number((nX4 - nX1).toFixed(2)) : null;
-  const rInt = dInt !== null ? Number((dInt / 2).toFixed(2)) : null;
-  const rExt = dExt !== null ? Number((dExt / 2).toFixed(2)) : null;
-  const thickness = rExt !== null && rInt !== null ? Number((rExt - rInt).toFixed(2)) : null;
+  const dims = isValid ? calculateTravellingMicroscopeDimensions(nX1, nX2, nX3, nX4) : null;
+  const dInt = dims ? dims.internalDiameter : null;
+  const dExt = dims ? dims.externalDiameter : null;
+  const rInt = dims ? dims.internalRadius : null;
+  const rExt = dims ? dims.externalRadius : null;
+  const thickness = dims ? dims.wallThickness : null;
 
   return (
     <div className="space-y-6">
@@ -221,12 +223,24 @@ export const TravellingMicroscopePractical: React.FC<TravellingMicroscopePractic
                 </span>
               </div>
               <div className="p-2.5 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                <span className="text-[10px] text-[#64748B] block font-sans">{t.internalRad}</span>
+                <span className="font-bold text-[#0F766E] dark:text-[#14B8A6]">
+                  {rInt !== null ? `${rInt} mm` : '—'}
+                </span>
+              </div>
+              <div className="p-2.5 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
                 <span className="text-[10px] text-[#64748B] block font-sans">{t.externalDia}</span>
                 <span className="font-bold text-[#14243A] dark:text-[#F8FAFC]">
                   {dExt !== null ? `${dExt} mm` : '—'}
                 </span>
               </div>
               <div className="p-2.5 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                <span className="text-[10px] text-[#64748B] block font-sans">{t.externalRad}</span>
+                <span className="font-bold text-[#0F766E] dark:text-[#14B8A6]">
+                  {rExt !== null ? `${rExt} mm` : '—'}
+                </span>
+              </div>
+              <div className="p-2.5 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60 sm:col-span-2 md:col-span-1">
                 <span className="text-[10px] text-[#64748B] block font-sans">{t.wallThickness}</span>
                 <span className="font-bold text-[#0F766E] dark:text-[#14B8A6]">
                   {thickness !== null ? `${thickness} mm` : '—'}

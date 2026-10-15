@@ -1,5 +1,6 @@
 import { MeasurementQuestion } from './types';
 import { MEASUREMENT_QUESTION_BANK } from './bank';
+import { parseNumericalInput } from '../physics/calculations';
 
 export interface AssessmentResult {
   totalQuestions: number;
@@ -72,9 +73,9 @@ export function evaluateAssessment(
         isCorrect = true;
       }
     } else if (q.type === 'numerical' && q.expected !== undefined) {
-      const num = parseFloat(studentAns);
+      const num = parseNumericalInput(studentAns);
       const tol = q.tolerance ?? 0.05;
-      if (!isNaN(num) && Math.abs(num - q.expected) <= tol) {
+      if (num !== null && Math.abs(num - q.expected) <= tol) {
         isCorrect = true;
       }
     }

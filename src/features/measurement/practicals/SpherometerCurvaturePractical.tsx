@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Spherometer } from '../instruments/Spherometer';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Printer, RotateCcw, Database } from 'lucide-react';
+import { calculateSpherometerCurvature } from '../physics/calculations';
 
 interface SpherometerCurvaturePracticalProps {
   locale?: Locale;
@@ -96,11 +97,13 @@ export const SpherometerCurvaturePractical: React.FC<SpherometerCurvaturePractic
   const meanH1 = parseMean(h1Trials);
   const zeroH0 = parseFloat(h0) || 0.0;
 
-  const elevationH = meanH1 !== null ? Number(Math.abs(meanH1 - zeroH0).toFixed(2)) : null;
-
-  const radiusR = meanA !== null && elevationH !== null && elevationH > 0.001
-    ? Number(((meanA * meanA) / (6 * elevationH) + elevationH / 2).toFixed(1))
-    : elevationH === 0 ? null : null;
+  const signedSagitta = meanH1 !== null ? Number((meanH1 - zeroH0).toFixed(2)) : null;
+  const curvResult = meanA !== null && signedSagitta !== null
+    ? calculateSpherometerCurvature(meanA, signedSagitta)
+    : null;
+  const elevationH = signedSagitta !== null ? Math.abs(signedSagitta) : null;
+  const radiusR = curvResult ? curvResult.radiusMm : null;
+  const surfaceDescription = curvResult ? curvResult.description[locale] : null;
 
   return (
     <div className="space-y-6">
@@ -273,6 +276,12 @@ export const SpherometerCurvaturePractical: React.FC<SpherometerCurvaturePractic
                 {radiusR !== null ? `R = ${radiusR} mm` : elevationH === 0 ? 'R = ∞' : '—'}
               </span>
             </div>
+
+            {surfaceDescription && (
+              <p className="text-xs font-semibold text-[#0F766E] dark:text-[#14B8A6]">
+                {surfaceDescription}
+              </p>
+            )}
 
             {radiusR !== null && meanA !== null && elevationH !== null && (
               <div className="text-xs font-mono text-[#0F766E] dark:text-[#14B8A6] bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 p-2.5 rounded-lg border border-[#99F6E4]/60">

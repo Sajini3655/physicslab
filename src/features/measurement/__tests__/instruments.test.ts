@@ -3,12 +3,18 @@ import {
   calculateVernierReading,
   applyZeroCorrection,
   calculateMicrometerReading,
+  getMicrometerScaleBreakdown,
   calculateSpherometerCurvature,
   calculateTravellingMicroscopeDiameters,
+  calculateTravellingMicroscopeDimensions,
+  calculateCylinderMaterialVolume,
+  calculateCoinVolumeAndUncertainty,
   convertDensity,
   propagateDensityUncertainty,
   resolveVector,
   addVectors,
+  subtractVectors,
+  parseNumericalInput,
 } from '../physics/calculations';
 
 describe('Unit 1 Measurement - Instrument Physics & Metrology', () => {
@@ -67,13 +73,54 @@ describe('Unit 1 Measurement - Instrument Physics & Metrology', () => {
       const corrected = applyZeroCorrection(4.82, -0.04);
       expect(corrected).toBe(4.86);
     });
+
+    it('performs exact integer breakdown without half-millimetre transition jitter', () => {
+      // At 4.49 mm: main = 4 mm, half line invisible, circular = 49
+      const b449 = getMicrometerScaleBreakdown(4.49);
+      expect(b449.mainMm).toBe(4);
+      expect(b449.halfMmVisible).toBe(false);
+      expect(b449.circularDiv).toBe(49);
+
+      // At 4.50 mm: main = 4 mm, half line visible, circular = 0
+      const b450 = getMicrometerScaleBreakdown(4.50);
+      expect(b450.mainMm).toBe(4);
+      expect(b450.halfMmVisible).toBe(true);
+      expect(b450.circularDiv).toBe(0);
+
+      // At 4.51 mm: main = 4 mm, half line visible, circular = 1
+      const b451 = getMicrometerScaleBreakdown(4.51);
+      expect(b451.mainMm).toBe(4);
+      expect(b451.halfMmVisible).toBe(true);
+      expect(b451.circularDiv).toBe(1);
+
+      // Boundary at 0.00 mm
+      const b0 = getMicrometerScaleBreakdown(0.0);
+      expect(b0.mainMm).toBe(0);
+      expect(b0.halfMmVisible).toBe(false);
+      expect(b0.circularDiv).toBe(0);
+
+      // Maximum 25.00 mm range
+      const b25 = getMicrometerScaleBreakdown(25.0);
+      expect(b25.mainMm).toBe(25);
+      expect(b25.halfMmVisible).toBe(false);
+      expect(b25.circularDiv).toBe(0);
+    });
   });
 
   describe('Spherometer Curvature Calculations', () => {
-    it('calculates radius of curvature R = a^2 / (6h) + h / 2', () => {
-      // a = 30.0 mm, h = 1.0 mm -> R = 900 / 6 + 0.5 = 150 + 0.5 = 150.5 mm
+    it('calculates radius of curvature R = a^2 / (6h) + h / 2 for convex surface', () => {
+      // a = 30.0 mm, h = +1.0 mm -> R = 900 / 6 + 0.5 = 150 + 0.5 = 150.5 mm
       const result = calculateSpherometerCurvature(30.0, 1.0);
       expect(result.isPlane).toBe(false);
+      expect(result.surfaceType).toBe('convex');
+      expect(result.radiusMm).toBe(150.5);
+    });
+
+    it('calculates radius of curvature for concave surface using |h| without treating as plane', () => {
+      // a = 30.0 mm, h = -1.0 mm (depressed center)
+      const result = calculateSpherometerCurvature(30.0, -1.0);
+      expect(result.isPlane).toBe(false);
+      expect(result.surfaceType).toBe('concave');
       expect(result.radiusMm).toBe(150.5);
     });
 
@@ -87,12 +134,14 @@ describe('Unit 1 Measurement - Instrument Physics & Metrology', () => {
     it('safely handles plane surface with h = 0 without division by zero', () => {
       const result = calculateSpherometerCurvature(40.0, 0.0);
       expect(result.isPlane).toBe(true);
+      expect(result.surfaceType).toBe('plane');
       expect(result.radiusMm).toBeNull();
     });
 
-    it('safely handles microscopic sagitta near zero threshold', () => {
+    it('safely handles microscopic sagitta near zero threshold below least count', () => {
       const result = calculateSpherometerCurvature(40.0, 0.0005);
       expect(result.isPlane).toBe(true);
+      expect(result.surfaceType).toBe('unresolvable');
       expect(result.radiusMm).toBeNull();
     });
   });
@@ -108,6 +157,54 @@ describe('Unit 1 Measurement - Instrument Physics & Metrology', () => {
       expect(res.internalDiameter).toBe(6.0); // |12 - 18|
       expect(res.externalDiameter).toBe(10.0); // |10 - 20|
       expect(res.wallThickness).toBe(2.0); // (10 - 6) / 2
+      expect(res.internalRadius).toBe(3.0);
+      expect(res.externalRadius).toBe(5.0);
+      expect(calculateTravellingMicroscopeDimensions).toBe(calculateTravellingMicroscopeDiameters);
+    });
+  });
+
+  describe('Cylinder & Tube Volume Metrology', () => {
+    it('calculates material volume for open hollow tube', () => {
+      // rExt = 2.0 cm, rInt = 1.5 cm, H = 10.0 cm
+      // V_ext = pi * 4 * 10 = 40 pi ~ 125.66
+      // V_cav = pi * 2.25 * 10 = 22.5 pi ~ 70.69
+      // V_solid = 17.5 pi ~ 54.98
+      const res = calculateCylinderMaterialVolume({
+        geometry: 'open_tube',
+        rExt: 2.0,
+        rInt: 1.5,
+        heightExt: 10.0,
+      });
+      expect(res.externalVolume).toBeCloseTo(125.7, 1);
+      expect(res.cavityVolume).toBeCloseTo(70.7, 1);
+      expect(res.solidVolume).toBeCloseTo(55.0, 1);
+    });
+
+    it('calculates material volume for closed-bottom cylinder with base plate thickness', () => {
+      // rExt = 2.0 cm, rInt = 1.5 cm, heightExt = 10.0 cm, cavity depth = 8.5 cm
+      // baseThickness = 10.0 - 8.5 = 1.5 cm
+      const res = calculateCylinderMaterialVolume({
+        geometry: 'closed_bottom',
+        rExt: 2.0,
+        rInt: 1.5,
+        heightExt: 10.0,
+        depthCavity: 8.5,
+      });
+      expect(res.baseThickness).toBe(1.5);
+      expect(res.solidVolume).toBeGreaterThan(0);
+      expect(res.externalVolume).toBeGreaterThan(res.cavityVolume);
+    });
+  });
+
+  describe('Coin Volume & Uncertainty Metrology', () => {
+    it('calculates coin volume and combined fractional uncertainty', () => {
+      // D = 24.0 mm, t = 2.0 mm, LC = 0.01 mm
+      // V = pi * 12^2 * 2 = 288 pi ~ 904.78 mm3
+      // Frac unc = 2 * (0.01 / 24) + (0.01 / 2) = 0.000833 + 0.005 = 0.0058
+      const coin = calculateCoinVolumeAndUncertainty(24.0, 2.0, 0.01);
+      expect(coin.volumeMm3).toBeCloseTo(904.78, 1);
+      expect(coin.fractionalUncertainty).toBe(0.0058);
+      expect(coin.percentageUncertainty).toBe(0.58);
     });
   });
 
@@ -140,7 +237,7 @@ describe('Unit 1 Measurement - Instrument Physics & Metrology', () => {
     });
   });
 
-  describe('2D Vector Resolution & Addition', () => {
+  describe('2D Vector Resolution, Addition, and Subtraction', () => {
     it('resolves vector into perpendicular components', () => {
       // Vector A = 10 at 0 degrees -> Ax = 10, Ay = 0
       const a0 = resolveVector(10, 0);
@@ -175,6 +272,50 @@ describe('Unit 1 Measurement - Instrument Physics & Metrology', () => {
       const result = addVectors([vecA, vecB]);
 
       expect(result.resultantMagnitude).toBe(0);
+    });
+
+    it('subtracts vectors correctly: D = A - B = A + (-B)', () => {
+      const vecA = { magnitude: 10, angleDegrees: 0 };
+      const vecB = { magnitude: 6, angleDegrees: 0 };
+      // 10 @ 0° - 6 @ 0° = 4 @ 0°
+      const sub1 = subtractVectors(vecA, vecB);
+      expect(sub1.resultantMagnitude).toBe(4);
+      expect(sub1.rx).toBe(4);
+
+      // 10 @ 0° - 10 @ 180° = 10 - (-10) = 20 @ 0°
+      const sub2 = subtractVectors({ magnitude: 10, angleDegrees: 0 }, { magnitude: 10, angleDegrees: 180 });
+      expect(sub2.resultantMagnitude).toBe(20);
+      expect(sub2.rx).toBe(20);
+    });
+  });
+
+  describe('Robust Numerical Input Parser', () => {
+    it('safely handles empty or whitespace input without converting to zero', () => {
+      expect(parseNumericalInput('')).toBeNull();
+      expect(parseNumericalInput('   ')).toBeNull();
+      expect(parseNumericalInput(undefined)).toBeNull();
+    });
+
+    it('parses standard integers and decimal values', () => {
+      expect(parseNumericalInput('28.6')).toBe(28.6);
+      expect(parseNumericalInput('0.00')).toBe(0);
+      expect(parseNumericalInput('-4.5')).toBe(-4.5);
+    });
+
+    it('parses comma-separated numbers', () => {
+      expect(parseNumericalInput('2,700')).toBe(2700);
+      expect(parseNumericalInput('1,000.5')).toBe(1000.5);
+    });
+
+    it('parses scientific notation in various conventions', () => {
+      expect(parseNumericalInput('2.7 x 10^3')).toBe(2700);
+      expect(parseNumericalInput('2.7 × 10^3')).toBe(2700);
+      expect(parseNumericalInput('6.626e-34')).toBeCloseTo(6.626e-34, 40);
+    });
+
+    it('strips trailing units gracefully', () => {
+      expect(parseNumericalInput('28.6 mm')).toBe(28.6);
+      expect(parseNumericalInput('2700 kg m⁻³')).toBe(2700);
     });
   });
 });
