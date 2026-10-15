@@ -7,6 +7,29 @@ export interface LearningObjective {
   si: string;
 }
 
+export interface StructuredRubricPoint {
+  point: number;
+  description: {
+    en: string;
+    si: string;
+  };
+}
+
+export interface StructuredSubPart {
+  id: string;
+  partLabel: string;
+  prompt: {
+    en: string;
+    si: string;
+  };
+  allocatedMarks: number;
+  rubric: StructuredRubricPoint[];
+  modelAnswer: {
+    en: string;
+    si: string;
+  };
+}
+
 export interface PracticeQuestion {
   id: string;
   question: {
@@ -21,6 +44,23 @@ export interface PracticeQuestion {
     en: string;
     si: string;
   };
+  options?: Array<{
+    id: string;
+    text: {
+      en: string;
+      si: string;
+    };
+  }>;
+  correctOptionId?: string;
+  numericalExpected?: number;
+  numericalTolerance?: number;
+  unit?: {
+    en: string;
+    si: string;
+  };
+  parts?: StructuredSubPart[];
+  competencyRef?: string;
+  difficulty?: 'foundation' | 'intermediate' | 'advanced';
 }
 
 export interface LessonContent {
@@ -74,7 +114,38 @@ export interface LessonDefinition {
   }>;
   status: LessonStatus;
   hasSimulation: boolean;
-  simulationType?: 'uniform-motion';
+  simulationType?:
+    | 'uniform-motion'
+    | 'measurement-instruments'
+    | 'measurement-practicals'
+    | 'vector-canvas'
+    | 'unit-assessment'
+    | 'projectiles-simulation'
+    | 'mechanics-practicals'
+    | 'mechanics-assessment'
+    | 'wave-superposition'
+    | 'waves-practicals'
+    | 'waves-assessment'
+    | 'ideal-gas-simulation'
+    | 'thermal-practicals'
+    | 'thermal-assessment'
+    | 'orbital-mechanics-simulation'
+    | 'gravitation-assessment'
+    | 'electrostatics-simulation'
+    | 'electrostatics-assessment'
+    | 'magnetic-field-simulation'
+    | 'magnetism-assessment'
+    | 'electricity-circuit-simulation'
+    | 'electricity-practicals'
+    | 'electricity-assessment'
+    | 'electronics-simulation'
+    | 'electronics-practicals'
+    | 'electronics-assessment'
+    | 'matter-properties-simulation'
+    | 'matter-properties-practicals'
+    | 'matter-properties-assessment'
+    | 'quantum-nuclear-simulation'
+    | 'quantum-nuclear-assessment';
   content?: LessonContent;
 }
 

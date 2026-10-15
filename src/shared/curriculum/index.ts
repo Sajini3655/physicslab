@@ -31,7 +31,11 @@ export function getAllLessons(): LessonDefinition[] {
 export function getLesson(unitSlug: string, lessonSlug: string): LessonDefinition | undefined {
   const unit = getUnitBySlug(unitSlug);
   if (!unit) return undefined;
-  return unit.lessons.find((l) => l.slug === lessonSlug);
+  let lesson = unit.lessons.find((l) => l.slug === lessonSlug);
+  if (!lesson && unitSlug === 'measurement' && lessonSlug === 'errors-in-measurement') {
+    lesson = unit.lessons.find((l) => l.slug === 'errors-and-uncertainties');
+  }
+  return lesson;
 }
 
 /**
