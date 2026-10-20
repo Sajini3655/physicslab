@@ -382,7 +382,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
                         <AlertCircle className="w-4 h-4 text-[#B45309] shrink-0 mt-0.5" />
                         <div>
                           <span className="text-[11px] font-semibold uppercase tracking-wider text-[#B45309] block">
-                            Misconception
+                            {loc === 'si' ? 'පොදු වැරදි වැටහීම' : 'Misconception'}
                           </span>
                           <p className="text-xs sm:text-sm text-[#14243A] dark:text-[#F8FAFC] font-medium leading-relaxed">
                             {item.misconception[loc]}
@@ -391,7 +391,9 @@ export default async function LessonPage({ params }: LessonPageProps) {
                       </div>
 
                       <div className="p-3 rounded-xl bg-[#F0FDFA] dark:bg-[#042F2E] border border-[#99F6E4] dark:border-[#115E59] text-xs text-[#0F766E] dark:text-[#14B8A6] leading-relaxed">
-                        <span className="font-semibold block mb-0.5">Physical Clarification:</span>
+                        <span className="font-semibold block mb-0.5">
+                          {loc === 'si' ? 'භෞතික පැහැදිලි කිරීම:' : 'Physical Clarification:'}
+                        </span>
                         {item.clarification[loc]}
                       </div>
                     </div>
@@ -416,7 +418,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
             </span>
           </div>
 
-          {!lesson.content && (
+          {!lesson.content && !lesson.hasSimulation && (
             <div className="p-3.5 rounded-xl bg-[#F6FAFD] dark:bg-[#0B131E] border border-[#DFE8EF] dark:border-[#1E334D] text-xs text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
               {tCurriculum('outlineNotice')}
             </div>

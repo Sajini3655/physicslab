@@ -42,7 +42,7 @@ export default async function HomePage({
         <div className="flex items-center gap-3 sm:gap-5">
           <a
             href="#curriculum-units"
-            className="text-xs sm:text-sm font-semibold text-[#14243A] dark:text-[#E2E8F0] hover:text-[#0F766E] dark:hover:text-[#14B8A6] transition-colors"
+            className="hidden sm:inline-block text-xs sm:text-sm font-semibold text-[#14243A] dark:text-[#E2E8F0] hover:text-[#0F766E] dark:hover:text-[#14B8A6] transition-colors whitespace-nowrap"
           >
             {tCurriculum('unitsTitle')}
           </a>

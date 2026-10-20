@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Locale } from '@/shared/curriculum';
+import React from 'react';
+import { Locale, useAssessmentSession } from '@/shared/curriculum';
 import {
   generateQuantumAssessment,
   evaluateQuantumAssessment,
@@ -30,42 +30,24 @@ interface QuantumNuclearAssessmentProps {
 export const QuantumNuclearAssessment: React.FC<QuantumNuclearAssessmentProps> = ({
   locale = 'en',
 }) => {
-  const [questions] = useState<QuantumQuestion[]>(() => generateQuantumAssessment());
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [submitted, setSubmitted] = useState<boolean>(false);
-  const [result, setResult] = useState<AssessmentResult | null>(null);
-  const [showSolutions, setShowSolutions] = useState<Record<string, boolean>>({});
-
-  const handleSelectOption = (qId: string, optionId: string) => {
-    if (submitted) return;
-    setAnswers((prev) => ({ ...prev, [qId]: optionId }));
-  };
-
-  const handleNumericalChange = (qId: string, val: string) => {
-    if (submitted) return;
-    setAnswers((prev) => ({ ...prev, [qId]: val }));
-  };
-
-  const handleSubmit = () => {
-    const res = evaluateQuantumAssessment(questions, answers, 1200);
-    setResult(res);
-    setSubmitted(true);
-  };
-
-  const handleReset = () => {
-    setAnswers({});
-    setSubmitted(false);
-    setResult(null);
-    setShowSolutions({});
-  };
-
-  const toggleSolution = (qId: string) => {
-    setShowSolutions((prev) => ({ ...prev, [qId]: !prev[qId] }));
-  };
-
-  const answeredCount = Object.keys(answers).filter(
-    (k) => answers[k]?.trim() !== ''
-  ).length;
+  const {
+    questions,
+    answers,
+    setAnswers,
+    submitted,
+    result,
+    showSolutions,
+    handleSelectOption,
+    handleNumericalChange,
+    handleSubmit,
+    handleReset,
+    toggleSolution,
+    answeredCount,
+  } = useAssessmentSession<QuantumQuestion, AssessmentResult>({
+    storageKey: 'unit-11',
+    generateQuestions: generateQuantumAssessment,
+    evaluateAssessment: (qs, ans) => evaluateQuantumAssessment(qs, ans, 1200),
+  });
 
   const t = {
     en: {

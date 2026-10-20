@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Locale } from '@/shared/curriculum';
+import React from 'react';
+import { Locale, useAssessmentSession } from '@/shared/curriculum';
 import { generateUnit1Assessment, evaluateAssessment, AssessmentResult } from '../questions/assessment';
 import { MeasurementQuestion } from '../questions/types';
 import { Button } from '@/components/ui/button';
@@ -21,40 +21,23 @@ interface UnitAssessmentProps {
 }
 
 export const UnitAssessment: React.FC<UnitAssessmentProps> = ({ locale = 'en' }) => {
-  const [questions] = useState<MeasurementQuestion[]>(() => generateUnit1Assessment());
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [submitted, setSubmitted] = useState<boolean>(false);
-  const [result, setResult] = useState<AssessmentResult | null>(null);
-  const [showSolutions, setShowSolutions] = useState<Record<string, boolean>>({});
-
-  const handleSelectOption = (qId: string, optionId: string) => {
-    if (submitted) return;
-    setAnswers((prev) => ({ ...prev, [qId]: optionId }));
-  };
-
-  const handleNumericalChange = (qId: string, val: string) => {
-    if (submitted) return;
-    setAnswers((prev) => ({ ...prev, [qId]: val }));
-  };
-
-  const handleSubmit = () => {
-    const res = evaluateAssessment(questions, answers);
-    setResult(res);
-    setSubmitted(true);
-  };
-
-  const handleReset = () => {
-    setAnswers({});
-    setSubmitted(false);
-    setResult(null);
-    setShowSolutions({});
-  };
-
-  const toggleSolution = (qId: string) => {
-    setShowSolutions((prev) => ({ ...prev, [qId]: !prev[qId] }));
-  };
-
-  const answeredCount = Object.keys(answers).filter((k) => answers[k]?.trim() !== '').length;
+  const {
+    questions,
+    answers,
+    submitted,
+    result,
+    showSolutions,
+    handleSelectOption,
+    handleNumericalChange,
+    handleSubmit,
+    handleReset,
+    toggleSolution,
+    answeredCount,
+  } = useAssessmentSession<MeasurementQuestion, AssessmentResult>({
+    storageKey: 'unit-1',
+    generateQuestions: generateUnit1Assessment,
+    evaluateAssessment,
+  });
 
   const t = {
     en: {

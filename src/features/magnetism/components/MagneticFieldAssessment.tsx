@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Locale } from '@/shared/curriculum';
+import React from 'react';
+import { Locale, useAssessmentSession } from '@/shared/curriculum';
 import {
   generateUnit7Assessment,
   evaluateMagnetismAssessment,
@@ -27,42 +27,24 @@ interface MagneticFieldAssessmentProps {
 export const MagneticFieldAssessment: React.FC<MagneticFieldAssessmentProps> = ({
   locale = 'en',
 }) => {
-  const [questions] = useState<MagnetismQuestion[]>(() => generateUnit7Assessment());
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [submitted, setSubmitted] = useState<boolean>(false);
-  const [result, setResult] = useState<MagnetismAssessmentResult | null>(null);
-  const [showSolutions, setShowSolutions] = useState<Record<string, boolean>>({});
-
-  const handleSelectOption = (qId: string, optionId: string) => {
-    if (submitted) return;
-    setAnswers((prev) => ({ ...prev, [qId]: optionId }));
-  };
-
-  const handleNumericalChange = (qId: string, val: string) => {
-    if (submitted) return;
-    setAnswers((prev) => ({ ...prev, [qId]: val }));
-  };
-
-  const handleSubmit = () => {
-    const res = evaluateMagnetismAssessment(questions, answers);
-    setResult(res);
-    setSubmitted(true);
-  };
-
-  const handleReset = () => {
-    setAnswers({});
-    setSubmitted(false);
-    setResult(null);
-    setShowSolutions({});
-  };
-
-  const toggleSolution = (qId: string) => {
-    setShowSolutions((prev) => ({ ...prev, [qId]: !prev[qId] }));
-  };
-
-  const answeredCount = Object.keys(answers).filter(
-    (k) => answers[k]?.trim() !== ''
-  ).length;
+  const {
+    questions,
+    answers,
+    setAnswers,
+    submitted,
+    result,
+    showSolutions,
+    handleSelectOption,
+    handleNumericalChange,
+    handleSubmit,
+    handleReset,
+    toggleSolution,
+    answeredCount,
+  } = useAssessmentSession<MagnetismQuestion, MagnetismAssessmentResult>({
+    storageKey: 'unit-7',
+    generateQuestions: generateUnit7Assessment,
+    evaluateAssessment: evaluateMagnetismAssessment,
+  });
 
   const t = {
     en: {
