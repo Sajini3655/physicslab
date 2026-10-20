@@ -71,6 +71,7 @@ import {
 import { Link } from '@/i18n/routing';
 import { routing } from '@/i18n/routing';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { LessonProgressActions } from '@/components/LessonProgressActions';
 import {
   Atom,
   ChevronRight,
@@ -228,7 +229,13 @@ export default async function LessonPage({ params }: LessonPageProps) {
           </Link>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 sm:gap-5">
+          <Link
+            href="/my-learning"
+            className="text-xs sm:text-sm font-semibold text-[#14243A] dark:text-[#E2E8F0] hover:text-[#0F766E] dark:hover:text-[#14B8A6] transition-colors whitespace-nowrap"
+          >
+            {tCurriculum('myLearning')}
+          </Link>
           <LanguageSwitcher currentLocale={locale} />
         </div>
       </header>
@@ -285,6 +292,12 @@ export default async function LessonPage({ params }: LessonPageProps) {
           <p className="text-sm sm:text-base text-[#475569] dark:text-[#94A3B8] leading-relaxed max-w-3xl">
             {lesson.summary[loc]}
           </p>
+
+          <LessonProgressActions
+            lessonId={lesson.id}
+            unitSlug={unit.slug}
+            lessonSlug={lesson.slug}
+          />
         </div>
 
         {/* LEARNING OBJECTIVES */}

@@ -17,7 +17,10 @@
     "featuredModuleAction": "පාඩමට පිවිසෙන්න",
     "featuredModuleSimAction": "අනුකරණය අරඹන්න",
     "productionOverviewHeading": "අන්තර්ක්‍රියාකාරී මොඩියුල විස්තරය",
-    "productionStudentFlowNotice": "සිසුන්ගේ ගැටලු සමාලෝචනය සහ අනුකරණය සක්‍රිය කිරීමේ අතුරුමුහුණත දැනට සම්බන්ධ කරමින් පවතී."
+    "productionStudentFlowNotice": "සිසුන්ගේ ගැටලු සමාලෝචනය සහ අනුකරණය සක්‍රිය කිරීමේ අතුරුමුහුණත දැනට සම්බන්ධ කරමින් පවතී.",
+    "continueLearning": "නැවත ඉගෙනුම අරඹන්න",
+    "resumeLesson": "පාඩම නැවත අරඹන්න",
+    "myLearning": "මගේ ඉගෙනුම"
   },
   "QuestionInput": {
     "title": "ප්‍රශ්නයක් ඇතුළත් කරන්න",
@@ -129,7 +132,18 @@
     "statusSimulated": "අන්තර්ක්‍රියාකාරී අනුකරණය",
     "outlineNotice": "මෙම පාඩම සඳහා විස්තරාත්මක ඉගැන්වීම් අන්තර්ගතය දැනට සංවර්ධනය වෙමින් පවතී. විෂය නිර්දේශයට අනුකූල නිපුණතා සැකැස්ම සහ ඉගෙනුම් ඵල පහත දැක්වේ.",
     "previousLesson": "පෙර පාඩම",
-    "nextLesson": "මීළඟ පාඩම"
+    "nextLesson": "මීළඟ පාඩම",
+    "myLearning": "මගේ ඉගෙනුම",
+    "continueLearning": "නැවත ඉගෙනුම අරඹන්න",
+    "resumeLesson": "පාඩම නැවත අරඹන්න",
+    "completed": "සම්පූර්ණයි",
+    "markAsComplete": "සම්පූර්ණ ලෙස සලකුණු කරන්න",
+    "markAsIncomplete": "අසම්පූර්ණ ලෙස සලකුණු කරන්න",
+    "saveLesson": "පාඩම සුරකින්න",
+    "removeSavedLesson": "සුරැකි බව ඉවත් කරන්න",
+    "lessonsCompletedCount": "පාඩම් {total} කින් {completed} ක් සම්පූර්ණයි",
+    "unitCompletion": "පාඩම් {total} කින් {completed} ක් ({percentage}%)",
+    "notStarted": "අරඹා නැත"
   },
   "Simulation": {
     "title": "ඒකාකාර චලිත අනුකරණය",
@@ -213,5 +227,34 @@
     "indeterminateVelocity": "ගතවූ කාලය සහ විස්ථාපනය යන දෙකම ශූන්‍ය වන විට ප්‍රවේගය අනියත වේ.",
     "impossibleStationaryDisplacement": "ශූන්‍ය ප්‍රවේගයක් ඇති වස්තුවකට විස්ථාපනයක් සිදුවිය නොහැක.",
     "impossibleZeroDurationDisplacement": "ශූන්‍ය කාලයකදී වස්තුවකට විස්ථාපනයක් සිදුවිය නොහැක."
+  },
+  "MyLearning": {
+    "navLink": "මගේ ඉගෙනුම",
+    "pageTitle": "මගේ ඉගෙනුම",
+    "pageSubtitle": "සම්පූර්ණ කළ පාඩම්, සුරැකි පිටුසන් සහ විෂය නිර්දේශයේ ඒකක 11 හරහා ඔබගේ ප්‍රගතිය නිරීක්ෂණය කරන්න.",
+    "savedOnDevice": "මෙම උපාංගයේ සුරැකිණි",
+    "savedOnDeviceDesc": "ඔබගේ ඉගෙනුම් ප්‍රගතිය ඔබගේ බ්‍රවුසරයේ ස්ථානීයව සුරැකෙන අතර කිසිදු ගිණුමක් අවශ්‍ය නොවේ.",
+    "continueLearningHeading": "නැවත ඉගෙනුම අරඹන්න",
+    "continueLearningDesc": "ඔබ අවසන් වරට පරිශීලනය කළ පාඩමෙන් නැවත අධ්‍යයනය අරඹන්න.",
+    "resumeLesson": "පාඩම නැවත අරඹන්න",
+    "lastVisitedAt": "අවසන් වරට පිවිසියේ {time}",
+    "unitProgressHeading": "විෂය නිර්දේශ ප්‍රගතිය (ඒකක 11)",
+    "unitProgressSubtitle": "ප්‍රගතිය මඟින් ඔබ සම්පූර්ණ කළ බවට සලකුණු කළ පාඩම් පෙන්වයි. සියලුම එකතු සත්‍ය විෂය නිර්දේශයෙන් ලබාගෙන ඇත.",
+    "savedLessonsHeading": "සුරැකි පාඩම්",
+    "savedLessonsSubtitle": "පසු විපරම හෝ පරිශීලනය සඳහා ඔබ සුරැකි (bookmark) පාඩම්.",
+    "noSavedLessons": "තවමත් සුරැකි පාඩම් නොමැත.",
+    "noSavedLessonsDesc": "පාඩම් අධ්‍යයනය කරන විට \"පාඩම සුරකින්න\" බොත්තම භාවිත කර ඒවා මෙහි පහසුවෙන් බලාගන්න.",
+    "removeBookmark": "සුරැකි බව ඉවත් කරන්න",
+    "emptyStateHeading": "ඔබගේ ඉගෙනුම් චාරිකාව අරඹන්න",
+    "emptyStateDesc": "ඔබ තවමත් කිසිදු පාඩමකට පිවිස හෝ සුරැක නැත. විෂය නිර්දේශය ගවේෂණය කර, පාඩම් සම්පූර්ණ බව සලකුණු කිරීම හා ප්‍රධාන මාතෘකා සුරැකීම අරඹන්න.",
+    "browseLessons": "පාඩම් ගවේෂණය කරන්න",
+    "completedBadge": "සම්පූර්ණයි",
+    "incompleteBadge": "අරඹා නැත",
+    "progressSummary": "පාඩම් {total} කින් {completed} ක් සම්පූර්ණයි ({percentage}%)",
+    "markAsComplete": "සම්පූර්ණ ලෙස සලකුණු කරන්න",
+    "markAsIncomplete": "අසම්පූර්ණ ලෙස සලකුණු කරන්න",
+    "saveLesson": "පාඩම සුරකින්න",
+    "removeSavedLesson": "සුරැකි බව ඉවත් කරන්න",
+    "completionDisclaimer": "පාඩමක් සම්පූර්ණ කළ බව සලකුණු කිරීමෙන් අදහස් වන්නේ ඔබ මාතෘකාව අධ්‍යයනය කර අවසන් බවයි; එය විභාග ප්‍රවීණතාවය තහවුරු කිරීමක් නොවේ."
   }
 }

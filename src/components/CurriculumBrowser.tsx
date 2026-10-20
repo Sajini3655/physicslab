@@ -10,6 +10,10 @@ import {
   Sparkles,
   X,
 } from 'lucide-react';
+import {
+  UnitProgressBadge,
+  LessonCompletionStatus,
+} from '@/components/UnitProgressIndicator';
 
 interface CurriculumBrowserProps {
   units: UnitDefinition[];
@@ -114,16 +118,19 @@ export const CurriculumBrowser: React.FC<CurriculumBrowserProps> = ({
                       <span className="text-[11px] font-semibold tracking-wider text-[#0F766E] dark:text-[#14B8A6] uppercase">
                         {t('unitLabel', { number: unit.syllabusOrder })} • {lesson.syllabusRef}
                       </span>
-                      {lesson.hasSimulation ? (
-                        <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#F0FDFA] dark:bg-[#042F2E] text-[#0F766E] dark:text-[#14B8A6] border border-[#99F6E4] dark:border-[#115E59]">
-                          <Sparkles className="w-2.5 h-2.5" />
-                          {t('statusSimulated')}
-                        </span>
-                      ) : (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#F6FAFD] dark:bg-[#17273C] text-[#64748B] dark:text-[#94A3B8] border border-[#DFE8EF] dark:border-[#1E334D]">
-                          {lesson.status === 'ready' ? t('statusReady') : t('statusOutline')}
-                        </span>
-                      )}
+                      <div className="flex items-center gap-1.5">
+                        <LessonCompletionStatus lessonId={lesson.id} />
+                        {lesson.hasSimulation ? (
+                          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#F0FDFA] dark:bg-[#042F2E] text-[#0F766E] dark:text-[#14B8A6] border border-[#99F6E4] dark:border-[#115E59]">
+                            <Sparkles className="w-2.5 h-2.5" />
+                            {t('statusSimulated')}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#F6FAFD] dark:bg-[#17273C] text-[#64748B] dark:text-[#94A3B8] border border-[#DFE8EF] dark:border-[#1E334D]">
+                            {lesson.status === 'ready' ? t('statusReady') : t('statusOutline')}
+                          </span>
+                        )}
+                      </div>
                     </div>
 
                     <h4 className="text-base font-bold text-[#14243A] dark:text-[#F8FAFC] group-hover:text-[#0F766E] dark:group-hover:text-[#14B8A6] transition-colors leading-snug">
@@ -159,9 +166,7 @@ export const CurriculumBrowser: React.FC<CurriculumBrowserProps> = ({
                     <span className="text-xs font-semibold text-[#0F766E] dark:text-[#14B8A6] uppercase tracking-wider">
                       {t('unitLabel', { number: unit.syllabusOrder })}
                     </span>
-                    <span className="text-[11px] font-medium text-[#64748B] dark:text-[#94A3B8]">
-                      {t('lessonsCount', { count: unit.lessons.length })}
-                    </span>
+                    <UnitProgressBadge unitSlug={unit.slug} totalLessons={unit.lessons.length} />
                   </div>
 
                   <div>

@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { PhysicsHeroIllustration } from '@/components/PhysicsHeroIllustration';
 import { CurriculumBrowser } from '@/components/CurriculumBrowser';
+import { ContinueLearningCard } from '@/components/ContinueLearningCard';
 import { getAllUnits, Locale } from '@/shared/curriculum';
 import { Link } from '@/i18n/routing';
 import { Atom, ArrowDownRight, Sparkles, BookOpen } from 'lucide-react';
@@ -20,7 +21,7 @@ export default async function HomePage({
 
   return (
     <div className="min-h-screen bg-[#F6FAFD] dark:bg-[#0B131E] text-[#475569] dark:text-[#CBD5E1] flex flex-col items-center selection:bg-[#B7E7EC] selection:text-[#14243A]">
-      {/* Header: PhysicsLab brand, One Curriculum link, Language switcher */}
+      {/* Header: PhysicsLab brand, My Learning, Curriculum link, Language switcher */}
       <header className="w-full max-w-7xl px-4 sm:px-6 lg:px-8 py-3.5 flex justify-between items-center border-b border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF]/85 dark:bg-[#111D2D]/85 backdrop-blur-md sticky top-0 z-30 transition-colors">
         <div className="flex items-center gap-3">
           <Link href="/" className="flex items-center gap-2.5 group">
@@ -40,6 +41,12 @@ export default async function HomePage({
 
         {/* Navigation & Language switcher */}
         <div className="flex items-center gap-3 sm:gap-5">
+          <Link
+            href="/my-learning"
+            className="text-xs sm:text-sm font-semibold text-[#14243A] dark:text-[#E2E8F0] hover:text-[#0F766E] dark:hover:text-[#14B8A6] transition-colors whitespace-nowrap"
+          >
+            {tCurriculum('myLearning')}
+          </Link>
           <a
             href="#curriculum-units"
             className="hidden sm:inline-block text-xs sm:text-sm font-semibold text-[#14243A] dark:text-[#E2E8F0] hover:text-[#0F766E] dark:hover:text-[#14B8A6] transition-colors whitespace-nowrap"
@@ -94,6 +101,11 @@ export default async function HomePage({
             <PhysicsHeroIllustration />
           </div>
         </section>
+
+        {/* ============================================================ */}
+        {/* CONTINUE LEARNING (ACTIVE WHEN VISITED LESSON EXISTS)        */}
+        {/* ============================================================ */}
+        <ContinueLearningCard locale={locale as Locale} />
 
         {/* ============================================================ */}
         {/* COMPACT FEATURED UNIFORM MOTION LESSON CARD                   */}
