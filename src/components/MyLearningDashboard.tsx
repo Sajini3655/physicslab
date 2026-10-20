@@ -6,6 +6,8 @@ import { useLearningProgress } from '@/shared/progress';
 import { UnitDefinition, Locale } from '@/shared/curriculum';
 import { Link } from '@/i18n/routing';
 import { ContinueLearningCard } from '@/components/ContinueLearningCard';
+import { AssessmentHistorySection } from '@/components/AssessmentHistorySection';
+import { useAssessmentHistory } from '@/shared/history';
 import {
   BookOpen,
   Bookmark,
@@ -39,11 +41,13 @@ export const MyLearningDashboard: React.FC<MyLearningDashboardProps> = ({
     totalLessons,
     overallPercentage,
   } = useLearningProgress();
+  const { attempts } = useAssessmentHistory();
 
   const isBrandNewVisitor =
     completedLessonIds.length === 0 &&
     bookmarkedLessons.length === 0 &&
-    !lastVisited;
+    !lastVisited &&
+    attempts.length === 0;
 
   return (
     <div className="space-y-10">
@@ -182,6 +186,9 @@ export const MyLearningDashboard: React.FC<MyLearningDashboardProps> = ({
               </div>
             )}
           </section>
+
+          {/* Assessment History Section */}
+          <AssessmentHistorySection locale={locale} />
         </>
       )}
 

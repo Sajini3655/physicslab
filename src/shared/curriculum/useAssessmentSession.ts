@@ -1,6 +1,13 @@
 'use client';
 
 import { useSyncExternalStore, useCallback, useMemo } from 'react';
+import {
+  recordAssessmentAttempt,
+  buildQuestionAttemptDetails,
+  calculateAttemptScore,
+  resolveUnitInfo,
+  updateAttemptRubricScore,
+} from '@/shared/history';
 
 export interface AssessmentSessionState<TQuestion, TResult> {
   questions: TQuestion[];
@@ -8,6 +15,9 @@ export interface AssessmentSessionState<TQuestion, TResult> {
   submitted: boolean;
   result: TResult | null;
   showSolutions: Record<string, boolean>;
+  attemptId?: string;
+  submittedAt?: number;
+  rubricScores?: Record<string, Record<string, number>>;
 }
 
 export interface UseAssessmentSessionOptions<TQuestion, TResult> {
@@ -59,6 +69,11 @@ function getStoredSnapshot(fullKey: string): string {
   }
 }
 
+function generateAttemptId(storageKey: string): string {
+  const rand = Math.random().toString(36).substring(2, 8);
+  return `attempt-${storageKey}-${Date.now()}-${rand}`;
+}
+
 export function useAssessmentSession<TQuestion extends { id: string }, TResult>({
   storageKey,
   generateQuestions,
@@ -90,6 +105,9 @@ export function useAssessmentSession<TQuestion extends { id: string }, TResult>(
             submitted: !!parsed.submitted,
             result: parsed.result || null,
             showSolutions: parsed.showSolutions || {},
+            attemptId: typeof parsed.attemptId === 'string' ? parsed.attemptId : undefined,
+            submittedAt: typeof parsed.submittedAt === 'number' ? parsed.submittedAt : undefined,
+            rubricScores: parsed.rubricScores || {},
           };
         }
       } catch {
@@ -102,6 +120,9 @@ export function useAssessmentSession<TQuestion extends { id: string }, TResult>(
       submitted: false,
       result: null,
       showSolutions: {},
+      attemptId: undefined,
+      submittedAt: undefined,
+      rubricScores: {},
     };
   }, [rawSnapshot, fallbackQuestions]);
 
@@ -147,20 +168,82 @@ export function useAssessmentSession<TQuestion extends { id: string }, TResult>(
 
   const handleSubmit = useCallback(() => {
     const res = evaluateAssessment(activeState.questions, activeState.answers);
-    saveToStorage({ ...activeState, submitted: true, result: res });
-  }, [activeState, evaluateAssessment, saveToStorage]);
+    const attemptId = activeState.attemptId || generateAttemptId(storageKey);
+    const submittedAt = activeState.submittedAt || Date.now();
+
+    try {
+      const questionDetails = buildQuestionAttemptDetails(
+        activeState.questions,
+        activeState.answers,
+        activeState.rubricScores
+      );
+      const scoreSummary = calculateAttemptScore(questionDetails);
+      const unitInfo = resolveUnitInfo(storageKey);
+
+      recordAssessmentAttempt({
+        id: attemptId,
+        unitId: unitInfo.unitId,
+        unitSlug: unitInfo.slug,
+        unitSyllabusOrder: unitInfo.syllabusOrder,
+        submittedAt,
+        totalQuestions: activeState.questions.length,
+        answeredQuestions: Object.values(activeState.answers).filter((a) => a && a.trim() !== '').length,
+        score: scoreSummary,
+        questions: questionDetails,
+      });
+    } catch (err) {
+      console.warn('Failed to record assessment to history:', err);
+    }
+
+    saveToStorage({
+      ...activeState,
+      attemptId,
+      submittedAt,
+      submitted: true,
+      result: res,
+    });
+  }, [activeState, evaluateAssessment, saveToStorage, storageKey]);
 
   const handleReset = useCallback(() => {
     const freshQuestions = generateQuestions();
+    const freshAttemptId = generateAttemptId(storageKey);
     const freshState: AssessmentSessionState<TQuestion, TResult> = {
       questions: freshQuestions,
       answers: {},
       submitted: false,
       result: null,
       showSolutions: {},
+      attemptId: freshAttemptId,
+      submittedAt: undefined,
+      rubricScores: {},
     };
     saveToStorage(freshState);
-  }, [generateQuestions, saveToStorage]);
+  }, [generateQuestions, saveToStorage, storageKey]);
+
+  const updateRubricScore = useCallback(
+    (questionId: string, rubricScores: Record<string, number>) => {
+      const nextRubrics = {
+        ...(activeState.rubricScores || {}),
+        [questionId]: rubricScores,
+      };
+      const attemptId = activeState.attemptId || generateAttemptId(storageKey);
+
+      saveToStorage({
+        ...activeState,
+        attemptId,
+        rubricScores: nextRubrics,
+      });
+
+      if (activeState.submitted) {
+        try {
+          updateAttemptRubricScore(attemptId, questionId, rubricScores);
+        } catch (err) {
+          console.warn('Failed to update rubric score in history:', err);
+        }
+      }
+    },
+    [activeState, saveToStorage, storageKey]
+  );
 
   const toggleSolution = useCallback(
     (qId: string) => {
@@ -185,10 +268,13 @@ export function useAssessmentSession<TQuestion extends { id: string }, TResult>(
     submitted: activeState.submitted,
     result: activeState.result,
     showSolutions: activeState.showSolutions,
+    attemptId: activeState.attemptId,
+    rubricScores: activeState.rubricScores,
     handleSelectOption,
     handleNumericalChange,
     handleSubmit,
     handleReset,
+    updateRubricScore,
     toggleSolution,
     answeredCount,
   };
