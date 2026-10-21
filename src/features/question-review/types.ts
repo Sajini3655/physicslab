@@ -1,6 +1,8 @@
 import type {
   UniformMotionDraft,
   UniformMotionCandidate,
+  ConfirmedUniformMotionScenario,
+  PhysicsValidationResult,
   DisplacementUnit,
   VelocityUnit,
   TimeUnit,
@@ -10,11 +12,19 @@ import type {
 export type {
   UniformMotionDraft,
   UniformMotionCandidate,
+  ConfirmedUniformMotionScenario,
+  PhysicsValidationResult,
   DisplacementUnit,
   VelocityUnit,
   TimeUnit,
   ScenarioTarget,
 };
+
+export interface LocalizedValidationIssue {
+  code: string;
+  field?: 's' | 'u' | 't' | 'target' | 'object' | 'axis' | 'general';
+  message: string;
+}
 
 export interface InterpretationSuccessResponse {
   status: 'success';

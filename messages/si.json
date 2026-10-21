@@ -97,7 +97,29 @@
     "clarificationsHeading": "පැහැදිලි කිරීම් සහ සටහන්",
     "noClarifications": "නිරාකරණය නොකළ ගැටලු කිසිවක් නොමැත.",
     "negativeTimeIssue": "ගත වූ කාලය සෘණ විය නොහැක.",
-    "missingObjectIssue": "චලනය වන වස්තුවක් හෝ විස්තරයක් අවශ්‍ය වේ."
+    "missingObjectIssue": "චලනය වන වස්තුවක් හෝ විස්තරයක් අවශ්‍ය වේ.",
+    "checkScenario": "සිද්ධිය පරීක්ෂා කරන්න",
+    "checkingScenario": "පරීක්ෂා කරමින්...",
+    "statusValidating": "භෞතික නීති පරීක්ෂා කරමින්...",
+    "statusPhysicalValid": "භෞතික නීති සත්‍යාපනය කර ඇත",
+    "statusPhysicalValidDesc": "මෙම සිද්ධිය සියලු භෞතික නීතිවලට අනුකූල වන අතර තහවුරු කිරීමට සූදානම්.",
+    "statusPhysicalInvalid": "භෞතික වලංගුකරණය අසාර්ථකයි",
+    "statusPhysicalInvalidDesc": "කරුණාකර පහත දැක්වෙන භෞතික නොගැලපීම් නිවැරදි කරන්න.",
+    "statusConfirmed": "සිසුවා විසින් තහවුරු කර ඇත",
+    "statusConfirmedDesc": "සිද්ධි විස්තර තහවුරු කර ඇත. චලිත අනුකරණය සක්‍රියයි.",
+    "confirmationCardTitle": "සිද්ධි විස්තර තහවුරු කරන්න",
+    "confirmationNotice": "අනුකරණය ආරම්භ කිරීමට පෙර මෙම විස්තර ඔබගේ ප්‍රශ්නයට ගැලපෙන බව කරුණාකර තහවුරු කරන්න.",
+    "confirmScenario": "සිද්ධිය තහවුරු කරන්න",
+    "confirmingScenario": "තහවුරු කරමින්...",
+    "confirmedBadge": "තහවුරු කර ඇත",
+    "startSimulation": "අනුකරණය අරඹන්න",
+    "openInLesson": "පාඩම් පරිශ්‍රයෙන් විවෘත කරන්න",
+    "resetSimulation": "අනුකරණය නැවත සකසන්න",
+    "editAfterConfirmationNotice": "ඕනෑම අගයක් වෙනස් කළහොත් මෙම තහවුරු කිරීම අවලංගු වන අතර නැවත පරීක්ෂා කිරීමට සිදුවේ.",
+    "validationIssuesTitle": "භෞතික වලංගුකරණ ගැටලු",
+    "validationErrorGeneric": "සිද්ධිය වලංගු කිරීමේදී දෝෂයක් සිදු විය.",
+    "simulationReadyTitle": "අනුකරණය සූදානම්",
+    "simulationReadyDesc": "ඔබ තහවුරු කළ සිද්ධිය අනුකරණයට සූදානම්."
   },
   "Curriculum": {
     "unitsTitle": "පාඨමාලා විෂය නිර්දේශය",
@@ -197,7 +219,13 @@
         "invalidSign": "දිශා නොගැලපීම (දෝෂ පරීක්ෂාව)",
         "indeterminate": "අනියත ශූන්‍ය අවස්ථාව (දෝෂ පරීක්ෂාව)"
       }
-    }
+    },
+    "studentScenarioActive": "ඔබ තහවුරු කළ සිද්ධිය",
+    "noConfirmedScenarioTitle": "අන්තර්ක්‍රියාකාරී අනුකරණ වැඩබිම",
+    "noConfirmedScenarioDesc": "ඔබේම ප්‍රශ්නයක් සජීවීව අනුකරණය කිරීම සඳහා ප්‍රශ්නයක් ඇතුළත් කර තහවුරු කරන්න.",
+    "corruptedScenarioNotice": "සුරකින ලද සිද්ධි දත්ත වලංගු නොවේ. කරුණාකර ප්‍රශ්නය නැවත පරීක්ෂා කර තහවුරු කරන්න.",
+    "enterQuestionCta": "ප්‍රශ්නයක් ඇතුළත් කරන්න",
+    "returnToReview": "නැවත සමාලෝචනයට"
   },
   "Validation": {
     "targetMustBeUnknown": "සෙවිය යුතු රාශිය නොදන්නා අගයක් විය යුතු අතර එයට අගයක් ලබාදිය නොහැක.",
@@ -212,6 +240,7 @@
     "indeterminateTime": "ප්‍රවේගය සහ විස්ථාපනය යන දෙකම ශූන්‍ය වන විට කාලය අනියත වේ.",
     "indeterminateVelocity": "ගතවූ කාලය සහ විස්ථාපනය යන දෙකම ශූන්‍ය වන විට ප්‍රවේගය අනියත වේ.",
     "impossibleStationaryDisplacement": "ශූන්‍ය ප්‍රවේගයක් ඇති වස්තුවකට විස්ථාපනයක් සිදුවිය නොහැක.",
-    "impossibleZeroDurationDisplacement": "ශූන්‍ය කාලයකදී වස්තුවකට විස්ථාපනයක් සිදුවිය නොහැක."
+    "impossibleZeroDurationDisplacement": "ශූන්‍ය කාලයකදී වස්තුවකට විස්ථාපනයක් සිදුවිය නොහැක.",
+    "divisionByZero": "ශූන්‍යයෙන් බෙදීමේ ගණිතමය දෝෂයක් හටගෙන ඇත."
   }
 }

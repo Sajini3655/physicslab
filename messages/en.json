@@ -97,7 +97,29 @@
     "clarificationsHeading": "Clarifications & Notes",
     "noClarifications": "No outstanding ambiguities.",
     "negativeTimeIssue": "Elapsed time cannot be negative.",
-    "missingObjectIssue": "A moving object name or description is required."
+    "missingObjectIssue": "A moving object name or description is required.",
+    "checkScenario": "Check scenario",
+    "checkingScenario": "Checking scenario...",
+    "statusValidating": "Checking physics rules...",
+    "statusPhysicalValid": "Physical rules verified",
+    "statusPhysicalValidDesc": "The scenario satisfies all physics rules and is ready for confirmation.",
+    "statusPhysicalInvalid": "Physical validation failed",
+    "statusPhysicalInvalidDesc": "Please correct the physical inconsistencies shown below.",
+    "statusConfirmed": "Confirmed by student",
+    "statusConfirmedDesc": "Scenario details confirmed. Motion playback is unlocked.",
+    "confirmationCardTitle": "Confirm Scenario Details",
+    "confirmationNotice": "Please confirm that these scenario details match your intended question before starting the simulation.",
+    "confirmScenario": "Confirm scenario",
+    "confirmingScenario": "Confirming...",
+    "confirmedBadge": "Confirmed",
+    "startSimulation": "Start simulation",
+    "openInLesson": "Open in Lesson Workspace",
+    "resetSimulation": "Reset simulation",
+    "editAfterConfirmationNotice": "Editing any value will invalidate this confirmation and require re-checking.",
+    "validationIssuesTitle": "Physical Validation Issues",
+    "validationErrorGeneric": "An error occurred during scenario validation.",
+    "simulationReadyTitle": "Simulation Ready",
+    "simulationReadyDesc": "Your confirmed scenario is ready to simulate."
   },
   "Curriculum": {
     "unitsTitle": "Course Curriculum",
@@ -197,7 +219,13 @@
         "invalidSign": "Sign Mismatch Error Test",
         "indeterminate": "Indeterminate Zero Test"
       }
-    }
+    },
+    "studentScenarioActive": "Confirmed Student Scenario",
+    "noConfirmedScenarioTitle": "Interactive Simulation Workspace",
+    "noConfirmedScenarioDesc": "Enter and confirm a physics question to simulate your custom scenario in real time.",
+    "corruptedScenarioNotice": "The stored scenario data was corrupted or invalid. Please check and confirm your scenario again.",
+    "enterQuestionCta": "Enter a question",
+    "returnToReview": "Return to Review"
   },
   "Validation": {
     "targetMustBeUnknown": "The target quantity must be unknown and cannot have a given value.",
@@ -212,6 +240,7 @@
     "indeterminateTime": "When velocity and displacement are both zero, duration is indeterminate.",
     "indeterminateVelocity": "When elapsed time and displacement are both zero, velocity is indeterminate.",
     "impossibleStationaryDisplacement": "An object with zero velocity cannot undergo non-zero displacement.",
-    "impossibleZeroDurationDisplacement": "An object cannot travel non-zero displacement in zero duration."
+    "impossibleZeroDurationDisplacement": "An object cannot travel non-zero displacement in zero duration.",
+    "divisionByZero": "Mathematical division by zero encountered."
   }
 }

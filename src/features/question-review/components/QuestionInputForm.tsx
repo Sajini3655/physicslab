@@ -11,12 +11,18 @@ import { QuestionSubmissionInputSchema, type QuestionSubmissionInput } from '../
 import {
   UniformMotionDraftSchema,
   type UniformMotionDraft,
+  type PhysicsValidationResult,
+  type ConfirmedUniformMotionScenario,
 } from '@/shared/scenarios/uniform-motion';
+import { validateUniformMotion, confirmScenario } from '@/features/simulation/physics/engine';
 import type { InterpretationResponse } from '../types';
 import {
   loadStoredReview,
   saveStoredReview,
   clearStoredReview,
+  computeCandidateReadiness,
+  saveConfirmedScenario,
+  clearConfirmedScenario,
 } from '../utils/review-helpers';
 import { ScenarioReviewSection } from './ScenarioReviewSection';
 
@@ -86,10 +92,18 @@ export function QuestionInputForm({ initialLocale }: { initialLocale: 'en' | 'si
     t?: string;
   }>({});
 
+  // Step 6 Validation, Confirmation & Simulation state
+  const [validationResult, setValidationResult] = useState<PhysicsValidationResult | null>(null);
+  const [isValidating, setIsValidating] = useState<boolean>(false);
+  const [confirmedScenario, setConfirmedScenario] = useState<ConfirmedUniformMotionScenario | null>(null);
+  const [isConfirming, setIsConfirming] = useState<boolean>(false);
+  const [isSimulating, setIsSimulating] = useState<boolean>(false);
+
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isMountedRef = useRef<boolean>(false);
   const abortControllerRef = useRef<AbortController | null>(null);
   const requestIdRef = useRef<number>(0);
+  const validationSeqRef = useRef<number>(0);
 
   // Restore working draft and scenario review from sessionStorage on mount
   useEffect(() => {
@@ -203,6 +217,10 @@ export function QuestionInputForm({ initialLocale }: { initialLocale: 'en' | 'si
     setDraft(null);
     setInterpretedSource(null);
     setTemporaryValues({});
+    setValidationResult(null);
+    setConfirmedScenario(null);
+    setIsSimulating(false);
+    clearConfirmedScenario();
     clearStoredReview();
   };
 
@@ -215,6 +233,7 @@ export function QuestionInputForm({ initialLocale }: { initialLocale: 'en' | 'si
       abortControllerRef.current.abort();
     }
     requestIdRef.current += 1;
+    validationSeqRef.current += 1;
 
     setQuestionText('');
     setSaveStatus(false);
@@ -226,10 +245,97 @@ export function QuestionInputForm({ initialLocale }: { initialLocale: 'en' | 'si
     setDraft(null);
     setInterpretedSource(null);
     setTemporaryValues({});
+    setValidationResult(null);
+    setConfirmedScenario(null);
+    setIsSimulating(false);
+    clearConfirmedScenario();
 
     safeRemoveStorage(STORAGE_KEY);
     safeRemoveStorage(WORKING_KEY);
     clearStoredReview();
+  };
+
+  const readiness = computeCandidateReadiness(draft, isStale);
+
+  const handleUpdateDraft = (newDraft: UniformMotionDraft) => {
+    setDraft(newDraft);
+    // Any semantic edit invalidates validation, confirmation, and active playback
+    setValidationResult(null);
+    setConfirmedScenario(null);
+    setIsSimulating(false);
+    clearConfirmedScenario();
+  };
+
+  const handleValidateScenario = () => {
+    if (!readiness.candidate || !readiness.isReady || isStale || isValidating) return;
+    setIsValidating(true);
+    validationSeqRef.current += 1;
+    const currentSeq = validationSeqRef.current;
+
+    try {
+      const result = validateUniformMotion(readiness.candidate);
+      if (currentSeq !== validationSeqRef.current) return;
+      setValidationResult(result);
+      if (!result.isValid) {
+        setConfirmedScenario(null);
+        setIsSimulating(false);
+        clearConfirmedScenario();
+      }
+    } catch {
+      if (currentSeq !== validationSeqRef.current) return;
+      setValidationResult({
+        scenarioId: readiness.candidate.scenarioId,
+        revision: readiness.candidate.revision,
+        isValid: false,
+        issues: [{ code: 'VALIDATION_ERROR', message: 'An unexpected validation error occurred.' }],
+      });
+      setConfirmedScenario(null);
+      setIsSimulating(false);
+      clearConfirmedScenario();
+    } finally {
+      if (currentSeq === validationSeqRef.current) {
+        setIsValidating(false);
+      }
+    }
+  };
+
+  const handleConfirmScenario = () => {
+    if (
+      !readiness.candidate ||
+      !validationResult ||
+      !validationResult.isValid ||
+      isConfirming ||
+      isStale
+    ) {
+      return;
+    }
+
+    if (
+      validationResult.scenarioId !== readiness.candidate.scenarioId ||
+      validationResult.revision !== readiness.candidate.revision
+    ) {
+      return;
+    }
+
+    setIsConfirming(true);
+    try {
+      const confirmed = confirmScenario(readiness.candidate, validationResult);
+      setConfirmedScenario(confirmed);
+      saveConfirmedScenario(confirmed);
+    } catch (err) {
+      console.error('Confirmation error:', err);
+    } finally {
+      setIsConfirming(false);
+    }
+  };
+
+  const handleStartSimulation = () => {
+    if (!confirmedScenario) return;
+    setIsSimulating(true);
+  };
+
+  const handleResetSimulation = () => {
+    setIsSimulating(false);
   };
 
   const handleSaveDraft = () => {
@@ -327,6 +433,10 @@ export function QuestionInputForm({ initialLocale }: { initialLocale: 'en' | 'si
             u: draftValidation.data.u.type === 'given' ? String(draftValidation.data.u.value) : undefined,
             t: draftValidation.data.t.type === 'given' ? String(draftValidation.data.t.value) : undefined,
           });
+          setValidationResult(null);
+          setConfirmedScenario(null);
+          setIsSimulating(false);
+          clearConfirmedScenario();
         } else {
           setInterpretationError(t('errorInvalidDraft'));
         }
@@ -335,6 +445,10 @@ export function QuestionInputForm({ initialLocale }: { initialLocale: 'en' | 'si
         setDraft(null);
         setInterpretedSource(null);
         setTemporaryValues({});
+        setValidationResult(null);
+        setConfirmedScenario(null);
+        setIsSimulating(false);
+        clearConfirmedScenario();
       } else if (data.status === 'error') {
         setInterpretationErrorCode(data.error.code);
         setInterpretationError(data.error.message || t('errorGeneric'));
@@ -436,6 +550,10 @@ export function QuestionInputForm({ initialLocale }: { initialLocale: 'en' | 'si
             onValueChange={(val) => {
               setQuestionLocale(val as 'en' | 'si');
               setSaveStatus(false);
+              setValidationResult(null);
+              setConfirmedScenario(null);
+              setIsSimulating(false);
+              clearConfirmedScenario();
             }}
           >
             <SelectTrigger id="question-language" className="w-full">
@@ -460,6 +578,10 @@ export function QuestionInputForm({ initialLocale }: { initialLocale: 'en' | 'si
               setQuestionText(e.target.value);
               setSaveStatus(false);
               if (error) setError(null);
+              setValidationResult(null);
+              setConfirmedScenario(null);
+              setIsSimulating(false);
+              clearConfirmedScenario();
             }}
           />
           <div className="flex justify-between items-center text-xs text-muted-foreground">
@@ -573,11 +695,20 @@ export function QuestionInputForm({ initialLocale }: { initialLocale: 'en' | 'si
           isStale={isStale}
           temporaryValues={temporaryValues}
           uiLocale={initialLocale}
-          onUpdateDraft={setDraft}
+          validationResult={validationResult}
+          isValidating={isValidating}
+          confirmedScenario={confirmedScenario}
+          isConfirming={isConfirming}
+          isSimulating={isSimulating}
+          onUpdateDraft={handleUpdateDraft}
           onUpdateTemporaryValue={(field, val) =>
             setTemporaryValues((prev) => ({ ...prev, [field]: val }))
           }
           onReinterpret={handleInterpretQuestion}
+          onValidate={handleValidateScenario}
+          onConfirm={handleConfirmScenario}
+          onStartSimulation={handleStartSimulation}
+          onResetSimulation={handleResetSimulation}
         />
       )}
     </div>
