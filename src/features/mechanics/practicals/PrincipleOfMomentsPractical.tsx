@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Locale } from '@/shared/curriculum';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { RotateCcw, Database, Scale, CheckCircle2, AlertCircle } from 'lucide-react';
 import { calculatePrincipleOfMoments } from '../physics/calculations';
+import { usePracticalWork } from '@/shared/practicals';
 
 interface PrincipleOfMomentsPracticalProps {
   locale?: Locale;
@@ -14,24 +15,44 @@ interface PrincipleOfMomentsPracticalProps {
 export const PrincipleOfMomentsPractical: React.FC<PrincipleOfMomentsPracticalProps> = ({
   locale = 'en',
 }) => {
-  // Mode: Verification of Moments vs Determination of Metre Rule Mass
-  const [subMode, setSubMode] = useState<'verification' | 'rule_mass'>('verification');
+  const {
+    observations,
+    updateObservations,
+    loadSampleObservations,
+    reset,
+    isCompleted,
+    setCompleted,
+  } = usePracticalWork({
+    experimentId: 'exp-6-moments',
+    defaultObservations: {
+      subMode: 'verification',
+      pivotCm: '50.0',
+      m1G: '100.0',
+      x1Cm: '30.0',
+      m2G: '50.0',
+      x2Cm: '90.0',
+      eccentricPivotCm: '40.0',
+      knownMassG: '50.0',
+      knownPosCm: '16.0',
+    },
+  });
 
-  // Verification mode inputs:
-  const [pivotCm, setPivotCm] = useState<string>('50.0'); // Center of gravity at 50 cm
-  const [m1G, setM1G] = useState<string>('100.0'); // Left mass (g)
-  const [x1Cm, setX1Cm] = useState<string>('30.0'); // Left position (cm) -> d1 = 20 cm
-  const [m2G, setM2G] = useState<string>('50.0'); // Right mass (g)
-  const [x2Cm, setX2Cm] = useState<string>('90.0'); // Right position (cm) -> d2 = 40 cm
+  const subMode = (observations.subMode || 'verification') as 'verification' | 'rule_mass';
+  const setSubMode = (mode: 'verification' | 'rule_mass') => updateObservations({ subMode: mode });
 
-  // Metre rule mass determination mode inputs:
-  const [eccentricPivotCm, setEccentricPivotCm] = useState<string>('40.0'); // Fulcrum shifted to 40 cm
-  const [knownMassG, setKnownMassG] = useState<string>('50.0'); // Counterbalancing mass
-  const [knownPosCm, setKnownPosCm] = useState<string>('16.0'); // Counterbalancing position -> d = 24 cm
+  const pivotCm = observations.pivotCm || '50.0';
+  const m1G = observations.m1G || '';
+  const x1Cm = observations.x1Cm || '';
+  const m2G = observations.m2G || '';
+  const x2Cm = observations.x2Cm || '';
+
+  const eccentricPivotCm = observations.eccentricPivotCm || '40.0';
+  const knownMassG = observations.knownMassG || '';
+  const knownPosCm = observations.knownPosCm || '';
 
   const t = {
     en: {
-      title: 'Practical 2.2: Verification of the Principle of Moments',
+      title: 'Practical 6: Verification of the Principle of Moments & Mass of a Metre Rule',
       aim: 'Aim: To verify the Principle of Moments for a uniform rigid body in rotational equilibrium and determine the mass of a metre rule without a balance.',
       apparatus: 'Apparatus: Uniform metre rule, sharp knife-edge fulcrum, spirit level, slotted masses with loops (50 g, 100 g), thread, electronic balance (for confirmation).',
       theoryTitle: 'Rotational Equilibrium & Principle of Moments',
@@ -60,9 +81,11 @@ export const PrincipleOfMomentsPractical: React.FC<PrincipleOfMomentsPracticalPr
       unbalancedVerdict: 'Moments Unbalanced (Adjust Distance Arms)',
       precautionsTitle: 'Experimental Precautions',
       precautions: '1. Ensure the knife edge is sharp and perpendicular to the metre rule edges. 2. Use a spirit level or compare ends against bench height to confirm horizontal alignment. 3. Loop threads lightly so their weight is negligible.',
+      submitLab: 'Submit Practical Record',
+      submittedMsg: 'Practical record completed and saved to your laboratory log.',
     },
     si: {
-      title: 'ප්‍රායෝගික පරීක්ෂණය 2.2: ඝූර්ණ මූලධර්මය සත්‍යාපනය කිරීම',
+      title: 'ප්‍රායෝගික පරීක්ෂණය 6: ඝූර්ණ මූලධර්මය සත්‍යාපනය සහ මීටර් රූලක ස්කන්ධය සෙවීම',
       aim: 'අරමුණ: භ්‍රමණ තුල්‍යතාවයේ පවතින දෘඪ වස්තුවක් සඳහා ඝූර්ණ මූලධර්මය සත්‍යාපනය කිරීම සහ තුලාවක් නොමැතිව මීටර් කෝදුවක ස්කන්ධය සෙවීම.',
       apparatus: 'උපකරණ: ඒකාකාර මීටර් කෝදුව, දැලිපිහි දාර ආධාරකය, මට්ටම් බුබුල, ලූප සහිත බර පඩි (50 g, 100 g), නූල්, තහවුරු කිරීමට විද්‍යුත් තුලාව.',
       theoryTitle: 'භ්‍රමණ තුල්‍යතාව සහ ඝූර්ණ මූලධර්මය',
@@ -91,6 +114,8 @@ export const PrincipleOfMomentsPractical: React.FC<PrincipleOfMomentsPracticalPr
       unbalancedVerdict: 'ඝූර්ණ අසමතුලිතයි (දුර සකසන්න)',
       precautionsTitle: 'පරීක්ෂණාත්මක පූර්වෝපායයන්',
       precautions: '1. දැලිපිහි දාරය තියුණු හා කෝදුවට ලම්බක විය යුතුය. 2. කෝදුව සම්පූර්ණයෙන්ම තිරස් බව පරීක්ෂා කිරීමට මට්ටම් බුබුලක් යොදා ගන්න. 3. නූල්වල බර නොසැලකිය හැකි වන සේ සිහින් නූල් යොදා ගන්න.',
+      submitLab: 'ප්‍රායෝගික සටහන භාරදෙන්න',
+      submittedMsg: 'ප්‍රායෝගික වාර්තාව සම්පූර්ණ කර රසායනාගාර සටහනට සුරකින ලදී.',
     },
   }[locale];
 
@@ -129,25 +154,26 @@ export const PrincipleOfMomentsPractical: React.FC<PrincipleOfMomentsPracticalPr
 
   const handleLoadSample = () => {
     if (subMode === 'verification') {
-      setPivotCm('50.0');
-      setM1G('100.0');
-      setX1Cm('30.0'); // d1 = 20 cm -> 2000 g cm
-      setM2G('50.0');
-      setX2Cm('90.0'); // d2 = 40 cm -> 2000 g cm
+      loadSampleObservations({
+        subMode: 'verification',
+        pivotCm: '50.0',
+        m1G: '100.0',
+        x1Cm: '30.0',
+        m2G: '50.0',
+        x2Cm: '90.0',
+      });
     } else {
-      setEccentricPivotCm('40.0'); // d_rule = 10 cm
-      setKnownMassG('50.0');
-      setKnownPosCm('16.0'); // d_mass = 24 cm -> M = 50 * 24 / 10 = 120.0 g
+      loadSampleObservations({
+        subMode: 'rule_mass',
+        eccentricPivotCm: '40.0',
+        knownMassG: '50.0',
+        knownPosCm: '16.0',
+      });
     }
   };
 
   const handleClear = () => {
-    setM1G('');
-    setX1Cm('');
-    setM2G('');
-    setX2Cm('');
-    setKnownMassG('');
-    setKnownPosCm('');
+    reset();
   };
 
   return (
@@ -306,7 +332,7 @@ export const PrincipleOfMomentsPractical: React.FC<PrincipleOfMomentsPracticalPr
                   <input
                     type="text"
                     value={m1G}
-                    onChange={(e) => setM1G(e.target.value)}
+                    onChange={(e) => updateObservations({ m1G: e.target.value })}
                     placeholder="100.0"
                     className="w-full px-3 py-2 rounded-lg border border-[#DFE8EF] dark:border-[#1E334D] bg-[#F6FAFD] dark:bg-[#0B131E]"
                   />
@@ -318,7 +344,7 @@ export const PrincipleOfMomentsPractical: React.FC<PrincipleOfMomentsPracticalPr
                   <input
                     type="text"
                     value={x1Cm}
-                    onChange={(e) => setX1Cm(e.target.value)}
+                    onChange={(e) => updateObservations({ x1Cm: e.target.value })}
                     placeholder="30.0"
                     className="w-full px-3 py-2 rounded-lg border border-[#DFE8EF] dark:border-[#1E334D] bg-[#F6FAFD] dark:bg-[#0B131E]"
                   />
@@ -330,7 +356,7 @@ export const PrincipleOfMomentsPractical: React.FC<PrincipleOfMomentsPracticalPr
                   <input
                     type="text"
                     value={m2G}
-                    onChange={(e) => setM2G(e.target.value)}
+                    onChange={(e) => updateObservations({ m2G: e.target.value })}
                     placeholder="50.0"
                     className="w-full px-3 py-2 rounded-lg border border-[#DFE8EF] dark:border-[#1E334D] bg-[#F6FAFD] dark:bg-[#0B131E]"
                   />
@@ -342,7 +368,7 @@ export const PrincipleOfMomentsPractical: React.FC<PrincipleOfMomentsPracticalPr
                   <input
                     type="text"
                     value={x2Cm}
-                    onChange={(e) => setX2Cm(e.target.value)}
+                    onChange={(e) => updateObservations({ x2Cm: e.target.value })}
                     placeholder="90.0"
                     className="w-full px-3 py-2 rounded-lg border border-[#DFE8EF] dark:border-[#1E334D] bg-[#F6FAFD] dark:bg-[#0B131E]"
                   />
@@ -401,7 +427,7 @@ export const PrincipleOfMomentsPractical: React.FC<PrincipleOfMomentsPracticalPr
                   <input
                     type="text"
                     value={eccentricPivotCm}
-                    onChange={(e) => setEccentricPivotCm(e.target.value)}
+                    onChange={(e) => updateObservations({ eccentricPivotCm: e.target.value })}
                     placeholder="40.0"
                     className="w-full px-3 py-2 rounded-lg border border-[#DFE8EF] dark:border-[#1E334D] bg-[#F6FAFD] dark:bg-[#0B131E]"
                   />
@@ -413,7 +439,7 @@ export const PrincipleOfMomentsPractical: React.FC<PrincipleOfMomentsPracticalPr
                   <input
                     type="text"
                     value={knownMassG}
-                    onChange={(e) => setKnownMassG(e.target.value)}
+                    onChange={(e) => updateObservations({ knownMassG: e.target.value })}
                     placeholder="50.0"
                     className="w-full px-3 py-2 rounded-lg border border-[#DFE8EF] dark:border-[#1E334D] bg-[#F6FAFD] dark:bg-[#0B131E]"
                   />
@@ -425,7 +451,7 @@ export const PrincipleOfMomentsPractical: React.FC<PrincipleOfMomentsPracticalPr
                   <input
                     type="text"
                     value={knownPosCm}
-                    onChange={(e) => setKnownPosCm(e.target.value)}
+                    onChange={(e) => updateObservations({ knownPosCm: e.target.value })}
                     placeholder="16.0"
                     className="w-full px-3 py-2 rounded-lg border border-[#DFE8EF] dark:border-[#1E334D] bg-[#F6FAFD] dark:bg-[#0B131E]"
                   />
@@ -455,6 +481,21 @@ export const PrincipleOfMomentsPractical: React.FC<PrincipleOfMomentsPracticalPr
           <div className="p-3.5 rounded-xl bg-[#F6FAFD] dark:bg-[#0B131E] border border-[#DFE8EF] dark:border-[#1E334D] text-xs text-[#64748B] dark:text-[#94A3B8] space-y-1">
             <span className="font-bold text-[#14243A] dark:text-[#F8FAFC] block">{t.precautionsTitle}</span>
             <p>{t.precautions}</p>
+          </div>
+
+          {/* Submit Action */}
+          <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#DFE8EF] dark:border-[#1E334D]">
+            <Button
+              className="w-full sm:w-auto bg-[#0F766E] hover:bg-[#0D655E] text-white"
+              onClick={() => setCompleted(true)}
+            >
+              <CheckCircle2 className="w-4 h-4 mr-2" /> {t.submitLab}
+            </Button>
+            {isCompleted && (
+              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                {t.submittedMsg}
+              </span>
+            )}
           </div>
         </CardContent>
       </Card>

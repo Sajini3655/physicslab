@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Locale } from '@/shared/curriculum';
 import { Button } from '@/components/ui/button';
 import {
@@ -13,6 +13,7 @@ import {
   HumidityDewPointPractical,
 } from './index';
 import { Wind, CupSoda, Snowflake, CloudRain, Flame, Gauge, FlaskConical, Droplets } from 'lucide-react';
+import { usePracticalWork } from '@/shared/practicals';
 
 interface ThermalPracticalsHubProps {
   locale?: Locale;
@@ -21,9 +22,20 @@ interface ThermalPracticalsHubProps {
 export const ThermalPracticalsHub: React.FC<ThermalPracticalsHubProps> = ({
   locale = 'en',
 }) => {
-  const [activeTab, setActiveTab] = useState<
-    'boyle' | 'calorimetry' | 'fusion' | 'vaporization' | 'cooling' | 'searle' | 'humidity'
-  >('boyle');
+  const { observations, updateObservations } = usePracticalWork({
+    experimentId: 'exp-thermal-hub',
+    defaultObservations: { activeTab: 'boyle' },
+  });
+  const activeTab = (observations.activeTab || 'boyle') as
+    | 'boyle'
+    | 'calorimetry'
+    | 'fusion'
+    | 'vaporization'
+    | 'cooling'
+    | 'searle'
+    | 'humidity';
+  const setActiveTab = (tab: 'boyle' | 'calorimetry' | 'fusion' | 'vaporization' | 'cooling' | 'searle' | 'humidity') =>
+    updateObservations({ activeTab: tab });
 
   const t = {
     en: {

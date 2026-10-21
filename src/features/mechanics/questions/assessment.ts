@@ -31,17 +31,23 @@ export function generateUnit2Assessment(): MechanicsQuestion[] {
     }
   });
 
-  const pick = (arr: MechanicsQuestion[], count: number) => arr.slice(0, count);
+  const pickBalanced = (arr: MechanicsQuestion[], totalCount: number) => {
+    const structured = arr.filter((q) => q.type === 'structured');
+    const others = arr.filter((q) => q.type !== 'structured');
+    const pickedStructured = structured.slice(0, 1);
+    const pickedOthers = others.slice(0, totalCount - pickedStructured.length);
+    return [...pickedOthers, ...pickedStructured];
+  };
 
   const selected: MechanicsQuestion[] = [
-    ...pick(byComp['Competency 2.1'], 3),
-    ...pick(byComp['Competency 2.2'], 3),
-    ...pick(byComp['Competency 2.3'], 3),
-    ...pick(byComp['Competency 2.4'], 3),
-    ...pick(byComp['Competency 2.5'], 2),
-    ...pick(byComp['Competency 2.6'], 2),
-    ...pick(byComp['Competency 2.7'], 2),
-    ...pick(byComp['Competency 2.8'], 2),
+    ...pickBalanced(byComp['Competency 2.1'], 3),
+    ...pickBalanced(byComp['Competency 2.2'], 3),
+    ...pickBalanced(byComp['Competency 2.3'], 3),
+    ...pickBalanced(byComp['Competency 2.4'], 3),
+    ...pickBalanced(byComp['Competency 2.5'], 2),
+    ...pickBalanced(byComp['Competency 2.6'], 2),
+    ...pickBalanced(byComp['Competency 2.7'], 2),
+    ...pickBalanced(byComp['Competency 2.8'], 2),
   ];
 
   return selected;

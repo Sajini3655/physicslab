@@ -408,3 +408,64 @@ export function parseNumericalInput(input: string | undefined): number | null {
   const val = parseFloat(sanitized);
   return isNaN(val) ? null : val;
 }
+
+/**
+ * Calculates rectangular block volume from length, width, and height.
+ * V = l * w * h
+ */
+export function calculateBlockVolume(length: number, width: number, height: number): number {
+  if (length <= 0 || width <= 0 || height <= 0) return 0;
+  return Number((length * width * height).toFixed(2));
+}
+
+/**
+ * Calculates sphere volume from diameter.
+ * V = (4/3) * pi * (D / 2)^3
+ */
+export function calculateSphereVolume(diameter: number): number {
+  if (diameter <= 0) return 0;
+  const radius = diameter / 2;
+  return Number(((4 / 3) * Math.PI * Math.pow(radius, 3)).toFixed(2));
+}
+
+/**
+ * Calculates cross-sectional area of a wire from diameter.
+ * A = (pi / 4) * d^2
+ */
+export function calculateWireCrossSection(diameterMm: number): number {
+  if (diameterMm <= 0) return 0;
+  return Number(((Math.PI / 4) * diameterMm * diameterMm).toFixed(4));
+}
+
+/**
+ * Calculates thickness of a single sheet of paper from a multi-sheet stack.
+ * t_single = t_stack / sheetCount
+ */
+export function calculatePaperThickness(stackThicknessMm: number, sheetCount: number = 100): number {
+  if (stackThicknessMm <= 0 || sheetCount <= 0) return 0;
+  return Number((stackThicknessMm / sheetCount).toFixed(4));
+}
+
+/**
+ * Calculates internal capillary tube bore dimensions from horizontal and vertical traverses.
+ */
+export function calculateCapillaryBoreDimensions(
+  diameterHorizontalMm: number,
+  diameterVerticalMm: number
+): {
+  meanDiameterMm: number;
+  radiusMm: number;
+  crossSectionAreaMm2: number;
+} {
+  if (diameterHorizontalMm <= 0 || diameterVerticalMm <= 0) {
+    return { meanDiameterMm: 0, radiusMm: 0, crossSectionAreaMm2: 0 };
+  }
+  const meanDia = Number(((diameterHorizontalMm + diameterVerticalMm) / 2).toFixed(3));
+  const radius = Number((meanDia / 2).toFixed(3));
+  const area = Number((Math.PI * radius * radius).toFixed(4));
+  return {
+    meanDiameterMm: meanDia,
+    radiusMm: radius,
+    crossSectionAreaMm2: area,
+  };
+}

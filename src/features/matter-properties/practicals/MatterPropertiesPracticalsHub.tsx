@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Locale } from '@/shared/curriculum';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   FileSpreadsheet,
 } from 'lucide-react';
+import { usePracticalWork } from '@/shared/practicals';
 
 interface MatterPropertiesPracticalsHubProps {
   locale?: Locale;
@@ -19,10 +20,6 @@ interface MatterPropertiesPracticalsHubProps {
 export const MatterPropertiesPracticalsHub: React.FC<MatterPropertiesPracticalsHubProps> = ({
   locale = 'en',
 }) => {
-  const [activeTab, setActiveTab] = useState<
-    'searles' | 'poiseuille' | 'stokes' | 'glassSlide' | 'capillary' | 'jaeger'
-  >('searles');
-
   // Practical 2: Poiseuille Capillary Flow Viscosity (Exp 39)
   const defaultPoiseuilleData = [
     { headCm: 10.0, volumeCm3: 30.0, timeS: 61.2, flowRateCm3S: 0.49 },
@@ -31,7 +28,6 @@ export const MatterPropertiesPracticalsHub: React.FC<MatterPropertiesPracticalsH
     { headCm: 25.0, volumeCm3: 30.0, timeS: 24.5, flowRateCm3S: 1.224 },
     { headCm: 30.0, volumeCm3: 30.0, timeS: 20.4, flowRateCm3S: 1.471 },
   ];
-  const [poiseuilleData, setPoiseuilleData] = useState(defaultPoiseuilleData);
   const capillaryLengthM = 0.30;
   const capillaryRadiusMm = 0.38;
 
@@ -43,7 +39,6 @@ export const MatterPropertiesPracticalsHub: React.FC<MatterPropertiesPracticalsH
     { depthCm: 4.0, manometerCm: 12.17, surfaceTensionNm: 0.0703 },
     { depthCm: 5.0, manometerCm: 13.42, surfaceTensionNm: 0.0703 },
   ];
-  const [jaegerData, setJaegerData] = useState(defaultJaegerData);
   const jaegerOrificeRadiusMm = 0.25;
   const paraffinDensity = 800;
   const waterDensity = 1000;
@@ -57,7 +52,6 @@ export const MatterPropertiesPracticalsHub: React.FC<MatterPropertiesPracticalsH
     { loadKg: 4.0, micrometerMm: 0.73, extensionMm: 0.73 },
     { loadKg: 5.0, micrometerMm: 0.91, extensionMm: 0.91 },
   ];
-  const [searleData, setSearleData] = useState(defaultSearleData);
   const wireLengthM = 2.8;
   const wireDiameterMm = 0.56;
 
@@ -69,7 +63,6 @@ export const MatterPropertiesPracticalsHub: React.FC<MatterPropertiesPracticalsH
     { radiusMm: 2.5, rSquaredMm2: 6.25, distanceCm: 40.0, timeS: 2.0, velocityCmS: 20.0 },
     { radiusMm: 3.0, rSquaredMm2: 9.0, distanceCm: 40.0, timeS: 1.39, velocityCmS: 28.8 },
   ];
-  const [stokesData, setStokesData] = useState(defaultStokesData);
 
   // Practical 3: Capillary Rise Method (Tube radius r vs height h)
   const defaultCapillaryData = [
@@ -79,7 +72,6 @@ export const MatterPropertiesPracticalsHub: React.FC<MatterPropertiesPracticalsH
     { radiusMm: 0.70, oneOverR: 1.43, heightCm: 2.11 },
     { radiusMm: 1.00, oneOverR: 1.0, heightCm: 1.48 },
   ];
-  const [capillaryData, setCapillaryData] = useState(defaultCapillaryData);
 
   // Practical 4: Microscope Slide Method (Slide length l vs pull-off force F)
   const defaultSlideData = [
@@ -87,7 +79,45 @@ export const MatterPropertiesPracticalsHub: React.FC<MatterPropertiesPracticalsH
     { lengthCm: 7.5, massG: 1.11, forceMn: 10.88, surfaceTensionNm: 0.0725 },
     { lengthCm: 10.0, massG: 1.48, forceMn: 14.51, surfaceTensionNm: 0.0726 },
   ];
-  const [slideData, setSlideData] = useState(defaultSlideData);
+
+  const {
+    observations,
+    updateObservations,
+  } = usePracticalWork({
+    experimentId: 'exp-matter-properties-hub',
+    defaultObservations: {
+      activeTab: 'searles',
+      poiseuilleData: defaultPoiseuilleData,
+      jaegerData: defaultJaegerData,
+      searleData: defaultSearleData,
+      stokesData: defaultStokesData,
+      capillaryData: defaultCapillaryData,
+      slideData: defaultSlideData,
+    },
+  });
+
+  const activeTab = (observations.activeTab || 'searles') as
+    | 'searles'
+    | 'poiseuille'
+    | 'stokes'
+    | 'glassSlide'
+    | 'capillary'
+    | 'jaeger';
+  const poiseuilleData: typeof defaultPoiseuilleData = observations.poiseuilleData || defaultPoiseuilleData;
+  const jaegerData: typeof defaultJaegerData = observations.jaegerData || defaultJaegerData;
+  const searleData: typeof defaultSearleData = observations.searleData || defaultSearleData;
+  const stokesData: typeof defaultStokesData = observations.stokesData || defaultStokesData;
+  const capillaryData: typeof defaultCapillaryData = observations.capillaryData || defaultCapillaryData;
+  const slideData: typeof defaultSlideData = observations.slideData || defaultSlideData;
+
+  const setActiveTab = (tab: 'searles' | 'poiseuille' | 'stokes' | 'glassSlide' | 'capillary' | 'jaeger') =>
+    updateObservations({ activeTab: tab });
+  const setPoiseuilleData = (data: typeof defaultPoiseuilleData) => updateObservations({ poiseuilleData: data });
+  const setJaegerData = (data: typeof defaultJaegerData) => updateObservations({ jaegerData: data });
+  const setSearleData = (data: typeof defaultSearleData) => updateObservations({ searleData: data });
+  const setStokesData = (data: typeof defaultStokesData) => updateObservations({ stokesData: data });
+  const setCapillaryData = (data: typeof defaultCapillaryData) => updateObservations({ capillaryData: data });
+  const setSlideData = (data: typeof defaultSlideData) => updateObservations({ slideData: data });
 
   const t = {
     en: {

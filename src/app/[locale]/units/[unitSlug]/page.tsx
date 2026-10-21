@@ -5,6 +5,10 @@ import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { Link } from '@/i18n/routing';
 import { routing } from '@/i18n/routing';
 import {
+  UnitProgressBadge,
+  LessonCompletionStatus,
+} from '@/components/UnitProgressIndicator';
+import {
   Atom,
   ChevronRight,
   ArrowLeft,
@@ -60,7 +64,13 @@ export default async function UnitPage({ params }: UnitPageProps) {
           </Link>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 sm:gap-5">
+          <Link
+            href="/my-learning"
+            className="text-xs sm:text-sm font-semibold text-[#14243A] dark:text-[#E2E8F0] hover:text-[#0F766E] dark:hover:text-[#14B8A6] transition-colors whitespace-nowrap"
+          >
+            {tCurriculum('myLearning')}
+          </Link>
           <LanguageSwitcher currentLocale={locale} />
         </div>
       </header>
@@ -86,9 +96,13 @@ export default async function UnitPage({ params }: UnitPageProps) {
               <Layers className="w-3.5 h-3.5" />
               {tCurriculum('unitLabel', { number: unit.syllabusOrder })} • {unit.competencyRange}
             </span>
-            <span className="text-xs font-medium text-[#64748B] dark:text-[#94A3B8]">
-              {tCurriculum('lessonsCount', { count: unit.lessons.length })}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium text-[#64748B] dark:text-[#94A3B8]">
+                {tCurriculum('lessonsCount', { count: unit.lessons.length })}
+              </span>
+              <span className="text-[#CBD5E1] dark:text-[#334155]">•</span>
+              <UnitProgressBadge unitSlug={unit.slug} totalLessons={unit.lessons.length} />
+            </div>
           </div>
 
           <h1 className="text-2xl sm:text-4xl font-bold tracking-tight text-[#14243A] dark:text-[#F8FAFC] font-heading">
@@ -123,6 +137,7 @@ export default async function UnitPage({ params }: UnitPageProps) {
                     <span className="text-[11px] text-[#64748B] dark:text-[#94A3B8]">
                       • {lesson.syllabusRef}
                     </span>
+                    <LessonCompletionStatus lessonId={lesson.id} />
                     {lesson.hasSimulation && (
                       <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-[#F0FDFA] dark:bg-[#042F2E] text-[#0F766E] dark:text-[#14B8A6] border border-[#99F6E4] dark:border-[#115E59]">
                         <Sparkles className="w-2.5 h-2.5" />

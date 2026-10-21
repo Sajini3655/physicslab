@@ -98,11 +98,11 @@ export const PracticeSection: React.FC<PracticeSectionProps> = ({
                   <div className="shrink-0">
                     {status === 'correct' ? (
                       <span className="inline-flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 dark:bg-emerald-950/40 px-2 py-0.5 rounded-full border border-emerald-200">
-                        <CheckCircle2 className="w-3.5 h-3.5" /> Correct
+                        <CheckCircle2 className="w-3.5 h-3.5" /> {locale === 'si' ? 'නිවැරදියි' : 'Correct'}
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1 text-xs font-bold text-amber-600 bg-amber-50 dark:bg-amber-950/40 px-2 py-0.5 rounded-full border border-amber-200">
-                        <XCircle className="w-3.5 h-3.5" /> Check again
+                        <XCircle className="w-3.5 h-3.5" /> {locale === 'si' ? 'නැවත පරීක්ෂා කරන්න' : 'Check again'}
                       </span>
                     )}
                   </div>
@@ -154,7 +154,7 @@ export const PracticeSection: React.FC<PracticeSectionProps> = ({
                     type="text"
                     value={numericalInputs[q.id] || ''}
                     onChange={(e) => setNumericalInputs((prev) => ({ ...prev, [q.id]: e.target.value }))}
-                    placeholder="Enter numerical answer"
+                    placeholder={locale === 'si' ? 'සංඛ්‍යාත්මක අගය ඇතුළත් කරන්න' : 'Enter numerical answer'}
                     className="px-3 py-1.5 rounded-lg border border-[#DFE8EF] dark:border-[#1E334D] bg-[#F6FAFD] dark:bg-[#0B131E] text-xs font-mono w-48 focus:outline-[#0F766E]"
                   />
                   {q.unit && (
@@ -167,7 +167,7 @@ export const PracticeSection: React.FC<PracticeSectionProps> = ({
                     onClick={() => handleCheckNumerical(q.id, q.numericalExpected, q.numericalTolerance)}
                     className="text-xs h-8 bg-[#0F766E] text-white hover:bg-[#0d645e]"
                   >
-                    Check
+                    {locale === 'si' ? 'පරීක්ෂා කරන්න' : 'Check'}
                   </Button>
                 </div>
               )}
@@ -206,7 +206,7 @@ export const PracticeSection: React.FC<PracticeSectionProps> = ({
               {/* Hint Box */}
               {isHintOpen && q.hint && (
                 <div className="p-3.5 rounded-xl bg-[#F0FDFA] dark:bg-[#042F2E] border border-[#99F6E4] dark:border-[#115E59] text-xs sm:text-sm text-[#0F766E] dark:text-[#14B8A6] leading-relaxed animate-in fade-in duration-200">
-                  <span className="font-semibold block mb-0.5">Hint:</span>
+                  <span className="font-semibold block mb-0.5">{locale === 'si' ? 'ඉඟිය:' : 'Hint:'}</span>
                   {q.hint[locale]}
                 </div>
               )}
@@ -214,7 +214,7 @@ export const PracticeSection: React.FC<PracticeSectionProps> = ({
               {/* Solution Box */}
               {isAnswerOpen && q.answer && (
                 <div className="p-3.5 rounded-xl bg-[#F6FAFD] dark:bg-[#0B131E] border border-[#DFE8EF] dark:border-[#1E334D] text-xs sm:text-sm text-[#14243A] dark:text-[#CBD5E1] leading-relaxed font-mono animate-in fade-in duration-200">
-                  <span className="font-semibold block mb-0.5 font-sans text-[#0F766E]">Solution:</span>
+                  <span className="font-semibold block mb-0.5 font-sans text-[#0F766E]">{locale === 'si' ? 'විසඳුම:' : 'Solution:'}</span>
                   {q.answer[locale]}
                 </div>
               )}

@@ -3,6 +3,7 @@ import { UnitDefinition, LessonDefinition, Locale } from './types';
 
 export * from './types';
 export * from './catalogue';
+export * from './useAssessmentSession';
 
 /**
  * Returns all 11 syllabus units in their official order.

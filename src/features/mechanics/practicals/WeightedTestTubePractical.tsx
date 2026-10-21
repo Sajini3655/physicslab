@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Locale } from '@/shared/curriculum';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Printer, RotateCcw, Database, Scale, TrendingUp, CheckCircle2, AlertCircle } from 'lucide-react';
 import { calculateWeightedTestTubeHydrometer } from '../physics/calculations';
+import { usePracticalWork } from '@/shared/practicals';
 
 interface WeightedTestTubePracticalProps {
   locale?: Locale;
@@ -20,22 +21,49 @@ interface TubeReading {
 export const WeightedTestTubePractical: React.FC<WeightedTestTubePracticalProps> = ({
   locale = 'en',
 }) => {
-  const [emptyTubeMass, setEmptyTubeMass] = useState<string>('18.5'); // g
-  const [tubeDiameter, setTubeDiameter] = useState<string>('2.20');   // cm
+  const {
+    observations,
+    updateObservations,
+    loadSampleObservations,
+    reset,
+    isCompleted,
+    setCompleted,
+  } = usePracticalWork({
+    experimentId: 'exp-9-test-tube',
+    defaultObservations: {
+      emptyTubeMass: '18.5',
+      tubeDiameter: '2.20',
+      readings: [
+        { id: 1, leadMass: '10.0', depthH: '7.5' },
+        { id: 2, leadMass: '15.0', depthH: '8.8' },
+        { id: 3, leadMass: '20.0', depthH: '10.1' },
+        { id: 4, leadMass: '25.0', depthH: '11.4' },
+        { id: 5, leadMass: '30.0', depthH: '12.8' },
+      ],
+      expectedDensity: '1.00',
+    },
+  });
 
-  const [readings, setReadings] = useState<TubeReading[]>([
+  const emptyTubeMass = observations.emptyTubeMass || '18.5';
+  const setEmptyTubeMass = (val: string) => updateObservations({ emptyTubeMass: val });
+
+  const tubeDiameter = observations.tubeDiameter || '2.20';
+  const setTubeDiameter = (val: string) => updateObservations({ tubeDiameter: val });
+
+  const readings = (observations.readings as TubeReading[]) || [
     { id: 1, leadMass: '10.0', depthH: '7.5' },
     { id: 2, leadMass: '15.0', depthH: '8.8' },
     { id: 3, leadMass: '20.0', depthH: '10.1' },
     { id: 4, leadMass: '25.0', depthH: '11.4' },
     { id: 5, leadMass: '30.0', depthH: '12.8' },
-  ]);
+  ];
 
-  const [expectedDensity, setExpectedDensity] = useState<string>('1.00'); // g/cm^3 (water)
+  const expectedDensity = observations.expectedDensity || '1.00';
+  const setExpectedDensity = (val: string) => updateObservations({ expectedDensity: val });
 
   const t = {
     en: {
-      title: 'Practical 2.5: Principle of Flotation & Loaded Test Tube Hydrometer',
+      title: 'Practical 9: Principle of Flotation & Loaded Test Tube Hydrometer',
       aim: 'Aim: To verify the Law of Flotation and determine the density of a liquid using a loaded test tube floating vertically as a hydrometer.',
       apparatus: 'Apparatus: Flat or round-bottomed test tube, lead shots / sand, millimeter graph scale insert, tall measuring jar, external calipers, chemical balance, test liquid (distilled water / brine).',
       theoryTitle: 'Physical Principle & Law of Flotation',
@@ -62,9 +90,11 @@ export const WeightedTestTubePractical: React.FC<WeightedTestTubePracticalProps>
       loadSample: 'Load Sample Data (Water)',
       clearInputs: 'Clear Inputs',
       printSheet: 'Print Laboratory Record',
+      submitLab: 'Submit Practical Record',
+      submittedMsg: 'Practical record completed and saved to your laboratory log.',
     },
     si: {
-      title: 'ප්‍රායෝගික පරීක්ෂණය 2.5: පාවීමේ නියමය සහ බර යෙදූ පරීක්ෂණ නළ ආරාවලිය',
+      title: 'ප්‍රායෝගික පරීක්ෂණය 9: පාවීමේ නියමය සහ බර යෙදූ පරීක්ෂණ නළය (ද්‍රවමානය)',
       aim: 'අරමුණ: පාවීමේ නියමය සත්‍යාපනය කිරීම සහ සිරස්ව පාවෙන බර යෙදූ පරීක්ෂණ නළයක් මඟින් ද්‍රවයක ඝනත්වය නිර්ණය කිරීම.',
       apparatus: 'උපකරණ: පතුල පැතලි හෝ ගෝලාකාර පරීක්ෂණ නළය, ඊයම් මූනිස්සම්, මිලිමීටර් පරිමාණ කඩදාසි පටියක්, උස මිනුම් සිලින්ඩරය, වර්නියර් කැලිපරය, තුලාව, පරීක්ෂණ ද්‍රවය (ජලය).',
       theoryTitle: 'භෞතික මූලධර්මය සහ පාවීමේ නියමය',
@@ -91,11 +121,14 @@ export const WeightedTestTubePractical: React.FC<WeightedTestTubePracticalProps>
       loadSample: 'ආදර්ශ දත්ත පූරණය (ජලය)',
       clearInputs: 'දත්ත හිස් කරන්න',
       printSheet: 'වාර්තාව මුද්‍රණය කරන්න',
+      submitLab: 'ප්‍රායෝගික සටහන භාරදෙන්න',
+      submittedMsg: 'ප්‍රායෝගික වාර්තාව සම්පූර්ණ කර රසායනාගාර සටහනට සුරකින ලදී.',
     },
   }[locale];
 
   const updateReading = (id: number, field: 'leadMass' | 'depthH', val: string) => {
-    setReadings(readings.map((r) => (r.id === id ? { ...r, [field]: val } : r)));
+    const updated = readings.map((r) => (r.id === id ? { ...r, [field]: val } : r));
+    updateObservations({ readings: updated });
   };
 
   const emptyM = parseFloat(emptyTubeMass) || 0;
@@ -129,20 +162,22 @@ export const WeightedTestTubePractical: React.FC<WeightedTestTubePracticalProps>
   const isPass = percDiff !== null && percDiff <= 4.0;
 
   const handleLoadSample = () => {
-    setEmptyTubeMass('18.5');
-    setTubeDiameter('2.20');
-    setReadings([
-      { id: 1, leadMass: '10.0', depthH: '7.5' },
-      { id: 2, leadMass: '15.0', depthH: '8.8' },
-      { id: 3, leadMass: '20.0', depthH: '10.1' },
-      { id: 4, leadMass: '25.0', depthH: '11.4' },
-      { id: 5, leadMass: '30.0', depthH: '12.8' },
-    ]);
-    setExpectedDensity('1.00');
+    loadSampleObservations({
+      emptyTubeMass: '18.5',
+      tubeDiameter: '2.20',
+      readings: [
+        { id: 1, leadMass: '10.0', depthH: '7.5' },
+        { id: 2, leadMass: '15.0', depthH: '8.8' },
+        { id: 3, leadMass: '20.0', depthH: '10.1' },
+        { id: 4, leadMass: '25.0', depthH: '11.4' },
+        { id: 5, leadMass: '30.0', depthH: '12.8' },
+      ],
+      expectedDensity: '1.00',
+    });
   };
 
   const handleClear = () => {
-    setReadings(readings.map((r) => ({ ...r, leadMass: '', depthH: '' })));
+    reset();
   };
 
   return (
@@ -162,157 +197,104 @@ export const WeightedTestTubePractical: React.FC<WeightedTestTubePracticalProps>
             <RotateCcw className="w-4 h-4 mr-1.5" />
             {t.clearInputs}
           </Button>
-          <Button variant="outline" size="sm" onClick={() => window.print()} className="text-[#475569] border-[#DFE8EF]">
+          <Button variant="outline" size="sm" onClick={() => window.print()} className="text-[#14243A] border-[#DFE8EF]">
             <Printer className="w-4 h-4 mr-1.5" />
             {t.printSheet}
           </Button>
         </div>
       </div>
 
-      {/* Grid: Schematic & Physical Principle */}
+      {/* Physical Background */}
+      <Card className="border-[#DFE8EF] bg-white">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base text-[#14243A] font-medium flex items-center gap-2">
+            <Scale className="w-4 h-4 text-[#0F766E]" />
+            {t.theoryTitle}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-[#475569] whitespace-pre-line leading-relaxed">{t.theoryText}</p>
+          <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+            <p className="text-xs text-[#475569] font-mono leading-relaxed">{t.procedure}</p>
+          </div>
+        </CardContent>
+      </Card>
+
+      {/* Main Grid: Data Table & Interactive Plot */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Schematic SVG */}
-        <Card className="border-[#DFE8EF] bg-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base text-[#14243A] font-medium flex items-center gap-2">
-              <Scale className="w-4 h-4 text-[#0F766E]" />
-              {locale === 'si' ? 'පරීක්ෂණ නළ ආරාවලි සැකැස්ම' : 'Loaded Test Tube Schematic'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex justify-center p-4 bg-[#F6FAFD] rounded-lg border border-[#DFE8EF]">
-              <svg width="260" height="260" viewBox="0 0 260 260" className="overflow-visible">
-                {/* Measuring Jar Outer Glass */}
-                <rect x="70" y="30" width="120" height="210" fill="none" stroke="#64748B" strokeWidth="2.5" rx="3" />
-                <rect x="50" y="240" width="160" height="12" fill="#64748B" rx="3" />
-
-                {/* Liquid in Jar */}
-                <rect x="72" y="70" width="116" height="168" fill="#E0F2FE" />
-                <line x1="70" y1="70" x2="190" y2="70" stroke="#0284C7" strokeWidth="2" strokeDasharray="4 2" />
-                <text x="195" y="74" fontSize="9" fill="#0284C7">Liquid Level</text>
-
-                {/* Test Tube floating */}
-                {/* Glass wall */}
-                <rect x="110" y="20" width="30" height="170" fill="#FFFFFF" stroke="#334155" strokeWidth="2" rx="4" />
-                {/* Millimeter insert strip */}
-                <rect x="116" y="25" width="6" height="160" fill="#FEF08A" stroke="#EAB308" strokeWidth="1" />
-                {[40, 60, 80, 100, 120, 140, 160].map((y) => (
-                  <line key={y} x1="116" y1={y} x2="122" y2={y} stroke="#854D0E" strokeWidth="1" />
-                ))}
-
-                {/* Lead shots at bottom */}
-                <circle cx="120" cy="180" r="3.5" fill="#475569" />
-                <circle cx="128" cy="180" r="3.5" fill="#475569" />
-                <circle cx="124" cy="174" r="3.5" fill="#475569" />
-                <circle cx="120" cy="168" r="3.5" fill="#475569" />
-                <circle cx="128" cy="168" r="3.5" fill="#475569" />
-
-                {/* Immersion Depth Dimension */}
-                <line x1="148" y1="70" x2="148" y2="190" stroke="#DC2626" strokeWidth="1.5" />
-                <polygon points="148,70 145,76 151,76" fill="#DC2626" />
-                <polygon points="148,190 145,184 151,184" fill="#DC2626" />
-                <text x="154" y="135" fontSize="11" fill="#DC2626" fontWeight="bold">h</text>
-
-                {/* Total mass arrow */}
-                <line x1="125" y1="190" x2="125" y2="225" stroke="#1E293B" strokeWidth="2" />
-                <polygon points="125,225 121,218 129,218" fill="#1E293B" />
-                <text x="125" y="238" textAnchor="middle" fontSize="10" fill="#1E293B" fontWeight="bold">W = M·g</text>
-
-                {/* Upthrust arrow */}
-                <line x1="100" y1="190" x2="100" y2="150" stroke="#0F766E" strokeWidth="2" />
-                <polygon points="100,150 96,157 104,157" fill="#0F766E" />
-                <text x="95" y="145" textAnchor="end" fontSize="10" fill="#0F766E" fontWeight="bold">U = A·h·ρ·g</text>
-              </svg>
-            </div>
-            <p className="text-xs text-[#475569] text-center mt-2 italic">
-              {locale === 'si' ? 'පාවීමේ තුල්‍යතාව: W = U ⇒ M = (A · ρ) · h' : 'Flotation Equilibrium: W = U ⇒ M = (A · ρ) · h'}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Theory & Constant Inputs */}
-        <Card className="border-[#DFE8EF] bg-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base text-[#14243A] font-medium">
-              {t.theoryTitle}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm text-[#475569]">
-            <p className="whitespace-pre-line leading-relaxed">{t.theoryText}</p>
-            <div className="grid grid-cols-2 gap-3 p-3 bg-[#F6FAFD] rounded-md border border-[#DFE8EF]">
-              <div>
-                <label className="text-xs font-semibold text-[#14243A] block mb-1">{t.tubeMassLabel}</label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={emptyTubeMass}
-                  onChange={(e) => setEmptyTubeMass(e.target.value)}
-                  className="w-full px-2 py-1 text-sm border border-[#DFE8EF] rounded outline-none focus:ring-1 focus:ring-[#0F766E]"
-                />
-              </div>
-              <div>
-                <label className="text-xs font-semibold text-[#14243A] block mb-1">{t.tubeDiamLabel}</label>
-                <input
-                  type="number"
-                  step="0.01"
-                  value={tubeDiameter}
-                  onChange={(e) => setTubeDiameter(e.target.value)}
-                  className="w-full px-2 py-1 text-sm border border-[#DFE8EF] rounded outline-none focus:ring-1 focus:ring-[#0F766E]"
-                />
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Observations & Regression Graph */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Table */}
+        {/* Table & Instrument Dimensions */}
         <Card className="border-[#DFE8EF] bg-white">
           <CardHeader className="pb-2">
             <CardTitle className="text-base text-[#14243A] font-medium">
               {t.obsTitle}
             </CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
+            {/* Tube Initial Dimensions */}
+            <div className="grid grid-cols-2 gap-3 p-3 bg-[#F6FAFD] rounded-lg border border-[#DFE8EF]">
+              <div>
+                <label className="text-xs font-semibold text-[#14243A] block mb-1">
+                  {t.tubeMassLabel}
+                </label>
+                <input
+                  type="number"
+                  step="0.1"
+                  value={emptyTubeMass}
+                  onChange={(e) => setEmptyTubeMass(e.target.value)}
+                  className="w-full px-2 py-1 text-sm font-mono border border-[#DFE8EF] rounded focus:outline-[#0F766E]"
+                />
+              </div>
+              <div>
+                <label className="text-xs font-semibold text-[#14243A] block mb-1">
+                  {t.tubeDiamLabel}
+                </label>
+                <input
+                  type="number"
+                  step="0.01"
+                  value={tubeDiameter}
+                  onChange={(e) => setTubeDiameter(e.target.value)}
+                  className="w-full px-2 py-1 text-sm font-mono border border-[#DFE8EF] rounded focus:outline-[#0F766E]"
+                />
+              </div>
+            </div>
+
+            {/* Observation Table */}
             <div className="overflow-x-auto">
               <table className="w-full text-sm text-left border-collapse">
                 <thead>
                   <tr className="bg-[#F6FAFD] border-b border-[#DFE8EF] text-[#14243A]">
-                    <th className="py-2 px-3 font-semibold">{t.trialCol}</th>
-                    <th className="py-2 px-3 font-semibold">{t.shotsCol}</th>
-                    <th className="py-2 px-3 font-semibold">{t.totalMassCol}</th>
-                    <th className="py-2 px-3 font-semibold">{t.depthCol}</th>
+                    <th className="py-2.5 px-3 font-semibold w-12">{t.trialCol}</th>
+                    <th className="py-2.5 px-3 font-semibold">{t.shotsCol}</th>
+                    <th className="py-2.5 px-3 font-semibold">{t.totalMassCol}</th>
+                    <th className="py-2.5 px-3 font-semibold">{t.depthCol}</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-[#DFE8EF]">
                   {readings.map((r) => {
                     const lm = parseFloat(r.leadMass);
                     const totalM = !isNaN(lm) ? (emptyM + lm).toFixed(1) : '—';
                     return (
-                      <tr key={r.id} className="border-b border-[#DFE8EF] hover:bg-slate-50">
-                        <td className="py-2 px-3 font-medium text-[#14243A]">{r.id}</td>
-                        <td className="py-1 px-3">
+                      <tr key={r.id} className="hover:bg-slate-50">
+                        <td className="py-2 px-3 font-mono text-[#64748B]">{r.id}</td>
+                        <td className="py-2 px-3">
                           <input
                             type="number"
-                            step="0.1"
+                            step="0.5"
                             value={r.leadMass}
                             onChange={(e) => updateReading(r.id, 'leadMass', e.target.value)}
-                            placeholder="m_shots"
-                            className="w-24 px-2 py-1 text-sm border border-[#DFE8EF] rounded outline-none focus:ring-1 focus:ring-[#0F766E]"
+                            placeholder="0.0"
+                            className="w-20 px-2 py-1 text-sm font-mono border border-[#DFE8EF] rounded focus:outline-[#0F766E]"
                           />
                         </td>
-                        <td className="py-2 px-3 font-mono font-semibold text-[#0F766E]">
-                          {totalM}
-                        </td>
-                        <td className="py-1 px-3">
+                        <td className="py-2 px-3 font-mono text-[#14243A] font-semibold">{totalM}</td>
+                        <td className="py-2 px-3">
                           <input
                             type="number"
                             step="0.1"
                             value={r.depthH}
                             onChange={(e) => updateReading(r.id, 'depthH', e.target.value)}
-                            placeholder="h"
-                            className="w-24 px-2 py-1 text-sm border border-[#DFE8EF] rounded outline-none focus:ring-1 focus:ring-[#0F766E]"
+                            placeholder="0.0"
+                            className="w-20 px-2 py-1 text-sm font-mono border border-[#DFE8EF] rounded focus:outline-[#0F766E]"
                           />
                         </td>
                       </tr>
@@ -324,7 +306,7 @@ export const WeightedTestTubePractical: React.FC<WeightedTestTubePracticalProps>
           </CardContent>
         </Card>
 
-        {/* SVG Scatter Plot / Regression */}
+        {/* Dynamic Scatter & Linear Fit (M vs h) */}
         <Card className="border-[#DFE8EF] bg-white">
           <CardHeader className="pb-2">
             <CardTitle className="text-base text-[#14243A] font-medium flex items-center gap-2">
@@ -332,58 +314,79 @@ export const WeightedTestTubePractical: React.FC<WeightedTestTubePracticalProps>
               {t.graphTitle}
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex justify-center p-3 bg-[#F6FAFD] rounded-lg border border-[#DFE8EF]">
-              <svg width="300" height="220" viewBox="0 0 300 220" className="overflow-visible">
-                {/* Axes */}
-                <line x1="45" y1="190" x2="280" y2="190" stroke="#1E293B" strokeWidth="1.5" />
-                <line x1="45" y1="190" x2="45" y2="20" stroke="#1E293B" strokeWidth="1.5" />
-                <text x="280" y="205" fontSize="10" fill="#1E293B" textAnchor="end">Depth h (cm) →</text>
-                <text x="40" y="20" fontSize="10" fill="#1E293B" textAnchor="end">Mass M (g) ↑</text>
+          <CardContent className="flex flex-col items-center">
+            {/* SVG Plot */}
+            <div className="w-full max-w-sm aspect-square bg-[#F6FAFD] rounded-xl border border-[#DFE8EF] p-4 relative">
+              <svg viewBox="0 0 300 300" className="w-full h-full">
+                {/* Grid lines */}
+                <line x1="40" y1="20" x2="40" y2="260" stroke="#DFE8EF" strokeWidth="1.5" />
+                <line x1="40" y1="260" x2="280" y2="260" stroke="#DFE8EF" strokeWidth="1.5" />
 
-                {/* Gridlines */}
-                {[50, 100, 150].map((y) => (
-                  <line key={y} x1="45" y1={y} x2="280" y2={y} stroke="#E2E8F0" strokeWidth="1" strokeDasharray="2 2" />
-                ))}
-                {[100, 160, 220].map((x) => (
-                  <line key={x} x1={x} y1="20" x2={x} y2="190" stroke="#E2E8F0" strokeWidth="1" strokeDasharray="2 2" />
-                ))}
+                <line x1="40" y1="200" x2="280" y2="200" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3" />
+                <line x1="40" y1="140" x2="280" y2="140" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3" />
+                <line x1="40" y1="80" x2="280" y2="80" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3" />
 
-                {/* Points */}
-                {parsedPairs.map((p) => {
-                  // Map h: 0..16 cm -> 45..270 px; M: 0..60 g -> 190..30 px
-                  const cx = 45 + (p.h / 16) * 225;
-                  const cy = 190 - (p.totalM / 60) * 160;
-                  return (
-                    <g key={p.id}>
-                      <circle cx={cx} cy={cy} r="4" fill="#0F766E" stroke="#FFFFFF" strokeWidth="1.5" />
-                      <line x1={cx - 3} y1={cy - 3} x2={cx + 3} y2={cy + 3} stroke="#0F766E" strokeWidth="1" />
-                      <line x1={cx - 3} y1={cy + 3} x2={cx + 3} y2={cy - 3} stroke="#0F766E" strokeWidth="1" />
-                    </g>
-                  );
-                })}
+                <line x1="100" y1="20" x2="100" y2="260" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3" />
+                <line x1="160" y1="20" x2="160" y2="260" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3" />
+                <line x1="220" y1="20" x2="220" y2="260" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3" />
 
-                {/* Regression Line */}
+                {/* Axes labels */}
+                <text x="160" y="290" textAnchor="middle" className="text-[11px] fill-[#64748B]">h (cm)</text>
+                <text x="15" y="140" textAnchor="middle" transform="rotate(-90 15 140)" className="text-[11px] fill-[#64748B]">Total M (g)</text>
+
+                {/* Ticks */}
+                <text x="35" y="275" textAnchor="end" className="text-[9px] fill-[#64748B]">0</text>
+                <text x="100" y="275" textAnchor="middle" className="text-[9px] fill-[#64748B]">5</text>
+                <text x="160" y="275" textAnchor="middle" className="text-[9px] fill-[#64748B]">10</text>
+                <text x="220" y="275" textAnchor="middle" className="text-[9px] fill-[#64748B]">15</text>
+                <text x="280" y="275" textAnchor="middle" className="text-[9px] fill-[#64748B]">20</text>
+
+                <text x="35" y="203" textAnchor="end" className="text-[9px] fill-[#64748B]">20</text>
+                <text x="35" y="143" textAnchor="end" className="text-[9px] fill-[#64748B]">40</text>
+                <text x="35" y="83" textAnchor="end" className="text-[9px] fill-[#64748B]">60</text>
+                <text x="35" y="23" textAnchor="end" className="text-[9px] fill-[#64748B]">80</text>
+
+                {/* Linear Fit Line */}
                 {calcResult && (
                   <line
-                    x1="45"
-                    y1="190"
-                    x2="270"
-                    y2={190 - (16 * calcResult.slope * (160 / 60))}
+                    x1="40"
+                    y1="260"
+                    x2={40 + (20 / 20) * 240}
+                    y2={260 - ((calcResult.slope * 20) / 80) * 240}
                     stroke="#0F766E"
                     strokeWidth="2"
                   />
                 )}
+
+                {/* Plotted points */}
+                {parsedPairs.map((p) => {
+                  const cx = 40 + (p.h / 20) * 240;
+                  const cy = 260 - (p.totalM / 80) * 240;
+                  if (cx >= 40 && cx <= 280 && cy >= 20 && cy <= 260) {
+                    return (
+                      <circle
+                        key={p.id}
+                        cx={cx}
+                        cy={cy}
+                        r="3.5"
+                        fill="#0F766E"
+                        stroke="#FFFFFF"
+                        strokeWidth="1.5"
+                      />
+                    );
+                  }
+                  return null;
+                })}
               </svg>
             </div>
-            <p className="text-xs text-[#475569] text-center mt-2 italic">
-              {locale === 'si' ? 'ප්‍රස්ථාරයේ බෑවුම m = A · ρ_L' : 'Flotation Slope: m = A · ρ_L'}
+            <p className="text-xs text-[#64748B] mt-2 italic text-center">
+              Linear regression line of Total Mass M against Immersion Depth h
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Analytical Summary */}
+      {/* Regression Results & Comparison */}
       <Card className="border-[#DFE8EF] bg-white">
         <CardHeader className="pb-2">
           <CardTitle className="text-base text-[#14243A] font-medium">
@@ -442,6 +445,21 @@ export const WeightedTestTubePractical: React.FC<WeightedTestTubePracticalProps>
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Submit Action */}
+          <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#DFE8EF] dark:border-[#1E334D]">
+            <Button
+              className="w-full sm:w-auto bg-[#0F766E] hover:bg-[#0D655E] text-white"
+              onClick={() => setCompleted(true)}
+            >
+              <CheckCircle2 className="w-4 h-4 mr-2" /> {t.submitLab}
+            </Button>
+            {isCompleted && (
+              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                {t.submittedMsg}
+              </span>
+            )}
           </div>
         </CardContent>
       </Card>

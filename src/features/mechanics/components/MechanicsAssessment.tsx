@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Locale } from '@/shared/curriculum';
+import React from 'react';
+import { Locale, useAssessmentSession } from '@/shared/curriculum';
 import { generateUnit2Assessment, evaluateMechanicsAssessment, MechanicsAssessmentResult } from '../questions/assessment';
 import { MechanicsQuestion, MechanicsCompetencyRef } from '../questions/types';
 import { Button } from '@/components/ui/button';
@@ -21,40 +21,24 @@ interface MechanicsAssessmentProps {
 }
 
 export const MechanicsAssessment: React.FC<MechanicsAssessmentProps> = ({ locale = 'en' }) => {
-  const [questions] = useState<MechanicsQuestion[]>(() => generateUnit2Assessment());
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [submitted, setSubmitted] = useState<boolean>(false);
-  const [result, setResult] = useState<MechanicsAssessmentResult | null>(null);
-  const [showSolutions, setShowSolutions] = useState<Record<string, boolean>>({});
-
-  const handleSelectOption = (qId: string, optionId: string) => {
-    if (submitted) return;
-    setAnswers((prev) => ({ ...prev, [qId]: optionId }));
-  };
-
-  const handleNumericalChange = (qId: string, val: string) => {
-    if (submitted) return;
-    setAnswers((prev) => ({ ...prev, [qId]: val }));
-  };
-
-  const handleSubmit = () => {
-    const res = evaluateMechanicsAssessment(questions, answers);
-    setResult(res);
-    setSubmitted(true);
-  };
-
-  const handleReset = () => {
-    setAnswers({});
-    setSubmitted(false);
-    setResult(null);
-    setShowSolutions({});
-  };
-
-  const toggleSolution = (qId: string) => {
-    setShowSolutions((prev) => ({ ...prev, [qId]: !prev[qId] }));
-  };
-
-  const answeredCount = Object.keys(answers).filter((k) => answers[k]?.trim() !== '').length;
+  const {
+    questions,
+    answers,
+    setAnswers,
+    submitted,
+    result,
+    showSolutions,
+    handleSelectOption,
+    handleNumericalChange,
+    handleSubmit,
+    handleReset,
+    toggleSolution,
+    answeredCount,
+  } = useAssessmentSession<MechanicsQuestion, MechanicsAssessmentResult>({
+    storageKey: 'unit-2',
+    generateQuestions: generateUnit2Assessment,
+    evaluateAssessment: evaluateMechanicsAssessment,
+  });
 
   const t = {
     en: {
