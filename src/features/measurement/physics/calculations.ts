@@ -191,6 +191,32 @@ export function calculateTravellingMicroscopeDimensions(
 export const calculateTravellingMicroscopeDiameters = calculateTravellingMicroscopeDimensions;
 
 /**
+ * Experiment 16: Refractive index of glass using a travelling microscope and rectangular glass block.
+ * Formula:
+ * - Real Depth d = |r3 - r1| (distance between bottom mark r1 and top surface r3)
+ * - Apparent Depth d' = |r3 - r2| (distance between apparent image r2 and top surface r3)
+ * - Refractive index n = Real Depth / Apparent Depth = d / d'
+ */
+export function calculateApparentDepthRefractiveIndex(
+  r1BottomMarkMm: number,
+  r2ApparentImageMm: number,
+  r3TopSurfaceMm: number
+): {
+  realDepthMm: number;
+  apparentDepthMm: number;
+  refractiveIndex: number;
+} {
+  const realDepthMm = Number(Math.abs(r3TopSurfaceMm - r1BottomMarkMm).toFixed(3));
+  const apparentDepthMm = Number(Math.abs(r3TopSurfaceMm - r2ApparentImageMm).toFixed(3));
+  const refractiveIndex = apparentDepthMm > 0 ? Number((realDepthMm / apparentDepthMm).toFixed(3)) : 0;
+  return {
+    realDepthMm,
+    apparentDepthMm,
+    refractiveIndex,
+  };
+}
+
+/**
  * Calculates cylinder material volume distinguishing open hollow tubes from closed-bottom vessels.
  *
  * Open tube:

@@ -1,3 +1,5 @@
+export { SimplePendulumPractical } from './SimplePendulumPractical';
+export { HelicalSpringPractical } from './HelicalSpringPractical';
 export { SonometerPractical } from './SonometerPractical';
 export { ResonanceTubePractical } from './ResonanceTubePractical';
 export { PrismRefractionPractical } from './PrismRefractionPractical';

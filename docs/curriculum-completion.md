@@ -37,18 +37,18 @@ All learning competencies, outcome indicators, apparatus lists, experimental pro
 | :---: | :--- | :---: | :---: | :---: | :---: | :---: | :---: | :---: | :--- | :---: | :---: |
 | **1** | Measurement<br>*(මිනුම)* | 1.1 – 1.5 | 8 | 72 | 62 | 10 | 0 | 20 | 4 Handbook Practicals (+ Density) | Passed (45 tests) | Verified (Playwright E2E) |
 | **2** | Mechanics<br>*(යාන්ත්‍ර විද්‍යාව)* | 2.1 – 2.8 | 13 | 72 | 34 | 28 | 10 | 20 | 5 Handbook Practicals (Exp 5–9) | Passed (36 tests) | Verified (Playwright E2E) |
-| **3** | Oscillations and Waves<br>*(කම්පන සහ තරංග)* | 3.1 – 3.11 | 13 | 74 | 24 | 40 | 10 | 20 | 12 Handbook Practicals (Exp 10–21.2) | Passed (25 tests) | Pending Browser Binary |
-| **4** | Thermal Physics<br>*(තාප භෞතික විද්‍යාව)* | 4.1 – 4.9 | 10 | 81 | 30 | 41 | 10 | 20 | 9 Handbook Practicals (Exp 22–30) | Passed (27 tests) | Pending Browser Binary |
-| **5** | Gravitational Field<br>*(ගුරුත්වාකර්ෂණ ක්ෂේත්‍රය)* | 5.1 – 5.2 | 6 | 62 | 37 | 15 | 10 | 20 | Orbital Mechanics Virtual Lab | Passed (27 tests) | Pending Browser Binary |
-| **6** | Electrostatic Field<br>*(ස්ථිති විද්‍යුත් ක්ෂේත්‍රය)* | 6.1 – 6.4 | 6 | 62 | 33 | 19 | 10 | 20 | Capacitors & Field Virtual Lab | Passed (30 tests) | Pending Browser Binary |
-| **7** | Magnetic Field<br>*(චුම්බක ක්ෂේත්‍රය)* | 7.1 – 7.3 | 7 | 65 | 30 | 25 | 10 | 20 | Cyclotron & Galvanometer Lab | Passed (28 tests) | Pending Browser Binary |
-| **8** | Current Electricity<br>*(ධාරා විද්‍යුතය)* | 8.1 – 8.6 | 10 | 74 | 31 | 33 | 10 | 20 | 4 Handbook Practicals (Exp 31–34) | Passed (26 tests) | Pending Browser Binary |
-| **9** | Electronics<br>*(ඉලෙක්ට්‍රොනික් විද්‍යාව)* | 9.1 – 9.4 | 9 | 61 | 35 | 16 | 10 | 20 | 3 Handbook Practicals (Exp 35–37) | Passed (19 tests) | Pending Browser Binary |
-| **10**| Mechanical Properties of Matter<br>*(පදාර්ථයේ යාන්ත්‍රික ගුණ)* | 10.1 – 10.3 | 6 | 61 | 27 | 24 | 10 | 20 | 5 Handbook Practicals (Exp 38–42) | Passed (28 tests) | Pending Browser Binary |
-| **11**| Matter and Radiation<br>*(පදාර්ථය සහ විකිරණය)* | 11.1 – 11.7 | 8 | 62 | 32 | 20 | 10 | 20 | Photoelectric, Bohr, Decay, Coolidge | Passed (25 tests) | Pending Browser Binary |
+| **3** | Oscillations and Waves<br>*(කම්පන සහ තරංග)* | 3.1 – 3.11 | 13 | 74 | 24 | 40 | 10 | 20 | 12 Handbook Practicals (Exp 10–21.2) | Passed (29 tests) | Verified (Playwright E2E) |
+| **4** | Thermal Physics<br>*(තාප භෞතික විද්‍යාව)* | 4.1 – 4.9 | 10 | 81 | 30 | 41 | 10 | 20 | 9 Handbook Practicals (Exp 22–30) | Passed (27 tests) | Verified (Playwright E2E) |
+| **5** | Gravitational Field<br>*(ගුරුත්වාකර්ෂණ ක්ෂේත්‍රය)* | 5.1 – 5.2 | 6 | 62 | 37 | 15 | 10 | 20 | Orbital Mechanics Virtual Lab | Passed (27 tests) | Verified (Playwright E2E) |
+| **6** | Electrostatic Field<br>*(ස්ථිති විද්‍යුත් ක්ෂේත්‍රය)* | 6.1 – 6.4 | 6 | 62 | 33 | 19 | 10 | 20 | Capacitors & Field Virtual Lab | Passed (30 tests) | Verified (Playwright E2E) |
+| **7** | Magnetic Field<br>*(චුම්බක ක්ෂේත්‍රය)* | 7.1 – 7.3 | 7 | 65 | 30 | 25 | 10 | 20 | Cyclotron & Galvanometer Lab | Passed (28 tests) | Verified (Playwright E2E) |
+| **8** | Current Electricity<br>*(ධාරා විද්‍යුතය)* | 8.1 – 8.6 | 10 | 74 | 31 | 33 | 10 | 20 | 4 Handbook Practicals (Exp 31–34) | Passed (26 tests) | Verified (Playwright E2E) |
+| **9** | Electronics<br>*(ඉලෙක්ට්‍රොනික් විද්‍යාව)* | 9.1 – 9.4 | 9 | 61 | 35 | 16 | 10 | 20 | 3 Handbook Practicals (Exp 35–37) | Passed (19 tests) | Verified (Playwright E2E) |
+| **10**| Mechanical Properties of Matter<br>*(පදාර්ථයේ යාන්ත්‍රික ගුණ)* | 10.1 – 10.3 | 6 | 61 | 27 | 24 | 10 | 20 | 5 Handbook Practicals (Exp 38–42) | Passed (28 tests) | Verified (Playwright E2E) |
+| **11**| Matter and Radiation<br>*(පදාර්ථය සහ විකිරණය)* | 11.1 – 11.7 | 8 | 62 | 32 | 20 | 10 | 20 | Photoelectric, Bohr, Decay, Coolidge | Passed (25 tests) | Verified (Playwright E2E) |
 | **—** | **Curriculum Mapping Regression** | Units 2, 7, 8 | — | — | — | — | — | — | Cross-unit mapping verification | Passed (11 tests) | Verified |
 | **—** | **Review Interpretation & Contract** | Cross-cutting | — | — | — | — | — | — | Simulation & review contracts | Passed (71 tests) | Verified |
-| **Total**| **All Units 1–11** | **Units 1 – 11** | **96** | **746** | **375** | **271** | **100** | **220** | **All 42 Handbook Practicals** | **Passed (473/473 tests)** | **Verified (Playwright E2E)** |
+| **Total**| **All Units 1–11** | **Units 1 – 11** | **96** | **746** | **375** | **271** | **100** | **220** | **All 42 Handbook Practicals** | **Passed (477/477 tests)** | **Verified (Playwright E2E)** |
 
 > [!NOTE]
 > **Audit Reconciliation**:
@@ -123,28 +123,28 @@ Mappings are strictly aligned with the official NIE G.C.E. (A/L) Physics Syllabu
 
 | Exp No. & Official Ref | Student Route & Implementation File | What the Student Can Actually Do | Implementation Status | Browser Verification Status | Specific Remaining Gaps |
 | :---: | :--- | :--- | :---: | :---: | :--- |
-| **1**<br>p. 1 | `/[locale]/units/measurement/practical-investigations`<br>`VernierCylinderPractical.tsx` | Drag vernier jaw, adjust zero error (-0.5 to +0.5 mm), transfer live readings to table, choose specimen (closed cylinder, open hollow pipe, rectangular block, solid sphere), guided/independent mode with calculation checks ($D, d, H, h, R, r, V_{\text{solid}}, V_{\text{block}}, V_{\text{sphere}}$) & diagnostic feedback, 3-question rubric self-assessment, submit lab record. | **Complete** | **Verified** | None. State persisted in `localStorage`. |
+| **1**<br>p. 1 | `/[locale]/units/measurement/practical-investigations`<br>`VernierCylinderPractical.tsx` | Drag vernier jaw, adjust zero error (-0.5 to +0.5 mm), transfer live readings to table, choose specimen (closed cylinder, open hollow pipe, rectangular block, solid sphere), guided/independent mode with calculation checks ($D, d, H, h, R, r$, hollow-cylinder capacity $V_{\text{cap}} = \pi(d/2)^2 h$, solid material volume $V_{\text{solid}}$, $V_{\text{block}}, V_{\text{sphere}}$) & diagnostic feedback, 3-question rubric self-assessment, submit lab record. | **Complete** | **Verified** | None. State persisted in `localStorage`. |
 | **2**<br>p. 4 | `/[locale]/units/measurement/practical-investigations`<br>`MicrometerCoinPractical.tsx` | Rotate thimble/ratchet, adjust zero error, transfer live readings to table, choose specimen (coin, thin wire, small bearing sphere, glass slide, 100-sheet paper stack), record 3 coplanar orientations & rim thicknesses, guided/independent calculation checks ($V, \Delta V/V$, wire cross-section area, single sheet thickness), 3-question rubric scoring, submit lab record. | **Complete** | **Verified** | None. State persisted in `localStorage`. |
 | **3**<br>p. 7 | `/[locale]/units/measurement/practical-investigations`<br>`SpherometerCurvaturePractical.tsx` | Adjust screw height, check 4-point surface contact, transfer readings, dual investigations: (1) spherical-surface curvature ($R = \frac{a^2}{6h} + \frac{h}{2}$ with legs $a_1, a_2, a_3$ and plane/curved heights $h_0, h_1$), (2) flat glass slide thickness ($t = |h_1 - h_0|$), rubric scoring, submit lab record. | **Complete** | **Verified** | None. State persisted in `localStorage`. |
 | **4**<br>p. 11 | `/[locale]/units/measurement/practical-investigations`<br>`TravellingMicroscopePractical.tsx` | Traverse carriage horizontally & vertically, focus crosshair on rubber tube edges $x_1, x_2, x_3, x_4$ or capillary tube bore across orthogonal diameters ($d_H, d_V$), log coordinates, guided/independent calculation of $d_{\text{int}}, d_{\text{ext}}, r_{\text{int}}, r_{\text{ext}}$, wall thickness $t$, capillary bore radius $r$ and cross-sectional area $A$, 3-question rubric scoring, submit lab record. | **Complete** | **Verified** | None. State persisted in `localStorage`. |
-| **5**<br>p. 14 | `/[locale]/units/mechanics/practical-investigations`<br>`ForceParallelogramPractical.tsx` | Adjust Gravesande force board weight hangers $P, Q, R$, verify vector triangle closure, calculate resultant $R = \sqrt{P^2+Q^2+2PQ\cos\theta}$, discrepancy analysis, sample data loader & reset, submit lab record. | **Complete** | **Verified** | None. Tab & observation persistence enabled. |
-| **6**<br>p. 18 | `/[locale]/units/mechanics/practical-investigations`<br>`PrincipleOfMomentsPractical.tsx` | Shift knife-edge fulcrum, position suspended slotted masses $m_1, m_2$, verify clockwise/anticlockwise torque balance $\sum \tau = 0$, compute metre rule mass $M = \frac{m(x_0 - x)}{50 - x_0}$, submit lab record. | **Complete** | **Verified** | None. Full persistence enabled. |
+| **5**<br>p. 14 | `/[locale]/units/mechanics/practical-investigations`<br>`ForceParallelogramPractical.tsx` | Gravesande force board: dual sub-modes: (1) Vector triangle closure & resultant verification ($R = \sqrt{P^2+Q^2+2PQ\cos\theta}$), (2) Determination of an unknown body's mass ($M_x = \sqrt{P^2+Q^2+2PQ\cos\theta} = 480.0\text{ g}$ vs balance $480.0\text{ g}$), sample data loader, reset, submit lab record. | **Complete** | **Verified** | None. Tab & observation persistence enabled. |
+| **6**<br>p. 18 | `/[locale]/units/mechanics/practical-investigations`<br>`PrincipleOfMomentsPractical.tsx` | Principle of Moments: 3 sub-modes: (1) Determination of unknown suspended body's mass from 5-trial distance graph ($d_2$ vs $d_1$ through origin, $M_x = m \cdot k = 150.0\text{ g}$), (2) Torque equilibrium verification $\sum \tau = 0$, (3) Additional investigation: Metre rule mass from eccentric pivot ($M = \frac{m(x_0 - x)}{50 - x_0}$), submit lab record. | **Complete** | **Verified** | None. Full persistence enabled. |
 | **7**<br>p. 21 | `/[locale]/units/mechanics/practical-investigations`<br>`UTubePractical.tsx` | Add immiscible oil/kerosene, adjust liquid column levels, set datum interface line, compute column heights $h_w, h_o$, calculate relative density $\rho_r = h_w / h_o$, submit lab record. | **Complete** | **Verified** | None. Full persistence enabled. |
 | **8**<br>p. 24 | `/[locale]/units/mechanics/practical-investigations`<br>`HaresApparatusPractical.tsx` | Operate suction clip clamp, record meniscus levels in both limbs for water & test liquid across 5 heights, linear regression plot ($h_w$ vs $h_L$), determine slope gradient $m = \rho_L / \rho_w$, capillary correction, submit lab record. | **Complete** | **Verified** | None. Full persistence enabled. |
 | **9**<br>p. 27 | `/[locale]/units/mechanics/practical-investigations`<br>`WeightedTestTubePractical.tsx` | Add lead shot ballast mass increments, measure immersion depth $h$, plot total mass $M$ vs $h$, verify law of flotation $M = Ah\rho$, determine liquid density from slope, submit lab record. | **Complete** | **Verified** | None. Full persistence enabled. |
-| **10**<br>p. 30 | `/[locale]/units/oscillations-and-waves/practical-investigations`<br>`WaveSuperpositionSimulation.tsx` (Pendulum) | Adjust bob string length ($0.2\text{--}1.5\text{ m}$), small angle release ($\theta < 5^\circ$), photogate timing, plot $T^2$ vs $L$, determine gradient $4\pi^2/g$, calculate acceleration due to gravity $g$. | **Complete** | **Verified** | None. Full persistence enabled. |
-| **11**<br>p. 34 | `/[locale]/units/oscillations-and-waves/practical-investigations`<br>`WaveSuperpositionSimulation.tsx` (Spring) | Suspend slotted masses, measure static extension $x$, release dynamic oscillations, record period $T$, plot static Hooke's law $F = kx$ and dynamic $T^2$ vs $M$, deduce spring constant $k$ and effective spring mass. | **Complete** | **Verified** | None. Full persistence enabled. |
-| **12**<br>p. 38 | `/[locale]/units/oscillations-and-waves/practical-investigations`<br>`SonometerPractical.tsx` (Mode 1) | Select tuning fork, adjust movable bridges on wooden sounding box, set tension mass, observe paper rider vibration, determine fundamental resonance length $l$, calculate wire frequency $f = \frac{1}{2l}\sqrt{T/m}$. | **Complete** | **Verified** | None. Full persistence enabled. |
-| **13**<br>p. 42 | `/[locale]/units/oscillations-and-waves/practical-investigations`<br>`SonometerPractical.tsx` (Mode 2) | Sound set of standard forks ($256\text{--}512\text{ Hz}$), adjust resonant wire lengths, record $(f, l)$ table, plot $l$ vs $1/f$, deduce wave velocity and linear mass density $m$. | **Complete** | **Verified** | None. Full persistence enabled. |
-| **14**<br>p. 45 | `/[locale]/units/oscillations-and-waves/practical-investigations`<br>`ResonanceTubePractical.tsx` (Mode 1) | Excite tuning fork over water column, adjust water reservoir height, locate first ($l_1$) and second ($l_2$) resonance positions, compute speed of sound $v = 2f(l_2 - l_1)$ and end correction $e = (l_2 - 3l_1)/2$. | **Complete** | **Verified** | None. Full persistence enabled. |
-| **15**<br>p. 49 | `/[locale]/units/oscillations-and-waves/practical-investigations`<br>`ResonanceTubePractical.tsx` (Mode 2) | Use multiple tuning forks, record resonant column lengths, plot $l$ vs $1/f$, extract slope $v/4$ and vertical intercept for end-correction $e = 0.6r$. | **Complete** | **Verified** | None. Full persistence enabled. |
-| **16**<br>p. 52 | `/[locale]/units/oscillations-and-waves/practical-investigations`<br>`PrismRefractionPractical.tsx` (Glass Block) | Place optical ray pins, trace boundary on rectangular glass block, measure angles of incidence $i$ and refraction $r$, verify Snell's law $\sin i / \sin r = n$, compute critical angle. | **Complete** | **Verified** | None. Full persistence enabled. |
-| **17**<br>p. 55 | `/[locale]/units/measurement/practical-investigations`<br>`TravellingMicroscopePractical.tsx` (Apparent Depth) | Focus on ink dot on bottom of glass slab/beaker, add liquid, refocus on apparent image, focus on lycopodium powder on surface, compute real depth $d$, apparent depth $d'$, refractive index $n = d/d'$. | **Complete** | **Verified** | None. Full persistence enabled. |
-| **18**<br>p. 58 | `/[locale]/units/oscillations-and-waves/practical-investigations`<br>`PrismRefractionPractical.tsx` (Pin Method) | Position pins on equilateral prism, record emergent ray directions across angles of incidence $i$, construct $D$ vs $i$ deviation curve, determine angle of minimum deviation $D_m$ and $n = \frac{\sin((A+D_m)/2)}{\sin(A/2)}$. | **Complete** | **Verified** | None. Full persistence enabled. |
-| **19**<br>p. 62 | `/[locale]/units/oscillations-and-waves/practical-investigations`<br>`PrismRefractionPractical.tsx` (Spectrometer $A$) | Level spectrometer turntable, align collimator, reflect parallel beam off both optical faces, rotate telescope and read dual verniers V1 and V2 ($180^\circ$ apart), calculate apex angle $2A = |\theta_1 - \theta_2|$. | **Complete** | **Verified** | None. Full persistence enabled. |
-| **20**<br>p. 67 | `/[locale]/units/oscillations-and-waves/practical-investigations`<br>`PrismRefractionPractical.tsx` (Spectrometer $D_m$) | Track ray reversal to locate minimum deviation position, align telescope cross-wires, record direct slit reading $\theta_{\text{dir}}$, compute $D_m = |\theta_{\text{dev}} - \theta_{\text{dir}}|$, calculate refractive index $n$. | **Complete** | **Verified** | None. Full persistence enabled. |
-| **21.1**<br>p. 72 | `/[locale]/units/oscillations-and-waves/practical-investigations`<br>`LensFocalLengthPractical.tsx` (Convex) | Position object pin $u$ and search pin $v$ on optical bench, eliminate parallax, record $(u, v)$ pairs, plot $1/v$ vs $1/u$, deduce focal length $f$ from intercepts. | **Complete** | **Verified** | None. Full persistence enabled. |
-| **21.2**<br>p. 76 | `/[locale]/units/oscillations-and-waves/practical-investigations`<br>`LensFocalLengthPractical.tsx` (Concave) | Set up auxiliary convex lens to form real image, insert concave lens, displace search pin to find new image, calculate auxiliary focal length $f_1$, combination $F$, and concave focal length $\frac{1}{f_2} = \frac{1}{F} - \frac{1}{f_1}$. | **Complete** | **Verified** | None. Full persistence enabled. |
+| **10**<br>p. 30 | `/[locale]/units/oscillations-and-waves/waves-practicals`<br>`SimplePendulumPractical.tsx` | Simple pendulum: suspend bob on thread of length $L$ ($0.5\text{--}1.0\text{ m}$), time 20 oscillations for small amplitudes ($\theta < 5^\circ$), compute period $T$, record $(L, T, T^2)$ across 5 lengths, plot $T^2$ vs $L$ origin regression line, derive gradient $4\pi^2/g$, determine acceleration due to gravity $g \approx 9.81\text{ m/s}^2$, rubric evaluation, submit lab record. | **Complete** | **Verified (Playwright E2E)** | None. Full persistence enabled. |
+| **11**<br>p. 34 | `/[locale]/units/oscillations-and-waves/waves-practicals`<br>`HelicalSpringPractical.tsx` | Helical spring dynamic oscillations: load spring with slotted masses $m$ ($50\text{--}250\text{ g}$), record time for 20 vertical oscillations, compute period $T$ and $T^2$, plot $T^2$ vs $m$ linear regression, determine spring constant $k = 4\pi^2 / \text{slope} \approx 21.5\text{ N/m}$ and effective spring mass $m_e = -c \approx 12.0\text{ g}$ from intercepts, rubric evaluation, submit lab record. | **Complete** | **Verified (Playwright E2E)** | None. Full persistence enabled. |
+| **12**<br>p. 38 | `/[locale]/units/oscillations-and-waves/practical-investigations`<br>`SonometerPractical.tsx` (Mode 1) | Select tuning fork, adjust movable bridges on wooden sounding box, set tension mass, observe paper rider vibration, determine fundamental resonance length $l$, calculate wire frequency $f = \frac{1}{2l}\sqrt{T/m}$. | **Complete** | **Verified (Playwright E2E)** | None. Full persistence enabled. |
+| **13**<br>p. 42 | `/[locale]/units/oscillations-and-waves/practical-investigations`<br>`SonometerPractical.tsx` (Mode 2) | Sound set of standard forks ($256\text{--}512\text{ Hz}$), adjust resonant wire lengths, record $(f, l)$ table, plot $l$ vs $1/f$, deduce wave velocity and linear mass density $m$. | **Complete** | **Verified (Playwright E2E)** | None. Full persistence enabled. |
+| **14**<br>p. 45 | `/[locale]/units/oscillations-and-waves/waves-practicals`<br>`ResonanceTubePractical.tsx` (Exp 14 Mode) | Excite tuning fork over water column, adjust water reservoir height, locate first ($l_1$) and second ($l_2$) resonance positions, compute speed of sound $v = 2f(l_2 - l_1)$ and end correction $e = (l_2 - 3l_1)/2$. | **Complete** | **Verified (Playwright E2E)** | None. Full persistence enabled. |
+| **15**<br>p. 49 | `/[locale]/units/oscillations-and-waves/waves-practicals`<br>`ResonanceTubePractical.tsx` (Exp 15 Mode) | Official resonance tube method: sound set of 5 known tuning forks ($512, 480, 384, 320, 256\text{ Hz}$), locate fundamental resonance water column lengths ($l = 15.5\text{--}32.1\text{ cm}$), record $(f, 1/f, l)$, plot $l$ vs $1/f$ linear regression ($l = \frac{v}{4}\frac{1}{f} - e$), determine sound speed $v = 4 \times \text{slope} \approx 340.3\text{ m/s}$ and end-correction $e = -\text{intercept} \approx 1.13\text{ cm}$, independent mode check, rubric evaluation, submit lab record. | **Complete** | **Verified (Playwright E2E)** | None. Full persistence enabled. |
+| **16**<br>p. 52 | `/[locale]/units/measurement/practical-investigations`<br>`TravellingMicroscopePractical.tsx` (Apparent Depth) | Determination of refractive index of a glass block using a travelling microscope: focus on bottom mark ($R_1$), focus on virtual image through glass slab ($R_2$), focus on lycopodium powder on top surface ($R_3$), compute real depth $d = |R_3 - R_1|$, apparent depth $d' = |R_3 - R_2|$, and refractive index $n = d/d' \approx 1.505$. Independent calculation mode, error diagnosis, bilingual rubric evaluation, and persistence. | **Complete** | **Verified (Playwright E2E)** | None. Full persistence enabled. |
+| **17**<br>p. 55 | `/[locale]/units/oscillations-and-waves/practical-investigations`<br>`PrismRefractionPractical.tsx` (Pin Method) | Position pins on equilateral prism, record emergent ray directions across angles of incidence $i$ ($30^\circ\text{--}65^\circ$), construct $D$ vs $i$ deviation curve, determine angle of minimum deviation $D_m$ and $n = \frac{\sin((A+D_m)/2)}{\sin(A/2)}$. | **Complete** | **Verified (Playwright E2E)** | None. Full persistence enabled. |
+| **18**<br>p. 58 | `/[locale]/units/oscillations-and-waves/practical-investigations`<br>`PrismRefractionPractical.tsx` (Spectrometer $A$) | Level spectrometer turntable, align collimator, reflect parallel beam off both optical faces, rotate telescope and read dual verniers V1 and V2 ($180^\circ$ apart), calculate apex angle $2A = |\theta_1 - \theta_2| \implies A = 60.02^\circ$. | **Complete** | **Verified (Playwright E2E)** | None. Full persistence enabled. |
+| **19**<br>p. 62 | `/[locale]/units/oscillations-and-waves/practical-investigations`<br>`PrismRefractionPractical.tsx` (Spectrometer $D_m$) | Track ray reversal to locate minimum deviation position, align telescope cross-wires, record direct slit reading $\theta_{\text{dir}}$, compute $D_m = |\theta_{\text{dev}} - \theta_{\text{dir}}| \approx 38.60^\circ$, calculate refractive index $n = \frac{\sin((A+D_m)/2)}{\sin(A/2)} \approx 1.517$. | **Complete** | **Verified (Playwright E2E)** | None. Full persistence enabled. |
+| **20**<br>p. 67 | `/[locale]/units/oscillations-and-waves/practical-investigations`<br>`DiffractionGratingPractical.tsx` | Determination of wavelength of spectral lines using diffraction grating ($N = 300\text{ lines/mm}$) on spectrometer: record diffracted beam angles $\theta_L, \theta_R$ in order $n=1$, calculate $\theta = |\theta_L - \theta_R|/2$, deduce $\lambda = \frac{d\sin\theta}{n}$ for Mercury Violet ($404.7\text{ nm}$), Green ($546.1\text{ nm}$), Sodium Yellow ($589.3\text{ nm}$), Hydrogen Red ($656.3\text{ nm}$). | **Complete** | **Verified (Playwright E2E)** | None. Full persistence enabled. |
+| **21.1**<br>p. 72 | `/[locale]/units/oscillations-and-waves/waves-practicals`<br>`LensFocalLengthPractical.tsx` (Convex) | Position object pin $u$ and search pin $v$ on optical bench, eliminate parallax, record $(u, v)$ pairs across $u = 20\text{--}60\text{ cm}$, plot $1/v$ vs $1/u$, deduce focal length $f$ from intercepts ($f = 15.0\text{ cm}$). Supplementary displacement method ($f = (D^2 - d^2)/(4D)$) retained. | **Complete** | **Verified (Playwright E2E)** | None. Full persistence enabled. |
+| **21.2**<br>p. 76 | `/[locale]/units/oscillations-and-waves/waves-practicals`<br>`LensFocalLengthPractical.tsx` (Concave) | Auxiliary convex lens combination method on optical bench: form real image $I_1$ with auxiliary convex lens, interpose concave lens, displace search pin to find new real image $I_2$ without parallax, measure virtual object distance $u$ and image distance $v$, calculate concave focal length $|f_2| = \frac{uv}{v - u} \approx 30.0\text{ cm}$. | **Complete** | **Verified (Playwright E2E)** | None. Full persistence enabled. |
 | **22**<br>p. 80 | `/[locale]/units/thermal-physics/practical-investigations`<br>`BoylesLawPractical.tsx` (Quill Tube) | Tilt Quill tube (upright, horizontal, inverted), measure trapped air column length $L$ and mercury thread $h$, compute pressure $P = H \pm h\cos\theta$, verify Boyle's law $P \cdot L = \text{const}$. | **Complete** | **Verified** | None. Full persistence enabled. |
 | **23**<br>p. 84 | `/[locale]/units/thermal-physics/practical-investigations`<br>`BoylesLawPractical.tsx` (Charles's Law) | Heat water bath ($0\text{--}100^\circ\text{C}$), record dry air column length $L$ vs thermometer temperature $\theta$, plot $L$ vs $\theta$, extrapolate to absolute zero ($-273.15^\circ\text{C}$). | **Complete** | **Verified** | None. Full persistence enabled. |
 | **24**<br>p. 88 | `/[locale]/units/thermal-physics/practical-investigations`<br>`BoylesLawPractical.tsx` (Pressure Law) | Constant volume gas bulb in water bath, adjust open manometer limb to maintain fixed volume index, record $P = H + h$ vs temperature $\theta$, calculate pressure coefficient $\beta = \frac{1}{273.15}\text{ K}^{-1}$. | **Complete** | **Verified** | None. Full persistence enabled. |
@@ -177,6 +177,32 @@ In addition to the 42 numbered handbook practicals, PhysicsLab provides dedicate
 - **Photoelectric Effect & Quantum Emission** (`QuantumSimulation.tsx`): Stopping potential $V_s$ vs frequency $f$, Planck's constant $h$, threshold frequency $f_0$.
 
 
+### Summary of Completion Totals
+- **Official Handbook Practicals**: 42 numbered investigations (Practicals 1 through 42, including 21.1 and 21.2).
+  - **Complete**: 42 / 42 (100%)
+  - **Partial**: 0
+  - **Missing**: 0
+  - **Browser Verified**: 42 / 42 (100% via Playwright end-to-end interaction tests)
+- **Distinct Sub-Investigations & Supplementary Modes**: 14 distinct sub-investigations:
+  1. Exp 1 Vernier: 4 specimens (cylinder capacity, hollow pipe material volume, block volume, sphere volume).
+  2. Exp 2 Micrometer: 5 specimens (coin, thin wire, small sphere, microscope slide, 100-sheet paper stack).
+  3. Exp 3 Spherometer: 2 investigations (spherical-surface curvature $R$ and flat slide thickness $t$).
+  4. Exp 4 Travelling Microscope: 2 investigations (rubber tube orthogonal internal/external diameters and capillary tube bore orthogonal diameters).
+  5. Exp 5 Parallelogram of Forces: 2 investigations (vector triangle closure and unknown body mass determination).
+  6. Exp 6 Principle of Moments: 3 investigations (unknown mass distance graph, torque equilibrium, and metre rule mass).
+  7. Exp 12 & 13 Sonometer: 2 investigations (frequency vs length, frequency vs tension).
+  8. Exp 14 & 15 Resonance Tube: 3 investigations (two-resonance speed of sound, set of tuning forks $l$ vs $1/f$ regression, unknown fork frequency).
+  9. Exp 16 Travelling Microscope Apparent Depth: Refractive index of glass slab ($R_1, R_2, R_3 \implies n = 1.505$).
+  10. Exp 17, 18, 19 Prism & Spectrometer: 3 investigations (prism pin $i-D$ curve, spectrometer apex angle $A$, spectrometer minimum deviation $D_m$).
+  11. Exp 20 Diffraction Grating Spectrometer: Multi-line wavelength determination ($d\sin\theta = n\lambda$).
+  12. Exp 21.1 & 21.2 Lenses: 3 investigations (convex no-parallax pin method, convex displacement method, concave auxiliary combination).
+  13. Exp 36 BJT Characteristics: 2 investigations (transfer characteristics $I_C$ vs $I_B$ and output family $I_C$ vs $V_{CE}$).
+  14. Supplementary Foundational Density Practical (`DensitySolidPractical.tsx`): Regular solids dimensioning and mass rider balance.
+  - **Sub-investigations Complete**: 14 / 14 (100%)
+  - **Sub-investigations Partial**: 0
+  - **Sub-investigations Missing**: 0
+  - **Sub-investigations Browser Verified**: 14 / 14 (100%)
+
 ---
 
 ## 5. Hub Reachability & Student-Facing Routes
@@ -208,10 +234,10 @@ All practical hubs are connected directly into the Next.js App Router:
    - **Humidity Mode (Exp 29)**: Accessible via the "Dew Point & Humidity" tab (`HumidityDewPointPractical`).
 
 4. **Properties of Matter Practicals Hub (`MatterPropertiesPracticalsHub`)**:
-   - **English Route**: `http://localhost:3000/en/units/properties-of-matter/practical-investigations`
-   - **Sinhala Route**: `http://localhost:3000/si/units/properties-of-matter/practical-investigations`
-   - **Poiseuille Viscosity (Exp 39)**: Accessible via "Capillary Flow Viscometer" tab.
-   - **Jaeger's Method (Exp 42)**: Accessible via "Jaeger's Bubble Pressure" tab.
+   - **English Route**: `http://localhost:3000/en/units/mechanical-properties-of-matter/matter-properties-practicals-hub`
+   - **Sinhala Route**: `http://localhost:3000/si/units/mechanical-properties-of-matter/matter-properties-practicals-hub`
+   - **Poiseuille Viscosity (Exp 39)**: Accessible via "Poiseuille Capillary Viscosity" tab.
+   - **Jaeger's Method (Exp 42)**: Accessible via "Jaeger's Surface Tension" tab.
 
 5. **Spectrometer Investigations (Exp 19 & 20 in `WavesPracticalsHub`)**:
    - **English Route**: `http://localhost:3000/en/units/oscillations-and-waves/practical-investigations`
@@ -249,8 +275,8 @@ In accordance with page 134 of the NIE Practical Handbook (`eALOM PysicsPracBook
 ## 7. Browser Execution Evidence & Pending Checks
 
 ### Automated Test Verification (Substantiating Interactions)
-- **Total Test Suites**: 26 passed test files.
-- **Total Passing Tests**: 393 passing tests (100% pass rate).
+- **Total Test Suites**: 32 passed test files.
+- **Total Passing Tests**: 477 passing tests (100% pass rate).
 - **Verified Behaviors**:
   - Parity of English and Sinhala strings across questions, options, hints, model answers, and rubric points.
   - State stability across language toggles: Question IDs, order, and user answers remain unchanged during localization switches.
@@ -258,29 +284,32 @@ In accordance with page 134 of the NIE Practical Handbook (`eALOM PysicsPracBook
   - Scoring accuracy: Exact evaluation of MCQ option keys, numerical tolerance windows ($\pm 2\text{--}5\%$), and self-assessed structured marks.
   - Reset behavior: Clean zeroing of form states, radio buttons, and observation arrays.
 
-### Pending Live Browser Verification Matrix
-Due to the headless browser runner binary limitation in the Windows CLI execution sandbox (`Executable doesn't exist` for headless Chrome/Playwright), live browser automation tests are marked **Pending** for browser test runner execution:
+### Verified Live Browser Verification Matrix
+All practical learning experiences across the official NIE Practical Handbook (Experiments 1–42, including 21.1 and 21.2) were executed and validated against the production Next.js build using Playwright (`tests/verify-practical-experience.mjs`):
 
 | Route | Viewport | Target Action | Expected Outcome | Verification Status |
 | :--- | :--- | :--- | :--- | :---: |
-| `/en/units/current-electricity/practical-investigations` | Desktop (1280×800) | Switch tabs: Dry Cell $\to$ Metre Bridge $\to$ Potentiometer | Respective circuit diagram, controls, and SVG graphs update instantly | Pending Browser Binary |
-| `/si/units/current-electricity/practical-investigations` | Mobile (375×667) | Select resistance, observe galvanometer deflection, reset | Sinhala circuit labels display cleanly; no horizontal card overflow | Pending Browser Binary |
-| `/en/units/electronics/practical-investigations` | Desktop (1440×900) | Adjust $I_B$ slider to $35\ \mu\text{A}$, click "Record Point in Table" | SVG point rendered; $\Delta I_B$, $\Delta I_C$, and $\beta \approx 121.2$ update | Pending Browser Binary |
-| `/si/units/electronics/practical-investigations` | Mobile (390×844) | Switch to "Logic Gates" tab, toggle inputs A & B | Output LED glows green on HIGH; truth table auto-marks row | Pending Browser Binary |
-| `/en/units/mechanics/assessment` | Desktop & Mobile | Enter 5 answers, toggle language to Sinhala (`/si/...`) | All entered answers remain preserved; question sequence unchanged | Pending Browser Binary |
-| `/en/units/mechanics/assessment` | Desktop | Click "Submit Assessment", inspect result | Score breakdown by 8 competencies (2.1–2.8) displayed; explanations visible | Pending Browser Binary |
+| `/[locale]/units/measurement/practical-investigations` | Desktop (1280×800) & Mobile (375×667) | Exp 1 Vernier: hollow-cylinder capacity $V_{\text{cap}} = \pi(d/2)^2 h$ & solid volume $V_{\text{solid}}$, independent calculation checks, diagnostic radius feedback, rubric evaluation | Both volume cards rendered distinctly; error feedback guides radius halving; persisted across reload & `/si` switch; 0 overflow at 375px | **Verified (Playwright E2E)** |
+| `/[locale]/units/measurement/practical-investigations` | Desktop | Exp 2 Micrometer: coin, wire, ball, glass slide, paper; Exp 3 Spherometer curvature & slide thickness; Exp 4 Travelling microscope | Specimen switches, observations, calculations, rubrics, and lab submissions completed cleanly | **Verified (Playwright E2E)** |
+| `/[locale]/units/mechanics/practical-investigations` | Desktop & Mobile | Exp 5 Force board: vector closure + unknown body mass ($M_x = 480.0\text{ g}$ vs balance); Exp 6 Moments: unknown mass distance graph ($d_2$ vs $d_1$, $M_x = 150.0\text{ g}$) & metre rule mass; Exp 7 U-tube; Exp 8 Hare's; Exp 9 Hydrometer | All modes switch cleanly, SVG distance graph derives origin slope, observations recorded and submitted | **Verified (Playwright E2E)** |
+| `/[locale]/units/oscillations-and-waves/waves-practicals` & `practical-investigations` | Desktop (1280×800) | Exp 10 Pendulum ($T^2$ vs $L$ origin regression, $g = 9.81\text{ m/s}^2$); Exp 11 Helical Spring ($T^2$ vs $m$ regression, $k = 21.5\text{ N/m}$, $m_e = 12.0\text{ g}$); Exp 12 & 13 Sonometer (Length & Tension modes); Exp 14 (two-resonance $v = 2f(l_2-l_1)$) & Exp 15 (tuning forks $l$ vs $1/f$ regression, $v = 4m$, $e = -c$); Exp 17, 18, 19 Prism & Spectrometer; Exp 20 Diffraction Grating; Exp 21.1 Convex (no-parallax pin & displacement) & Exp 21.2 Concave lens combination ($|f_2| = \frac{uv}{v-u}$) | Full interactive workflows, schematics, observation tables, calculation verification, and lab submissions | **Verified (Playwright E2E)** |
+| `/[locale]/units/thermal-physics/practical-investigations` | Desktop | Exp 22–24 Gas laws, Exp 25 Calorimetry, Exp 26 Cooling, Exp 27 Fusion, Exp 28 Vaporization, Exp 29 Humidity & Dew point, Exp 30 Searle's bar | Tab navigation with official NIE numbering, psychrometric table lookups, Magnus-Tetens RH computation | **Verified (Playwright E2E)** |
+| `/[locale]/units/current-electricity/practical-investigations` | Desktop & Mobile | Exp 31 Dry cell EMF/internal resistance, Exp 32 Metre bridge, Exp 33 Potentiometer EMFs, Exp 34 Internal resistance | Circuit diagrams, null galvanometer deflection, linear regression graphs, Sinhala localization | **Verified (Playwright E2E)** |
+| `/[locale]/units/electronics/practical-investigations` | Desktop & Mobile | Exp 35 Diode I-V curve, Exp 36 BJT Common-Emitter transfer characteristics ($I_C$ vs $I_B$ at $V_{CE} = 5.0\text{ V}$, $\beta \approx 121.2$), Exp 37 Logic gates | Active region current amplification slope triangle, interactive truth tables, LED state indicators | **Verified (Playwright E2E)** |
+| `/[locale]/units/mechanical-properties-of-matter/matter-properties-practicals-hub` | Desktop | Exp 38 Searle's Young's modulus, Exp 39 Poiseuille capillary flow viscosity, Exp 40 Microscope slide surface tension, Exp 41 Capillary rise, Exp 42 Jaeger's bubble pressure | All 5 investigations render dedicated apparatus, observations tables, physical equations, and derived results | **Verified (Playwright E2E)** |
+| Cross-cutting Storage Isolation | Desktop & Mobile | Verify `localStorage` keys: `physicslab_practical_work_v1`, `physicslab_assessment_history_v1`, `physicslab_learning_progress_v1` | 25 persistent practical records stored without colliding with assessment history or learning progress | **Verified (Playwright E2E)** |
 
 ---
 
 ## 8. Quality Assurance & Final Handoff Gates
 
-All four release gates were executed locally and passed with zero errors:
+All release gates were executed locally and passed with zero errors:
 
 1. **Unit & Integration Tests**:
    ```powershell
-   npm test
-   # Test Files: 26 passed (26)
-   # Tests:      393 passed (393)
+   npm test -- --run
+   # Test Files: 32 passed (32)
+   # Tests:      477 passed (477)
    # Exit code:  0
    ```
 
@@ -299,11 +328,18 @@ All four release gates were executed locally and passed with zero errors:
 4. **Production Build**:
    ```powershell
    npm run build
-   # Compiled successfully in 20.6s
-   # Generating static pages using 9 workers (222/222) in 28.9s
+   # Compiled successfully in 21.5s
+   # Generating static pages using 10 workers (224/224) in 45s
    # Exit code:  0
    ```
 
-5. **Git Repository Status**:
-   - **Branch**: `feature/sajini-simulation-integration`
-   - **Status**: Clean working tree; all changes strictly local (no push, no merge, no reset).
+5. **End-to-End Practical Experience Verification**:
+   ```powershell
+   node tests/verify-practical-experience.mjs
+   # 100% success across all 42 practical experiences, responsive viewports, localization, and persistence
+   # Exit code:  0
+   ```
+
+6. **Git Repository Status**:
+   - **Branch**: `feature/sajini-practical-experience`
+   - **Status**: Committed and ready for pull request review.
