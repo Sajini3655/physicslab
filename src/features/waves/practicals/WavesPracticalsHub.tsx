@@ -98,18 +98,18 @@ export const WavesPracticalsHub: React.FC<WavesPracticalsHubProps> = ({
         </div>
 
         {/* Tab Navigation Pill Bar */}
-        <div className="flex flex-wrap gap-2 pt-2 border-t border-[#DFE8EF]">
+        <div className="flex flex-wrap gap-2 pt-2 border-t border-[#DFE8EF] overflow-x-auto">
           <Button
             size="sm"
             variant={activeTab === 'pendulum' ? 'default' : 'outline'}
             onClick={() => setActiveTab('pendulum')}
-            className={
+            className={`whitespace-normal text-left h-auto min-h-8 py-1.5 ${
               activeTab === 'pendulum'
                 ? 'bg-[#0F766E] hover:bg-[#0D655E] text-white shadow-sm'
                 : 'text-[#475569] border-[#DFE8EF] hover:bg-slate-50'
-            }
+            }`}
           >
-            <Activity className="w-4 h-4 mr-1.5" />
+            <Activity className="w-4 h-4 mr-1.5 shrink-0" />
             {t.pendulumTab}
           </Button>
 
@@ -117,13 +117,13 @@ export const WavesPracticalsHub: React.FC<WavesPracticalsHubProps> = ({
             size="sm"
             variant={activeTab === 'spring' ? 'default' : 'outline'}
             onClick={() => setActiveTab('spring')}
-            className={
+            className={`whitespace-normal text-left h-auto min-h-8 py-1.5 ${
               activeTab === 'spring'
                 ? 'bg-[#0F766E] hover:bg-[#0D655E] text-white shadow-sm'
                 : 'text-[#475569] border-[#DFE8EF] hover:bg-slate-50'
-            }
+            }`}
           >
-            <ArrowUpDown className="w-4 h-4 mr-1.5" />
+            <ArrowUpDown className="w-4 h-4 mr-1.5 shrink-0" />
             {t.springTab}
           </Button>
 
@@ -131,13 +131,13 @@ export const WavesPracticalsHub: React.FC<WavesPracticalsHubProps> = ({
             size="sm"
             variant={activeTab === 'sonometer' ? 'default' : 'outline'}
             onClick={() => setActiveTab('sonometer')}
-            className={
+            className={`whitespace-normal text-left h-auto min-h-8 py-1.5 ${
               activeTab === 'sonometer'
                 ? 'bg-[#0F766E] hover:bg-[#0D655E] text-white shadow-sm'
                 : 'text-[#475569] border-[#DFE8EF] hover:bg-slate-50'
-            }
+            }`}
           >
-            <Music className="w-4 h-4 mr-1.5" />
+            <Music className="w-4 h-4 mr-1.5 shrink-0" />
             {t.sonometerTab}
           </Button>
 
@@ -145,13 +145,13 @@ export const WavesPracticalsHub: React.FC<WavesPracticalsHubProps> = ({
             size="sm"
             variant={activeTab === 'resonance' ? 'default' : 'outline'}
             onClick={() => setActiveTab('resonance')}
-            className={
+            className={`whitespace-normal text-left h-auto min-h-8 py-1.5 ${
               activeTab === 'resonance'
                 ? 'bg-[#0F766E] hover:bg-[#0D655E] text-white shadow-sm'
                 : 'text-[#475569] border-[#DFE8EF] hover:bg-slate-50'
-            }
+            }`}
           >
-            <Waves className="w-4 h-4 mr-1.5" />
+            <Waves className="w-4 h-4 mr-1.5 shrink-0" />
             {t.resonanceTab}
           </Button>
 
@@ -159,13 +159,13 @@ export const WavesPracticalsHub: React.FC<WavesPracticalsHubProps> = ({
             size="sm"
             variant={activeTab === 'prism_critical' ? 'default' : 'outline'}
             onClick={() => setActiveTab('prism_critical')}
-            className={
+            className={`whitespace-normal text-left h-auto min-h-8 py-1.5 ${
               activeTab === 'prism_critical'
                 ? 'bg-[#0F766E] hover:bg-[#0D655E] text-white shadow-sm'
                 : 'text-[#475569] border-[#DFE8EF] hover:bg-slate-50'
-            }
+            }`}
           >
-            <Eye className="w-4 h-4 mr-1.5" />
+            <Eye className="w-4 h-4 mr-1.5 shrink-0" />
             {t.prismCriticalTab}
           </Button>
 
@@ -173,13 +173,13 @@ export const WavesPracticalsHub: React.FC<WavesPracticalsHubProps> = ({
             size="sm"
             variant={activeTab === 'prism' ? 'default' : 'outline'}
             onClick={() => setActiveTab('prism')}
-            className={
+            className={`whitespace-normal text-left h-auto min-h-8 py-1.5 ${
               activeTab === 'prism'
                 ? 'bg-[#0F766E] hover:bg-[#0D655E] text-white shadow-sm'
                 : 'text-[#475569] border-[#DFE8EF] hover:bg-slate-50'
-            }
+            }`}
           >
-            <Scan className="w-4 h-4 mr-1.5" />
+            <Scan className="w-4 h-4 mr-1.5 shrink-0" />
             {t.prismTab}
           </Button>
 
@@ -187,13 +187,13 @@ export const WavesPracticalsHub: React.FC<WavesPracticalsHubProps> = ({
             size="sm"
             variant={activeTab === 'lens' ? 'default' : 'outline'}
             onClick={() => setActiveTab('lens')}
-            className={
+            className={`whitespace-normal text-left h-auto min-h-8 py-1.5 ${
               activeTab === 'lens'
                 ? 'bg-[#0F766E] hover:bg-[#0D655E] text-white shadow-sm'
                 : 'text-[#475569] border-[#DFE8EF] hover:bg-slate-50'
-            }
+            }`}
           >
-            <Scan className="w-4 h-4 mr-1.5" />
+            <Scan className="w-4 h-4 mr-1.5 shrink-0" />
             {t.lensTab}
           </Button>
 
@@ -201,13 +201,13 @@ export const WavesPracticalsHub: React.FC<WavesPracticalsHubProps> = ({
             size="sm"
             variant={activeTab === 'grating' ? 'default' : 'outline'}
             onClick={() => setActiveTab('grating')}
-            className={
+            className={`whitespace-normal text-left h-auto min-h-8 py-1.5 ${
               activeTab === 'grating'
                 ? 'bg-[#0F766E] hover:bg-[#0D655E] text-white shadow-sm'
                 : 'text-[#475569] border-[#DFE8EF] hover:bg-slate-50'
-            }
+            }`}
           >
-            <Sparkles className="w-4 h-4 mr-1.5" />
+            <Sparkles className="w-4 h-4 mr-1.5 shrink-0" />
             {t.gratingTab}
           </Button>
         </div>
