@@ -76,7 +76,7 @@ export const DensitySolidPractical: React.FC<DensitySolidPracticalProps> = ({
 
   const t = {
     en: {
-      title: 'Practical 5: Determination of the Density of a Regular Solid',
+      title: 'Additional Syllabus Investigation: Determination of the Density of a Regular Solid',
       aim: 'Aim: To select suitable measuring instruments, determine the mass and volume of a regular solid, and calculate its density with unit conversions and error propagation.',
       apparatus: 'Apparatus: Triple beam / electronic balance (LC 0.01 g), Vernier calipers (LC 0.01 cm), Micrometer screw gauge (LC 0.001 cm), Regular solids (Brass block, Steel cylinder, Glass sphere).',
       theoryTitle: 'Instrument Selection & Error Theory',
@@ -123,7 +123,7 @@ export const DensitySolidPractical: React.FC<DensitySolidPracticalProps> = ({
       printSheet: 'Print Laboratory Record',
     },
     si: {
-      title: 'ප්‍රායෝගික පරීක්ෂණය 5: ක්‍රමවත් ඝන ද්‍රව්‍යයක ඝනත්වය නිර්ණය කිරීම',
+      title: 'අතිරේක විෂය නිර්දේශ පරීක්ෂණය: ක්‍රමවත් ඝන ද්‍රව්‍යයක ඝනත්වය නිර්ණය කිරීම',
       aim: 'අරමුණ: සුදුසු මිනුම් උපකරණ තෝරාගෙන, ක්‍රමවත් ඝන වස්තුවක ස්කන්ධය සහ පරිමාව මැන, ඒකක පරිවර්තනය සහ දෝෂ ප්‍රචාරණය සහිතව ඝනත්වය ගණනය කිරීම.',
       apparatus: 'උපකරණ: විද්‍යුත් හෝ තුලා තුලාව (කුඩාම මිනුම 0.01 g), වර්නියර් කැලිපරය (කුඩාම මිනුම 0.01 cm), මයික්‍රොමීටර් ඉස්කුරුප්පු ආමානය (කුඩාම මිනුම 0.001 cm), ක්‍රමවත් ඝන වස්තු.',
       theoryTitle: 'උපකරණ තේරීම සහ දෝෂ න්‍යාය',

@@ -37,21 +37,21 @@ export const MeasurementPracticalsHub: React.FC<MeasurementPracticalsHubProps> =
   const t = {
     en: {
       hubTitle: 'A/L Physics Laboratory: Unit 1 Practicals Hub',
-      hubSubtitle: 'Complete hands-on virtual laboratory practicals for all 5 official NIE Grade 12 syllabus investigations.',
+      hubSubtitle: 'Complete hands-on virtual laboratory practicals for official NIE Grade 12 investigations (Handbook Exp 1–4 and Additional Solid Density).',
       vernierTab: '1. Vernier Calipers (Cylinder)',
       micrometerTab: '2. Micrometer Gauge (Coin)',
       spherometerTab: '3. Spherometer (Curvature)',
       microscopeTab: '4. Travelling Microscope (Tube)',
-      densityTab: '5. Solid Density & Balance',
+      densityTab: 'Additional: Regular Solid Density & Balance',
     },
     si: {
       hubTitle: 'උසස් පෙළ භෞතික විද්‍යා රසායනාගාරය: ඒකක 1 ප්‍රායෝගික පරීක්ෂණ',
-      hubSubtitle: 'ජාතික අධ්‍යාපන ආයතන (NIE) 12 ශ්‍රේණියේ නිල විෂය නිර්දේශයේ ප්‍රායෝගික පරීක්ෂණ 5 සඳහා අන්තර්ක්‍රියාකාරී පරිසරය.',
+      hubSubtitle: 'ජාතික අධ්‍යාපන ආයතන (NIE) 12 ශ්‍රේණියේ ප්‍රායෝගික පරීක්ෂණ (අත්පොත 1–4 සහ අතිරේක ඝනත්ව පරීක්ෂණය) සඳහා අන්තර්ක්‍රියාකාරී පරිසරය.',
       vernierTab: '1. වර්නියර් කැලිපරය (සිලින්ඩරය)',
       micrometerTab: '2. මයික්‍රොමීටරය (කාසිය)',
       spherometerTab: '3. ගෝලමානය (වක්‍රතාව)',
       microscopeTab: '4. චල අන්වීක්ෂය (රබර් නලය)',
-      densityTab: '5. ඝනත්ව නිර්ණය සහ තුලාව',
+      densityTab: 'අතිරේක: ඝන වස්තුවක ඝනත්වය සහ තුලාව',
     },
   }[locale];
 

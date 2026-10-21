@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Locale } from '@/shared/curriculum';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Printer, RotateCcw, Database, Scale, TrendingUp, CheckCircle2, AlertCircle } from 'lucide-react';
 import { calculateHaresApparatusDensity } from '../physics/calculations';
+import { usePracticalWork } from '@/shared/practicals';
 
 interface HaresApparatusPracticalProps {
   locale?: Locale;
@@ -20,20 +21,43 @@ interface HareReading {
 export const HaresApparatusPractical: React.FC<HaresApparatusPracticalProps> = ({
   locale = 'en',
 }) => {
-  const [readings, setReadings] = useState<HareReading[]>([
+  const {
+    observations,
+    updateObservations,
+    loadSampleObservations,
+    reset,
+    isCompleted,
+    setCompleted,
+  } = usePracticalWork({
+    experimentId: 'exp-8-hares',
+    defaultObservations: {
+      readings: [
+        { id: 1, hWater: '12.0', hLiquid: '15.0' },
+        { id: 2, hWater: '16.0', hLiquid: '20.0' },
+        { id: 3, hWater: '20.0', hLiquid: '25.0' },
+        { id: 4, hWater: '24.0', hLiquid: '30.0' },
+        { id: 5, hWater: '28.0', hLiquid: '35.0' },
+        { id: 6, hWater: '32.0', hLiquid: '40.0' },
+      ],
+      referenceDensity: '800',
+    },
+  });
+
+  const readings = (observations.readings as HareReading[]) || [
     { id: 1, hWater: '12.0', hLiquid: '15.0' },
     { id: 2, hWater: '16.0', hLiquid: '20.0' },
     { id: 3, hWater: '20.0', hLiquid: '25.0' },
     { id: 4, hWater: '24.0', hLiquid: '30.0' },
     { id: 5, hWater: '28.0', hLiquid: '35.0' },
     { id: 6, hWater: '32.0', hLiquid: '40.0' },
-  ]);
+  ];
 
-  const [referenceDensity, setReferenceDensity] = useState<string>('800'); // kg/m^3 (e.g. alcohol / kerosene)
+  const referenceDensity = observations.referenceDensity || '800';
+  const setReferenceDensity = (val: string) => updateObservations({ referenceDensity: val });
 
   const t = {
     en: {
-      title: 'Practical 2.4: Determination of Relative Density of a Liquid Using Hare’s Apparatus',
+      title: 'Practical 8: Determination of Relative Density of a Liquid Using Hare’s Apparatus',
       aim: 'Aim: To determine the relative density and absolute density of a liquid miscible or immiscible with water using Hare’s apparatus and graphical slope analysis.',
       apparatus: 'Apparatus: Hare’s apparatus (inverted 3-limb tube with rubber tube and pinch cock), two beakers, metre rule, set squares, clamp stand, water, test liquid (methylated spirit / kerosene / brine).',
       theoryTitle: 'Physical Principle & Manometric Theory',
@@ -57,9 +81,11 @@ export const HaresApparatusPractical: React.FC<HaresApparatusPracticalProps> = (
       loadSample: 'Load Sample Data (Spirit)',
       clearInputs: 'Clear Inputs',
       printSheet: 'Print Laboratory Record',
+      submitLab: 'Submit Practical Record',
+      submittedMsg: 'Practical record completed and saved to your laboratory log.',
     },
     si: {
-      title: 'ප්‍රායෝගික පරීක්ෂණය 2.4: හේයාර්ගේ උපකරණය භාවිතයෙන් ද්‍රවයක සාපේක්ෂ ඝනත්වය සෙවීම',
+      title: 'ප්‍රායෝගික පරීක්ෂණය 8: හේයාර්ගේ උපකරණය භාවිතයෙන් ද්‍රවයක සාපේක්ෂ ඝනත්වය සෙවීම',
       aim: 'අරමුණ: හේයාර්ගේ උපකරණය සහ ප්‍රස්ථාරික බෑවුම් විශ්ලේෂණය භාවිතයෙන් ද්‍රවයක සාපේක්ෂ ඝනත්වය සහ නිරපේක්ෂ ඝනත්වය නිර්ණය කිරීම.',
       apparatus: 'උපකරණ: හේයාර්ගේ උපකරණය (රබර් බටයක් සහ මිරිකුම් ඇමුණුමක් සහිත ප්‍රතිලෝම U-නළය), බීකර 2ක්, මීටර් රූල, සෘජුකෝණ ත්‍රිකෝණ, ආධාරකය, ජලය, පරීක්ෂණ ද්‍රවය (භූමිතෙල් / ස්ප්‍රීතු).',
       theoryTitle: 'භෞතික මූලධර්මය සහ මනෝමිතික සමීකරණය',
@@ -83,11 +109,14 @@ export const HaresApparatusPractical: React.FC<HaresApparatusPracticalProps> = (
       loadSample: 'ආදර්ශ දත්ත පූරණය (ස්ප්‍රීතු)',
       clearInputs: 'දත්ත හිස් කරන්න',
       printSheet: 'වාර්තාව මුද්‍රණය කරන්න',
+      submitLab: 'ප්‍රායෝගික සටහන භාරදෙන්න',
+      submittedMsg: 'ප්‍රායෝගික වාර්තාව සම්පූර්ණ කර රසායනාගාර සටහනට සුරකින ලදී.',
     },
   }[locale];
 
   const updateReading = (id: number, field: 'hWater' | 'hLiquid', val: string) => {
-    setReadings(readings.map((r) => (r.id === id ? { ...r, [field]: val } : r)));
+    const updated = readings.map((r) => (r.id === id ? { ...r, [field]: val } : r));
+    updateObservations({ readings: updated });
   };
 
   const parsedPairs = readings
@@ -116,19 +145,21 @@ export const HaresApparatusPractical: React.FC<HaresApparatusPracticalProps> = (
   const isPass = percError !== null && percError <= 3.0;
 
   const handleLoadSample = () => {
-    setReadings([
-      { id: 1, hWater: '12.0', hLiquid: '15.0' },
-      { id: 2, hWater: '16.0', hLiquid: '20.0' },
-      { id: 3, hWater: '20.0', hLiquid: '25.0' },
-      { id: 4, hWater: '24.0', hLiquid: '30.0' },
-      { id: 5, hWater: '28.0', hLiquid: '35.0' },
-      { id: 6, hWater: '32.0', hLiquid: '40.0' },
-    ]);
-    setReferenceDensity('800');
+    loadSampleObservations({
+      readings: [
+        { id: 1, hWater: '12.0', hLiquid: '15.0' },
+        { id: 2, hWater: '16.0', hLiquid: '20.0' },
+        { id: 3, hWater: '20.0', hLiquid: '25.0' },
+        { id: 4, hWater: '24.0', hLiquid: '30.0' },
+        { id: 5, hWater: '28.0', hLiquid: '35.0' },
+        { id: 6, hWater: '32.0', hLiquid: '40.0' },
+      ],
+      referenceDensity: '800',
+    });
   };
 
   const handleClear = () => {
-    setReadings(readings.map((r) => ({ ...r, hWater: '', hLiquid: '' })));
+    reset();
   };
 
   return (
@@ -148,107 +179,30 @@ export const HaresApparatusPractical: React.FC<HaresApparatusPracticalProps> = (
             <RotateCcw className="w-4 h-4 mr-1.5" />
             {t.clearInputs}
           </Button>
-          <Button variant="outline" size="sm" onClick={() => window.print()} className="text-[#475569] border-[#DFE8EF]">
+          <Button variant="outline" size="sm" onClick={() => window.print()} className="text-[#14243A] border-[#DFE8EF]">
             <Printer className="w-4 h-4 mr-1.5" />
             {t.printSheet}
           </Button>
         </div>
       </div>
 
-      {/* Grid: Schematic & Physical Principle */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Hare's Apparatus Schematic */}
-        <Card className="border-[#DFE8EF] bg-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base text-[#14243A] font-medium flex items-center gap-2">
-              <Scale className="w-4 h-4 text-[#0F766E]" />
-              {locale === 'si' ? 'හේයාර් උපකරණයේ සැකැස්ම' : 'Hare’s Apparatus Schematic'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex justify-center p-4 bg-[#F6FAFD] rounded-lg border border-[#DFE8EF]">
-              <svg width="280" height="260" viewBox="0 0 280 260" className="overflow-visible">
-                {/* Clamp Stand */}
-                <line x1="30" y1="20" x2="30" y2="245" stroke="#94A3B8" strokeWidth="4" />
-                <rect x="15" y="245" width="70" height="10" fill="#64748B" rx="2" />
-                <line x1="30" y1="90" x2="100" y2="90" stroke="#94A3B8" strokeWidth="3" />
+      {/* Theory & Method */}
+      <Card className="border-[#DFE8EF] bg-white">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base text-[#14243A] font-medium flex items-center gap-2">
+            <Scale className="w-4 h-4 text-[#0F766E]" />
+            {t.theoryTitle}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-[#475569] whitespace-pre-line leading-relaxed">{t.theoryText}</p>
+          <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+            <p className="text-xs text-[#475569] font-mono leading-relaxed">{t.procedure}</p>
+          </div>
+        </CardContent>
+      </Card>
 
-                {/* Beaker 1: Water (Left) */}
-                <rect x="75" y="190" width="50" height="50" fill="none" stroke="#64748B" strokeWidth="2" rx="2" />
-                <rect x="76" y="205" width="48" height="34" fill="#E0F2FE" />
-                <line x1="75" y1="205" x2="125" y2="205" stroke="#0284C7" strokeWidth="1.5" />
-                <text x="100" y="255" textAnchor="middle" fontSize="9" fill="#0284C7">Water Beaker</text>
-
-                {/* Beaker 2: Liquid (Right) */}
-                <rect x="155" y="190" width="50" height="50" fill="none" stroke="#64748B" strokeWidth="2" rx="2" />
-                <rect x="156" y="205" width="48" height="34" fill="#FEF3C7" />
-                <line x1="155" y1="205" x2="205" y2="205" stroke="#D97706" strokeWidth="1.5" />
-                <text x="180" y="255" textAnchor="middle" fontSize="9" fill="#D97706">Liquid Beaker</text>
-
-                {/* Inverted T-tube Glass */}
-                {/* Left limb */}
-                <line x1="100" y1="40" x2="100" y2="230" stroke="#CBD5E1" strokeWidth="10" />
-                <line x1="100" y1="40" x2="100" y2="230" stroke="#FFFFFF" strokeWidth="6" />
-                {/* Right limb */}
-                <line x1="180" y1="40" x2="180" y2="230" stroke="#CBD5E1" strokeWidth="10" />
-                <line x1="180" y1="40" x2="180" y2="230" stroke="#FFFFFF" strokeWidth="6" />
-                {/* Top horizontal link */}
-                <line x1="95" y1="40" x2="185" y2="40" stroke="#CBD5E1" strokeWidth="10" />
-                <line x1="95" y1="40" x2="185" y2="40" stroke="#FFFFFF" strokeWidth="6" />
-
-                {/* Top suction tube with clip */}
-                <line x1="140" y1="40" x2="140" y2="15" stroke="#EF4444" strokeWidth="8" strokeLinecap="round" />
-                <rect x="133" y="20" width="14" height="8" fill="#1E293B" rx="2" />
-                <text x="140" y="10" textAnchor="middle" fontSize="8" fill="#DC2626" fontWeight="bold">Clip / Pinch Cock</text>
-
-                {/* Water Column (Left, Blue) */}
-                <line x1="100" y1="120" x2="100" y2="205" stroke="#79B9E7" strokeWidth="6" />
-                <ellipse cx="100" cy="120" rx="3" ry="1.5" fill="#0284C7" />
-
-                {/* Liquid Column (Right, Amber) */}
-                <line x1="180" y1="100" x2="180" y2="205" stroke="#F59E0B" strokeWidth="6" />
-                <ellipse cx="180" cy="100" rx="3" ry="1.5" fill="#D97706" />
-
-                {/* Height Annotations */}
-                <line x1="68" y1="120" x2="68" y2="205" stroke="#0284C7" strokeWidth="1.5" />
-                <polygon points="68,120 65,126 71,126" fill="#0284C7" />
-                <polygon points="68,205 65,199 71,199" fill="#0284C7" />
-                <text x="50" y="166" fontSize="11" fill="#0284C7" fontWeight="bold">h_w</text>
-
-                <line x1="212" y1="100" x2="212" y2="205" stroke="#D97706" strokeWidth="1.5" />
-                <polygon points="212,100 209,106 215,106" fill="#D97706" />
-                <polygon points="212,205 209,199 215,199" fill="#D97706" />
-                <text x="218" y="156" fontSize="11" fill="#D97706" fontWeight="bold">h_L</text>
-              </svg>
-            </div>
-            <p className="text-xs text-[#475569] text-center mt-2 italic">
-              {locale === 'si' ? 'හේයාර් උපකරණයේ ද්‍රව කඳන්: h_w · ρ_w = h_L · ρ_L' : 'Hare’s Columns Balance: h_w · ρ_w = h_L · ρ_L'}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Theory & Procedure */}
-        <Card className="border-[#DFE8EF] bg-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base text-[#14243A] font-medium">
-              {t.theoryTitle}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm text-[#475569]">
-            <p className="whitespace-pre-line leading-relaxed">{t.theoryText}</p>
-            <div className="p-3 bg-[#F6FAFD] rounded-md border border-[#DFE8EF]">
-              <span className="font-semibold text-[#14243A]">{t.apparatus.split(':')[0]}:</span>
-              <span>{t.apparatus.split(':')[1]}</span>
-            </div>
-            <div className="p-3 bg-[#F6FAFD] rounded-md border border-[#DFE8EF]">
-              <span className="font-semibold text-[#14243A]">{t.procedure.split(':')[0]}:</span>
-              <span>{t.procedure.split(':')[1]}</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Observations and Graph Grid */}
+      {/* Main Grid: Data Table & Interactive Plot */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Table */}
         <Card className="border-[#DFE8EF] bg-white">
@@ -262,43 +216,41 @@ export const HaresApparatusPractical: React.FC<HaresApparatusPracticalProps> = (
               <table className="w-full text-sm text-left border-collapse">
                 <thead>
                   <tr className="bg-[#F6FAFD] border-b border-[#DFE8EF] text-[#14243A]">
-                    <th className="py-2 px-3 font-semibold">{t.trialCol}</th>
-                    <th className="py-2 px-3 font-semibold">{t.hwCol}</th>
-                    <th className="py-2 px-3 font-semibold">{t.hlCol}</th>
-                    <th className="py-2 px-3 font-semibold">{t.ratioCol}</th>
+                    <th className="py-2.5 px-3 font-semibold w-14">{t.trialCol}</th>
+                    <th className="py-2.5 px-3 font-semibold">{t.hlCol}</th>
+                    <th className="py-2.5 px-3 font-semibold">{t.hwCol}</th>
+                    <th className="py-2.5 px-3 font-semibold">{t.ratioCol}</th>
                   </tr>
                 </thead>
-                <tbody>
+                <tbody className="divide-y divide-[#DFE8EF]">
                   {readings.map((r) => {
                     const hw = parseFloat(r.hWater);
                     const hl = parseFloat(r.hLiquid);
                     const ratio = !isNaN(hw) && !isNaN(hl) && hl > 0 ? (hw / hl).toFixed(3) : '—';
                     return (
-                      <tr key={r.id} className="border-b border-[#DFE8EF] hover:bg-slate-50">
-                        <td className="py-2 px-3 font-medium text-[#14243A]">{r.id}</td>
-                        <td className="py-1 px-3">
-                          <input
-                            type="number"
-                            step="0.1"
-                            value={r.hWater}
-                            onChange={(e) => updateReading(r.id, 'hWater', e.target.value)}
-                            placeholder="hw"
-                            className="w-24 px-2 py-1 text-sm border border-[#DFE8EF] rounded outline-none focus:ring-1 focus:ring-[#0F766E]"
-                          />
-                        </td>
-                        <td className="py-1 px-3">
+                      <tr key={r.id} className="hover:bg-slate-50">
+                        <td className="py-2 px-3 font-mono text-[#64748B]">{r.id}</td>
+                        <td className="py-2 px-3">
                           <input
                             type="number"
                             step="0.1"
                             value={r.hLiquid}
                             onChange={(e) => updateReading(r.id, 'hLiquid', e.target.value)}
-                            placeholder="hL"
-                            className="w-24 px-2 py-1 text-sm border border-[#DFE8EF] rounded outline-none focus:ring-1 focus:ring-[#0F766E]"
+                            placeholder="0.0"
+                            className="w-24 px-2 py-1 text-sm font-mono border border-[#DFE8EF] rounded focus:outline-[#0F766E]"
                           />
                         </td>
-                        <td className="py-2 px-3 font-mono font-semibold text-[#0F766E]">
-                          {ratio}
+                        <td className="py-2 px-3">
+                          <input
+                            type="number"
+                            step="0.1"
+                            value={r.hWater}
+                            onChange={(e) => updateReading(r.id, 'hWater', e.target.value)}
+                            placeholder="0.0"
+                            className="w-24 px-2 py-1 text-sm font-mono border border-[#DFE8EF] rounded focus:outline-[#0F766E]"
+                          />
                         </td>
+                        <td className="py-2 px-3 font-mono text-[#0F766E] font-medium">{ratio}</td>
                       </tr>
                     );
                   })}
@@ -308,7 +260,7 @@ export const HaresApparatusPractical: React.FC<HaresApparatusPracticalProps> = (
           </CardContent>
         </Card>
 
-        {/* SVG Scatter Plot / Regression */}
+        {/* Dynamic Scatter & Regression Line Graph */}
         <Card className="border-[#DFE8EF] bg-white">
           <CardHeader className="pb-2">
             <CardTitle className="text-base text-[#14243A] font-medium flex items-center gap-2">
@@ -316,58 +268,79 @@ export const HaresApparatusPractical: React.FC<HaresApparatusPracticalProps> = (
               {t.graphTitle}
             </CardTitle>
           </CardHeader>
-          <CardContent>
-            <div className="flex justify-center p-3 bg-[#F6FAFD] rounded-lg border border-[#DFE8EF]">
-              <svg width="300" height="220" viewBox="0 0 300 220" className="overflow-visible">
-                {/* Axes */}
-                <line x1="45" y1="190" x2="280" y2="190" stroke="#1E293B" strokeWidth="1.5" />
-                <line x1="45" y1="190" x2="45" y2="20" stroke="#1E293B" strokeWidth="1.5" />
-                <text x="280" y="205" fontSize="10" fill="#1E293B" textAnchor="end">h_L (cm) →</text>
-                <text x="40" y="20" fontSize="10" fill="#1E293B" textAnchor="end">h_w (cm) ↑</text>
+          <CardContent className="flex flex-col items-center">
+            {/* SVG Plot */}
+            <div className="w-full max-w-sm aspect-square bg-[#F6FAFD] rounded-xl border border-[#DFE8EF] p-4 relative">
+              <svg viewBox="0 0 300 300" className="w-full h-full">
+                {/* Grid lines */}
+                <line x1="40" y1="20" x2="40" y2="260" stroke="#DFE8EF" strokeWidth="1.5" />
+                <line x1="40" y1="260" x2="280" y2="260" stroke="#DFE8EF" strokeWidth="1.5" />
 
-                {/* Gridlines */}
-                {[50, 100, 150].map((y) => (
-                  <line key={y} x1="45" y1={y} x2="280" y2={y} stroke="#E2E8F0" strokeWidth="1" strokeDasharray="2 2" />
-                ))}
-                {[100, 160, 220].map((x) => (
-                  <line key={x} x1={x} y1="20" x2={x} y2="190" stroke="#E2E8F0" strokeWidth="1" strokeDasharray="2 2" />
-                ))}
+                <line x1="40" y1="200" x2="280" y2="200" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3" />
+                <line x1="40" y1="140" x2="280" y2="140" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3" />
+                <line x1="40" y1="80" x2="280" y2="80" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3" />
+
+                <line x1="100" y1="20" x2="100" y2="260" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3" />
+                <line x1="160" y1="20" x2="160" y2="260" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3" />
+                <line x1="220" y1="20" x2="220" y2="260" stroke="#F1F5F9" strokeWidth="1" strokeDasharray="3" />
+
+                {/* Axes labels */}
+                <text x="160" y="290" textAnchor="middle" className="text-[11px] fill-[#64748B]">h_L (cm)</text>
+                <text x="15" y="140" textAnchor="middle" transform="rotate(-90 15 140)" className="text-[11px] fill-[#64748B]">h_w (cm)</text>
+
+                {/* Axis origin and tick numbers */}
+                <text x="35" y="275" textAnchor="end" className="text-[9px] fill-[#64748B]">0</text>
+                <text x="100" y="275" textAnchor="middle" className="text-[9px] fill-[#64748B]">10</text>
+                <text x="160" y="275" textAnchor="middle" className="text-[9px] fill-[#64748B]">20</text>
+                <text x="220" y="275" textAnchor="middle" className="text-[9px] fill-[#64748B]">30</text>
+                <text x="280" y="275" textAnchor="middle" className="text-[9px] fill-[#64748B]">40</text>
+
+                <text x="35" y="203" textAnchor="end" className="text-[9px] fill-[#64748B]">10</text>
+                <text x="35" y="143" textAnchor="end" className="text-[9px] fill-[#64748B]">20</text>
+                <text x="35" y="83" textAnchor="end" className="text-[9px] fill-[#64748B]">30</text>
+                <text x="35" y="23" textAnchor="end" className="text-[9px] fill-[#64748B]">40</text>
 
                 {/* Regression Line */}
                 {regressionRes && (
                   <line
-                    x1="45"
-                    y1="190"
-                    x2="270"
-                    y2={190 - (225 * regressionRes.gradient * (45 / 50))}
+                    x1="40"
+                    y1="260"
+                    x2={40 + 6 * 40}
+                    y2={260 - 6 * (40 * regressionRes.gradient)}
                     stroke="#0F766E"
                     strokeWidth="2"
                   />
                 )}
 
-                {/* Data Points */}
+                {/* Plotted points */}
                 {parsedPairs.map((p) => {
-                  // Map hl: 0..50 cm -> 45..270 px; hw: 0..40 cm -> 190..30 px
-                  const cx = 45 + (p.hl / 50) * 225;
-                  const cy = 190 - (p.hw / 40) * 160;
-                  return (
-                    <g key={p.id}>
-                      <circle cx={cx} cy={cy} r="4" fill="#0F766E" stroke="#FFFFFF" strokeWidth="1.5" />
-                      <line x1={cx - 3} y1={cy - 3} x2={cx + 3} y2={cy + 3} stroke="#0F766E" strokeWidth="1" />
-                      <line x1={cx - 3} y1={cy + 3} x2={cx + 3} y2={cy - 3} stroke="#0F766E" strokeWidth="1" />
-                    </g>
-                  );
+                  const cx = 40 + (p.hl / 40) * 240;
+                  const cy = 260 - (p.hw / 40) * 240;
+                  if (cx >= 40 && cx <= 280 && cy >= 20 && cy <= 260) {
+                    return (
+                      <circle
+                        key={p.id}
+                        cx={cx}
+                        cy={cy}
+                        r="3.5"
+                        fill="#0F766E"
+                        stroke="#FFFFFF"
+                        strokeWidth="1.5"
+                      />
+                    );
+                  }
+                  return null;
                 })}
               </svg>
             </div>
-            <p className="text-xs text-[#475569] text-center mt-2 italic">
-              {locale === 'si' ? 'සරල රේඛාවේ අනුක්‍රමණය m = ρ_L / ρ_w' : 'Slope of best-fit line: m = ρ_L / ρ_w'}
+            <p className="text-xs text-[#64748B] mt-2 italic text-center">
+              Origin-constrained linear fit line passes through (0,0)
             </p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Analytical Summary */}
+      {/* Regression Results & Comparison */}
       <Card className="border-[#DFE8EF] bg-white">
         <CardHeader className="pb-2">
           <CardTitle className="text-base text-[#14243A] font-medium">
@@ -419,6 +392,21 @@ export const HaresApparatusPractical: React.FC<HaresApparatusPracticalProps> = (
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Submit Action */}
+          <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#DFE8EF] dark:border-[#1E334D]">
+            <Button
+              className="w-full sm:w-auto bg-[#0F766E] hover:bg-[#0D655E] text-white"
+              onClick={() => setCompleted(true)}
+            >
+              <CheckCircle2 className="w-4 h-4 mr-2" /> {t.submitLab}
+            </Button>
+            {isCompleted && (
+              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                {t.submittedMsg}
+              </span>
+            )}
           </div>
         </CardContent>
       </Card>

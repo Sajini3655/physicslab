@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Locale } from '@/shared/curriculum';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Printer, RotateCcw, Database, Scale, CheckCircle2, AlertCircle } from 'lucide-react';
 import { calculateUTubeRelativeDensity } from '../physics/calculations';
+import { usePracticalWork } from '@/shared/practicals';
 
 interface UTubePracticalProps {
   locale?: Locale;
@@ -20,18 +21,39 @@ interface UTubeTrial {
 export const UTubePractical: React.FC<UTubePracticalProps> = ({
   locale = 'en',
 }) => {
-  const [trials, setTrials] = useState<UTubeTrial[]>([
+  const {
+    observations,
+    updateObservations,
+    loadSampleObservations,
+    reset,
+    isCompleted,
+    setCompleted,
+  } = usePracticalWork({
+    experimentId: 'exp-7-utube',
+    defaultObservations: {
+      trials: [
+        { id: 1, hLiquid: '12.0', hWater: '9.8' },
+        { id: 2, hLiquid: '16.0', hWater: '13.1' },
+        { id: 3, hLiquid: '20.0', hWater: '16.4' },
+        { id: 4, hLiquid: '24.0', hWater: '19.7' },
+      ],
+      expectedDensity: '0.82',
+    },
+  });
+
+  const trials = (observations.trials as UTubeTrial[]) || [
     { id: 1, hLiquid: '12.0', hWater: '9.8' },
     { id: 2, hLiquid: '16.0', hWater: '13.1' },
     { id: 3, hLiquid: '20.0', hWater: '16.4' },
     { id: 4, hLiquid: '24.0', hWater: '19.7' },
-  ]);
+  ];
 
-  const [expectedDensity, setExpectedDensity] = useState<string>('0.82'); // e.g. kerosene / paraffin oil
+  const expectedDensity = observations.expectedDensity || '0.82';
+  const setExpectedDensity = (val: string) => updateObservations({ expectedDensity: val });
 
   const t = {
     en: {
-      title: 'Practical 2.3: Determination of Relative Density of an Immiscible Liquid Using a U-Tube',
+      title: 'Practical 7: Determination of Relative Density of an Immiscible Liquid Using a U-Tube',
       aim: 'Aim: To determine the relative density of a liquid immiscible with water (e.g. kerosene / oil) using a vertical U-tube manometer.',
       apparatus: 'Apparatus: Glass U-tube of uniform bore, retort stand and clamp, metre rule, set squares, funnel, water, immiscible liquid (kerosene / paraffin oil).',
       theoryTitle: 'Physical Principle & Hydrostatic Balancing',
@@ -53,9 +75,11 @@ export const UTubePractical: React.FC<UTubePracticalProps> = ({
       loadSample: 'Load Sample Data (Kerosene)',
       clearInputs: 'Clear Inputs',
       printSheet: 'Print Laboratory Record',
+      submitLab: 'Submit Practical Record',
+      submittedMsg: 'Practical record completed and saved to your laboratory log.',
     },
     si: {
-      title: 'ප්‍රායෝගික පරීක්ෂණය 2.3: U-නළය භාවිතයෙන් මිශ්‍ර නොවන ද්‍රවයක සාපේක්ෂ ඝනත්වය සෙවීම',
+      title: 'ප්‍රායෝගික පරීක්ෂණය 7: U-නළය භාවිතයෙන් මිශ්‍ර නොවන ද්‍රවයක සාපේක්ෂ ඝනත්වය සෙවීම',
       aim: 'අරමුණ: සිරස් U-නළයක් භාවිතයෙන් ජලය සමඟ මිශ්‍ර නොවන ද්‍රවයක (උදා. භූමිතෙල් / පැරෆින් තෙල්) සාපේක්ෂ ඝනත්වය නිර්ණය කිරීම.',
       apparatus: 'උපකරණ: ඒකාකාර හරස්කඩක් සහිත වීදුරු U-නළය, ආධාරකය සහ මංජුව, මීටර් රූල, සෘජුකෝණ ත්‍රිකෝණ, පුනීලය, ජලය, මිශ්‍ර නොවන පරීක්ෂණ ද්‍රවය.',
       theoryTitle: 'භෞතික මූලධර්මය සහ ජලස්ථිතික සමතුලිතතාව',
@@ -77,11 +101,14 @@ export const UTubePractical: React.FC<UTubePracticalProps> = ({
       loadSample: 'ආදර්ශ දත්ත පූරණය (භූමිතෙල්)',
       clearInputs: 'දත්ත හිස් කරන්න',
       printSheet: 'වාර්තාව මුද්‍රණය කරන්න',
+      submitLab: 'ප්‍රායෝගික සටහන භාරදෙන්න',
+      submittedMsg: 'ප්‍රායෝගික වාර්තාව සම්පූර්ණ කර රසායනාගාර සටහනට සුරකින ලදී.',
     },
   }[locale];
 
   const updateTrial = (id: number, field: 'hLiquid' | 'hWater', val: string) => {
-    setTrials(trials.map((t) => (t.id === id ? { ...t, [field]: val } : t)));
+    const updated = trials.map((t) => (t.id === id ? { ...t, [field]: val } : t));
+    updateObservations({ trials: updated });
   };
 
   const calculatedTrials = trials.map((tr) => {
@@ -106,22 +133,19 @@ export const UTubePractical: React.FC<UTubePracticalProps> = ({
   const isPass = percDiff !== null && percDiff <= 4.0;
 
   const handleLoadSample = () => {
-    setTrials([
-      { id: 1, hLiquid: '12.0', hWater: '9.8' },
-      { id: 2, hLiquid: '16.0', hWater: '13.1' },
-      { id: 3, hLiquid: '20.0', hWater: '16.4' },
-      { id: 4, hLiquid: '24.0', hWater: '19.7' },
-    ]);
-    setExpectedDensity('0.82');
+    loadSampleObservations({
+      trials: [
+        { id: 1, hLiquid: '12.0', hWater: '9.8' },
+        { id: 2, hLiquid: '16.0', hWater: '13.1' },
+        { id: 3, hLiquid: '20.0', hWater: '16.4' },
+        { id: 4, hLiquid: '24.0', hWater: '19.7' },
+      ],
+      expectedDensity: '0.82',
+    });
   };
 
   const handleClear = () => {
-    setTrials([
-      { id: 1, hLiquid: '', hWater: '' },
-      { id: 2, hLiquid: '', hWater: '' },
-      { id: 3, hLiquid: '', hWater: '' },
-      { id: 4, hLiquid: '', hWater: '' },
-    ]);
+    reset();
   };
 
   return (
@@ -141,115 +165,30 @@ export const UTubePractical: React.FC<UTubePracticalProps> = ({
             <RotateCcw className="w-4 h-4 mr-1.5" />
             {t.clearInputs}
           </Button>
-          <Button variant="outline" size="sm" onClick={() => window.print()} className="text-[#475569] border-[#DFE8EF]">
+          <Button variant="outline" size="sm" onClick={() => window.print()} className="text-[#14243A] border-[#DFE8EF]">
             <Printer className="w-4 h-4 mr-1.5" />
             {t.printSheet}
           </Button>
         </div>
       </div>
 
-      {/* Grid: Apparatus Diagram & Physical Principle */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Schematic SVG Diagram */}
-        <Card className="border-[#DFE8EF] bg-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base text-[#14243A] font-medium flex items-center gap-2">
-              <Scale className="w-4 h-4 text-[#0F766E]" />
-              {locale === 'si' ? 'U-නළ පරීක්ෂණ සැකැස්ම' : 'U-Tube Apparatus Schematic'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex justify-center p-4 bg-[#F6FAFD] rounded-lg border border-[#DFE8EF]">
-              <svg width="280" height="260" viewBox="0 0 280 260" className="overflow-visible">
-                {/* Retort Stand */}
-                <line x1="40" y1="20" x2="40" y2="240" stroke="#94A3B8" strokeWidth="4" />
-                <rect x="20" y="240" width="80" height="10" fill="#64748B" rx="2" />
-                <line x1="40" y1="120" x2="80" y2="120" stroke="#94A3B8" strokeWidth="4" />
+      {/* Theory & Physical Background */}
+      <Card className="border-[#DFE8EF] bg-white">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base text-[#14243A] font-medium flex items-center gap-2">
+            <Scale className="w-4 h-4 text-[#0F766E]" />
+            {t.theoryTitle}
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <p className="text-sm text-[#475569] whitespace-pre-line leading-relaxed">{t.theoryText}</p>
+          <div className="p-3 bg-slate-50 rounded-lg border border-slate-200">
+            <p className="text-xs text-[#475569] font-mono leading-relaxed">{t.procedure}</p>
+          </div>
+        </CardContent>
+      </Card>
 
-                {/* U-Tube Outer Glass */}
-                <path
-                  d="M 90 40 L 90 200 A 30 30 0 0 0 150 200 L 150 40"
-                  fill="none"
-                  stroke="#64748B"
-                  strokeWidth="24"
-                  strokeLinecap="round"
-                />
-                <path
-                  d="M 90 40 L 90 200 A 30 30 0 0 0 150 200 L 150 40"
-                  fill="none"
-                  stroke="#F8FAFC"
-                  strokeWidth="18"
-                  strokeLinecap="round"
-                />
-
-                {/* Water Column (Limb 2 & bottom bend) - Blue */}
-                <path
-                  d="M 90 170 L 90 200 A 30 30 0 0 0 150 200 L 150 100"
-                  fill="none"
-                  stroke="#79B9E7"
-                  strokeWidth="16"
-                  strokeLinecap="butt"
-                />
-
-                {/* Immiscible Liquid Column (Limb 1) - Light Amber / Aqua */}
-                <path
-                  d="M 90 70 L 90 170"
-                  fill="none"
-                  stroke="#F59E0B"
-                  strokeWidth="16"
-                  strokeLinecap="butt"
-                />
-
-                {/* Interface line & Datum */}
-                <line x1="70" y1="170" x2="170" y2="170" stroke="#DC2626" strokeWidth="1.5" strokeDasharray="3 3" />
-                <text x="175" y="174" fontSize="10" fill="#DC2626" fontWeight="bold">Datum Level (Interface)</text>
-
-                {/* Height Annotations */}
-                {/* h_L */}
-                <line x1="75" y1="70" x2="75" y2="170" stroke="#D97706" strokeWidth="1.5" />
-                <polygon points="75,70 72,76 78,76" fill="#D97706" />
-                <polygon points="75,170 72,164 78,164" fill="#D97706" />
-                <text x="56" y="125" fontSize="11" fill="#D97706" fontWeight="bold">h_L</text>
-
-                {/* h_w */}
-                <line x1="165" y1="100" x2="165" y2="170" stroke="#0284C7" strokeWidth="1.5" />
-                <polygon points="165,100 162,106 168,106" fill="#0284C7" />
-                <polygon points="165,170 162,164 168,164" fill="#0284C7" />
-                <text x="172" y="138" fontSize="11" fill="#0284C7" fontWeight="bold">h_w</text>
-
-                {/* Labels */}
-                <text x="90" y="32" textAnchor="middle" fontSize="10" fill="#475569">Oil Limb</text>
-                <text x="150" y="32" textAnchor="middle" fontSize="10" fill="#475569">Water Limb</text>
-              </svg>
-            </div>
-            <p className="text-xs text-[#475569] text-center mt-2 italic">
-              {locale === 'si' ? 'අතුරුමුහුණත මට්ටමේදී (Datum) ජලස්ථිතික පීඩන සමානතාව: h_L · ρ_L = h_w · ρ_w' : 'At the interface datum level: Hydrostatic pressure balance h_L · ρ_L = h_w · ρ_w'}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Theory & Apparatus details */}
-        <Card className="border-[#DFE8EF] bg-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base text-[#14243A] font-medium">
-              {t.theoryTitle}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm text-[#475569]">
-            <p className="whitespace-pre-line leading-relaxed">{t.theoryText}</p>
-            <div className="p-3 bg-[#F6FAFD] rounded-md border border-[#DFE8EF]">
-              <span className="font-semibold text-[#14243A]">{t.apparatus.split(':')[0]}:</span>
-              <span>{t.apparatus.split(':')[1]}</span>
-            </div>
-            <div className="p-3 bg-[#F6FAFD] rounded-md border border-[#DFE8EF]">
-              <span className="font-semibold text-[#14243A]">{t.procedure.split(':')[0]}:</span>
-              <span>{t.procedure.split(':')[1]}</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Observations Table */}
+      {/* Observation Table */}
       <Card className="border-[#DFE8EF] bg-white">
         <CardHeader className="pb-2">
           <CardTitle className="text-base text-[#14243A] font-medium">
@@ -261,37 +200,37 @@ export const UTubePractical: React.FC<UTubePracticalProps> = ({
             <table className="w-full text-sm text-left border-collapse">
               <thead>
                 <tr className="bg-[#F6FAFD] border-b border-[#DFE8EF] text-[#14243A]">
-                  <th className="py-2.5 px-4 font-semibold">{t.trialCol}</th>
-                  <th className="py-2.5 px-4 font-semibold">{t.hLCol}</th>
-                  <th className="py-2.5 px-4 font-semibold">{t.hwCol}</th>
-                  <th className="py-2.5 px-4 font-semibold">{t.rdCol}</th>
+                  <th className="py-2.5 px-3 font-semibold w-16">{t.trialCol}</th>
+                  <th className="py-2.5 px-3 font-semibold">{t.hLCol}</th>
+                  <th className="py-2.5 px-3 font-semibold">{t.hwCol}</th>
+                  <th className="py-2.5 px-3 font-semibold">{t.rdCol}</th>
                 </tr>
               </thead>
-              <tbody>
+              <tbody className="divide-y divide-[#DFE8EF]">
                 {calculatedTrials.map((tr) => (
-                  <tr key={tr.id} className="border-b border-[#DFE8EF] hover:bg-slate-50">
-                    <td className="py-2.5 px-4 font-medium text-[#14243A]">{tr.id}</td>
-                    <td className="py-2 px-4">
+                  <tr key={tr.id} className="hover:bg-slate-50">
+                    <td className="py-2.5 px-3 font-mono text-[#64748B]">{tr.id}</td>
+                    <td className="py-2.5 px-3">
                       <input
                         type="number"
                         step="0.1"
                         value={tr.hLiquid}
                         onChange={(e) => updateTrial(tr.id, 'hLiquid', e.target.value)}
-                        placeholder="e.g. 15.0"
-                        className="w-32 px-2.5 py-1 text-sm border border-[#DFE8EF] rounded focus:ring-1 focus:ring-[#0F766E] outline-none"
+                        placeholder="0.0"
+                        className="w-28 px-2 py-1 text-sm font-mono border border-[#DFE8EF] rounded focus:outline-[#0F766E]"
                       />
                     </td>
-                    <td className="py-2 px-4">
+                    <td className="py-2.5 px-3">
                       <input
                         type="number"
                         step="0.1"
                         value={tr.hWater}
                         onChange={(e) => updateTrial(tr.id, 'hWater', e.target.value)}
-                        placeholder="e.g. 12.3"
-                        className="w-32 px-2.5 py-1 text-sm border border-[#DFE8EF] rounded focus:ring-1 focus:ring-[#0F766E] outline-none"
+                        placeholder="0.0"
+                        className="w-28 px-2 py-1 text-sm font-mono border border-[#DFE8EF] rounded focus:outline-[#0F766E]"
                       />
                     </td>
-                    <td className="py-2.5 px-4 font-mono font-semibold text-[#0F766E]">
+                    <td className="py-2.5 px-3 font-mono font-medium text-[#0F766E]">
                       {tr.rd !== null ? tr.rd.toFixed(3) : '—'}
                     </td>
                   </tr>
@@ -340,6 +279,21 @@ export const UTubePractical: React.FC<UTubePracticalProps> = ({
                 </div>
               )}
             </div>
+          </div>
+
+          {/* Submit Action */}
+          <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#DFE8EF] dark:border-[#1E334D]">
+            <Button
+              className="w-full sm:w-auto bg-[#0F766E] hover:bg-[#0D655E] text-white"
+              onClick={() => setCompleted(true)}
+            >
+              <CheckCircle2 className="w-4 h-4 mr-2" /> {t.submitLab}
+            </Button>
+            {isCompleted && (
+              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                {t.submittedMsg}
+              </span>
+            )}
           </div>
         </CardContent>
       </Card>

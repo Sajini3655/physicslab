@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Locale } from '@/shared/curriculum';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { RotateCcw, Database, Compass, CheckCircle2, AlertCircle } from 'lucide-react';
 import { calculateForceBoardResultant } from '../physics/calculations';
+import { usePracticalWork } from '@/shared/practicals';
 
 interface ForceParallelogramPracticalProps {
   locale?: Locale;
@@ -14,14 +15,31 @@ interface ForceParallelogramPracticalProps {
 export const ForceParallelogramPractical: React.FC<ForceParallelogramPracticalProps> = ({
   locale = 'en',
 }) => {
-  const [pG, setPG] = useState<string>('300'); // Force P in grams-weight
-  const [qG, setQG] = useState<string>('400'); // Force Q in grams-weight
-  const [rG, setRG] = useState<string>('500'); // Central balancing weight R
-  const [angleDeg, setAngleDeg] = useState<string>('90'); // Angle between P and Q (degrees)
+  const {
+    observations,
+    updateObservations,
+    loadSampleObservations,
+    reset,
+    isCompleted,
+    setCompleted,
+  } = usePracticalWork({
+    experimentId: 'exp-5-force-board',
+    defaultObservations: {
+      pG: '300',
+      qG: '400',
+      rG: '500',
+      angleDeg: '90',
+    },
+  });
+
+  const pG = observations.pG || '';
+  const qG = observations.qG || '';
+  const rG = observations.rG || '';
+  const angleDeg = observations.angleDeg || '';
 
   const t = {
     en: {
-      title: 'Practical 2.1: Verification of the Parallelogram Law & Triangle of Forces',
+      title: 'Practical 5: Verification of the Parallelogram Law & Triangle of Forces',
       aim: 'Aim: To verify the Parallelogram Law of Forces and Triangle of Forces for three coplanar concurrent forces in static equilibrium using Gravesande’s force board.',
       apparatus: 'Apparatus: Gravesande’s force board, two frictionless pulleys, three slotted weight hangers with weights (P, Q, R), thin light cord, drawing paper, mirror strip, protractor, set squares.',
       theoryTitle: 'Physical Principle & Parallelogram Geometry',
@@ -45,9 +63,11 @@ export const ForceParallelogramPractical: React.FC<ForceParallelogramPracticalPr
       loadSample: 'Load Sample Data',
       clearInputs: 'Clear Inputs',
       printSheet: 'Print Laboratory Record',
+      submitLab: 'Submit Practical Record',
+      submittedMsg: 'Practical record completed and saved to your laboratory log.',
     },
     si: {
-      title: 'ප්‍රායෝගික පරීක්ෂණය 2.1: බල සමාන්තරාස්‍ර සහ බල ත්‍රිකෝණ නීතිය සත්‍යාපනය කිරීම',
+      title: 'ප්‍රායෝගික පරීක්ෂණය 5: බල සමාන්තරාස්‍ර සහ බල ත්‍රිකෝණ නීතිය සත්‍යාපනය කිරීම',
       aim: 'අරමුණ: ග්‍රේව්සැන්ඩ් බල ලෑල්ල භාවිතයෙන් ස්ථිතික තුල්‍යතාවයේ පවතින ඒකතල සමගාමී බල තුනක් සඳහා බල සමාන්තරාස්‍ර නියමය සහ බල ත්‍රිකෝණ නියමය සත්‍යාපනය කිරීම.',
       apparatus: 'උපකරණ: ග්‍රේව්සැන්ඩ් බල ලෑල්ල, ඝර්ෂණ-විරහිත කප්පි දෙකක්, පඩි තැටි 3ක් සහිත බර පඩි (P, Q, R), සැහැල්ලු නූල්, චිත්‍ර ඇඳීමේ කඩදාසි, දර්පණ පටියක්, කෝණමානයක්, සෘජුකෝණ ත්‍රිකෝණ.',
       theoryTitle: 'භෞතික මූලධර්මය සහ සමාන්තරාස්‍ර ජ්‍යාමිතිය',
@@ -71,6 +91,8 @@ export const ForceParallelogramPractical: React.FC<ForceParallelogramPracticalPr
       loadSample: 'ආදර්ශ දත්ත පුරවන්න',
       clearInputs: 'හිස් කරන්න',
       printSheet: 'වාර්තාව මුද්‍රණය කරන්න',
+      submitLab: 'ප්‍රායෝගික සටහන භාරදෙන්න',
+      submittedMsg: 'ප්‍රායෝගික වාර්තාව සම්පූර්ණ කර රසායනාගාර සටහනට සුරකින ලදී.',
     },
   }[locale];
 
@@ -89,28 +111,31 @@ export const ForceParallelogramPractical: React.FC<ForceParallelogramPracticalPr
 
   const handleLoadSample = (preset: '345' | 'equal' | 'general') => {
     if (preset === '345') {
-      setPG('300');
-      setQG('400');
-      setRG('500');
-      setAngleDeg('90');
+      loadSampleObservations({
+        pG: '300',
+        qG: '400',
+        rG: '500',
+        angleDeg: '90',
+      });
     } else if (preset === 'equal') {
-      setPG('250');
-      setQG('250');
-      setRG('250');
-      setAngleDeg('120');
+      loadSampleObservations({
+        pG: '250',
+        qG: '250',
+        rG: '250',
+        angleDeg: '120',
+      });
     } else {
-      setPG('200');
-      setQG('300');
-      setRG('435');
-      setAngleDeg('60');
+      loadSampleObservations({
+        pG: '200',
+        qG: '300',
+        rG: '435',
+        angleDeg: '60',
+      });
     }
   };
 
   const handleClear = () => {
-    setPG('');
-    setQG('');
-    setRG('');
-    setAngleDeg('');
+    reset();
   };
 
   return (
@@ -216,7 +241,7 @@ export const ForceParallelogramPractical: React.FC<ForceParallelogramPracticalPr
               <input
                 type="text"
                 value={pG}
-                onChange={(e) => setPG(e.target.value)}
+                onChange={(e) => updateObservations({ pG: e.target.value })}
                 placeholder="e.g. 300"
                 className="w-full px-3 py-2 rounded-lg border border-[#DFE8EF] dark:border-[#1E334D] bg-[#F6FAFD] dark:bg-[#0B131E]"
               />
@@ -229,7 +254,7 @@ export const ForceParallelogramPractical: React.FC<ForceParallelogramPracticalPr
               <input
                 type="text"
                 value={qG}
-                onChange={(e) => setQG(e.target.value)}
+                onChange={(e) => updateObservations({ qG: e.target.value })}
                 placeholder="e.g. 400"
                 className="w-full px-3 py-2 rounded-lg border border-[#DFE8EF] dark:border-[#1E334D] bg-[#F6FAFD] dark:bg-[#0B131E]"
               />
@@ -242,7 +267,7 @@ export const ForceParallelogramPractical: React.FC<ForceParallelogramPracticalPr
               <input
                 type="text"
                 value={rG}
-                onChange={(e) => setRG(e.target.value)}
+                onChange={(e) => updateObservations({ rG: e.target.value })}
                 placeholder="e.g. 500"
                 className="w-full px-3 py-2 rounded-lg border border-[#DFE8EF] dark:border-[#1E334D] bg-[#F6FAFD] dark:bg-[#0B131E]"
               />
@@ -255,7 +280,7 @@ export const ForceParallelogramPractical: React.FC<ForceParallelogramPracticalPr
               <input
                 type="text"
                 value={angleDeg}
-                onChange={(e) => setAngleDeg(e.target.value)}
+                onChange={(e) => updateObservations({ angleDeg: e.target.value })}
                 placeholder="e.g. 90"
                 className="w-full px-3 py-2 rounded-lg border border-[#DFE8EF] dark:border-[#1E334D] bg-[#F6FAFD] dark:bg-[#0B131E]"
               />
@@ -312,6 +337,21 @@ export const ForceParallelogramPractical: React.FC<ForceParallelogramPracticalPr
           <div className="p-3.5 rounded-xl bg-[#F6FAFD] dark:bg-[#0B131E] border border-[#DFE8EF] dark:border-[#1E334D] text-xs text-[#64748B] dark:text-[#94A3B8] space-y-1">
             <span className="font-bold text-[#14243A] dark:text-[#F8FAFC] block">{t.precautionsTitle}</span>
             <p>{t.precautions}</p>
+          </div>
+
+          {/* Submit Action */}
+          <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#DFE8EF] dark:border-[#1E334D]">
+            <Button
+              className="w-full sm:w-auto bg-[#0F766E] hover:bg-[#0D655E] text-white"
+              onClick={() => setCompleted(true)}
+            >
+              <CheckCircle2 className="w-4 h-4 mr-2" /> {t.submitLab}
+            </Button>
+            {isCompleted && (
+              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                {t.submittedMsg}
+              </span>
+            )}
           </div>
         </CardContent>
       </Card>

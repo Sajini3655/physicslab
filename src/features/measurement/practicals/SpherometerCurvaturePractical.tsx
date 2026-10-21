@@ -19,6 +19,8 @@ import {
 import { calculateSpherometerCurvature } from '../physics/calculations';
 import { usePracticalWork } from '@/shared/practicals';
 
+export type SpherometerInvestigation = 'curvature' | 'thickness';
+
 interface SpherometerCurvaturePracticalProps {
   locale?: Locale;
 }
@@ -46,6 +48,7 @@ export const SpherometerCurvaturePractical: React.FC<SpherometerCurvaturePractic
     experimentId: 'exp-3-spherometer',
     defaultMode: 'guided',
     defaultObservations: {
+      investigationType: 'curvature',
       aTrials: ['', '', ''],
       h0: '',
       h1Trials: ['', '', ''],
@@ -55,8 +58,12 @@ export const SpherometerCurvaturePractical: React.FC<SpherometerCurvaturePractic
       meanH1: '',
       elevationH: '',
       radiusOfCurvature: '',
+      slideThickness: '',
     },
   });
+
+  const investigationType: SpherometerInvestigation =
+    (observations.investigationType as SpherometerInvestigation) || 'curvature';
 
   const aTrials: [string, string, string] = (
     Array.isArray(observations.aTrials) && observations.aTrials.length === 3
@@ -78,33 +85,38 @@ export const SpherometerCurvaturePractical: React.FC<SpherometerCurvaturePractic
 
   const t = {
     en: {
-      title: 'Practical 3: Radius of Curvature Using a Spherometer',
-      aim: 'Aim: To determine the radius of curvature of a spherical surface (convex lens/concave mirror) using a spherometer.',
-      apparatus: 'Apparatus: Spherometer (Least Count 0.01 mm), Plane glass plate, Convex spherical surface, Plain paper, Sheet of paper, Millimeter ruler.',
+      title: 'Practical 3: Radius of Curvature & Slide Thickness Using a Spherometer',
+      aim: 'Aim: To determine the radius of curvature of a spherical surface (lens/mirror) and the thickness of a flat glass slide using a spherometer.',
+      apparatus: 'Apparatus: Spherometer (Least Count 0.01 mm), Plane glass plate, Convex spherical surface, Flat microscope glass slide, Plain paper, Millimeter ruler.',
       theoryTitle: 'Theory & Geometrical Derivation',
-      theoryText: 'The three fixed outer legs of the spherometer form an equilateral triangle of mean side a. By placing the instrument on a flat plane glass plate, the reference datum h₀ is obtained. On placing it on the curved surface, the center screw is adjusted to touch the surface to give h₁. The elevation h = |h₁ - h₀|. The radius of curvature is R = (a² / 6h) + (h / 2). If h = 0, R = ∞ (plane surface).',
-      procedure: 'Procedure: 1. Press spherometer legs gently onto paper to produce prick marks and measure sides a₁, a₂, a₃ to find mean a. 2. Place on plane glass plate and record zero reading h₀. 3. Transfer onto spherical surface and adjust central screw until all 4 tips make contact without rocking. 4. Record 3 independent readings of h₁. 5. Compute mean elevation h and calculate R.',
+      theoryText: 'The three fixed outer legs of the spherometer form an equilateral triangle of mean side a. By placing the instrument on a flat plane glass plate, the reference datum h₀ is obtained. 1. For a curved surface, the center screw touches the apex to give h₁; sagitta h = |h₁ - h₀|, and R = (a² / 6h) + (h / 2). 2. For a flat glass slide, the three outer legs rest on the flat plane glass plate while the center screw is adjusted onto the top surface of the slide, yielding thickness t = |h₁ - h₀|.',
+      procedure: 'Procedure: 1. Select investigation type (Curvature or Slide Thickness). 2. For curvature: measure outer leg distance a using needle pricks on paper; record flat datum h₀; measure curved sagitta h₁ in 3 positions. 3. For slide thickness: record flat datum h₀; place slide under central screw on the flat plate and record 3 readings of h₁. 4. Compute elevation/thickness and calculate radius of curvature R or slide thickness t.',
       modeSelector: 'Learning Mode:',
       guidedMode: 'Guided Mode (Hints & Auto-Calculation)',
       independentMode: 'Independent Practice (Manual Calculations & Check)',
+      invSelector: 'Investigation Target:',
+      invCurvature: 'Spherical Surface Curvature (R)',
+      invThickness: 'Glass Slide Thickness (t)',
       transferReading: 'Transfer Spherometer Reading to Table:',
       logH0: 'Log as Zero Reading (h₀)',
-      logH1: 'Log as Curved Reading (h₁)',
+      logH1: investigationType === 'curvature' ? 'Log as Curved Reading (h₁)' : 'Log as Slide Reading (h₁)',
       obsTableLegs: 'Table 1: Distance Between Outer Legs (a)',
       side1: 'Side a₁ (mm)',
       side2: 'Side a₂ (mm)',
       side3: 'Side a₃ (mm)',
       meanA: 'Mean Leg Distance a (mm)',
-      obsTableH: 'Table 2: Elevation & Sagitta Readings (h)',
+      obsTableH: investigationType === 'curvature' ? 'Table 2: Elevation & Sagitta Readings (h)' : 'Table: Slide Thickness Readings (t)',
       planeZero: 'Plane Glass Reading h₀ (mm):',
-      sphericalTrial1: 'Curved Reading 1 (mm)',
-      sphericalTrial2: 'Curved Reading 2 (mm)',
-      sphericalTrial3: 'Curved Reading 3 (mm)',
-      meanH1: 'Mean Curved Reading h₁ (mm)',
-      elevationH: 'Elevation h = |h₁ - h₀| (mm)',
-      calcTitle: 'Radius of Curvature Calculation',
+      sphericalTrial1: investigationType === 'curvature' ? 'Curved Reading 1 (mm)' : 'Slide Reading 1 (mm)',
+      sphericalTrial2: investigationType === 'curvature' ? 'Curved Reading 2 (mm)' : 'Slide Reading 2 (mm)',
+      sphericalTrial3: investigationType === 'curvature' ? 'Curved Reading 3 (mm)' : 'Slide Reading 3 (mm)',
+      meanH1: investigationType === 'curvature' ? 'Mean Curved Reading h₁ (mm)' : 'Mean Slide Reading h₁ (mm)',
+      elevationH: investigationType === 'curvature' ? 'Elevation h = |h₁ - h₀| (mm)' : 'Thickness t = |h₁ - h₀| (mm)',
+      calcTitle: investigationType === 'curvature' ? 'Radius of Curvature Calculation' : 'Slide Thickness Calculation',
       radiusLabel: 'Radius of Curvature (R):',
+      thicknessLabel: 'Glass Slide Thickness (t):',
       formulaBreakdown: 'Formula: R = (a² / 6h) + (h / 2)',
+      thicknessFormula: 'Formula: t = |h₁ - h₀|',
       checkCalcs: 'Check My Calculations',
       revealSolution: 'Show Model Solution',
       hideSolution: 'Hide Model Solution',
@@ -126,33 +138,38 @@ export const SpherometerCurvaturePractical: React.FC<SpherometerCurvaturePractic
       printSheet: 'Print Laboratory Record',
     },
     si: {
-      title: 'ප්‍රායෝගික පරීක්ෂණය 3: ගෝලමානය භාවිතයෙන් වක්‍රතා අරය නිර්ණය කිරීම',
-      aim: 'අරමුණ: ගෝලමානයක් භාවිතයෙන් ගෝලීය පෘෂ්ඨයක (උත්තල කාචයක් හෝ අවතල දර්පණයක්) වක්‍රතා අරය නිර්ණය කිරීම.',
-      apparatus: 'උපකරණ: ගෝලමානය (කුඩාම මිනුම 0.01 mm), තල වීදුරු තහඩුව, උත්තල ගෝලීය පෘෂ්ඨය, සුදු කඩදාසි, මිලිමීටර් පරිමාණය.',
+      title: 'ප්‍රායෝගික පරීක්ෂණය 3: ගෝලමානය භාවිතයෙන් වක්‍රතා අරය සහ වීදුරු තහඩුවක ඝනකම නිර්ණය කිරීම',
+      aim: 'අරමුණ: ගෝලමානයක් භාවිතයෙන් ගෝලීය පෘෂ්ඨයක (කාච/දර්පණ) වක්‍රතා අරය සහ තල වීදුරු තහඩුවක ඝනකම නිරවද්‍යව නිර්ණය කිරීම.',
+      apparatus: 'උපකරණ: ගෝලමානය (කුඩාම මිනුම 0.01 mm), තල වීදුරු තහඩුව, උත්තල ගෝලීය පෘෂ්ඨය, අන්වීක්ෂ තල වීදුරු තහඩුව, සුදු කඩදාසි, මිලිමීටර් පරිමාණය.',
       theoryTitle: 'මූලධර්මය සහ ජ්‍යාමිතික ව්‍යුත්පන්නය',
-      theoryText: 'ගෝලමානයේ ස්ථාවර බාහිර පාද තුන මගින් මධ්‍යන්‍ය පාදය a වූ සමපාද ත්‍රිකෝණයක් සාදයි. තල වීදුරු තහඩුව මත තැබීමෙන් මූලික පාඨාංකය h₀ ලබා ගනී. ගෝලීය පෘෂ්ඨය මත තබා මැද ඉස්කුරුප්පුව ස්පර්ශ කරවීමෙන් h₁ ලබා ගනී. එවිට එසවීම h = |h₁ - h₀| වේ. වක්‍රතා අරය R = (a² / 6h) + (h / 2) මගින් ලැබේ.',
-      procedure: 'ක්‍රමවේදය: 1. කඩදාසියක් මත ගෝලමානයේ පාද තදකර ලකුණු 3 අතර දුර a₁, a₂, a₃ මැන මධ්‍යන්‍ය a සෙවීම. 2. තල වීදුරු තහඩුව මත තබා h₀ සටහන් කිරීම. 3. ගෝලීය පෘෂ්ඨය මත තබා තුඩු 4ම සමතුලිතව ස්පර්ශ වන සේ සකසා h₁ සඳහා තෙවරක් මැනීම. 4. එසවීම h ගණනය කර R සෙවීම.',
+      theoryText: 'ගෝලමානයේ ස්ථාවර බාහිර පාද තුන මගින් මධ්‍යන්‍ය පාදය a වූ සමපාද ත්‍රිකෝණයක් සාදයි. තල වීදුරු තහඩුව මත තැබීමෙන් මූලික පාඨාංකය h₀ ලබා ගනී. 1. ගෝලීය පෘෂ්ඨයක් සඳහා, මැද ඉස්කුරුප්පුව මුදුන ස්පර්ශ කර h₁ ලබා ගන්නා අතර එසවීම h = |h₁ - h₀| සහ R = (a² / 6h) + (h / 2) වේ. 2. තල වීදුරු තහඩුවක ඝනකම සෙවීමේදී, බාහිර පාද තුන තල වීදුරු පදනම මත තබා මැද ඉස්කුරුප්පුව තහඩුව මත තැබීමෙන් ඝනකම t = |h₁ - h₀| මනිනු ලැබේ.',
+      procedure: 'ක්‍රමවේදය: 1. පරීක්ෂණ අරමුණ තෝරන්න (වක්‍රතා අරය හෝ තහඩුවේ ඝනකම). 2. වක්‍රතාව සඳහා: කඩදාසිය මත පාද තදකර a මැනීම, තල වීදුරුව මත h₀ සටහන් කිරීම, ගෝලීය පෘෂ්ඨයේ ස්ථාන 3කින් h₁ මැනීම. 3. ඝනකම සඳහා: තල පදනම මත h₀ සටහන් කිරීම, තහඩුව මත h₁ ස්ථාන 3කින් මැනීම. 4. එසවීම/ඝනකම ගණනය කර වක්‍රතා අරය R හෝ තහඩු ඝනකම t නිර්ණය කිරීම.',
       modeSelector: 'ඉගෙනුම් ආකාරය:',
       guidedMode: 'මඟපෙන්වන ලද ආකාරය (ස්වයංක්‍රීය ගණනය)',
       independentMode: 'ස්වාධීන පුහුණුව (ස්වයං ගණනය සහ පරීක්ෂාව)',
+      invSelector: 'පරීක්ෂණ අරමුණ:',
+      invCurvature: 'ගෝලීය පෘෂ්ඨයක වක්‍රතා අරය (R)',
+      invThickness: 'තල වීදුරු තහඩුවක ඝනකම (t)',
       transferReading: 'ගෝලමාන පාඨාංකය වගුවට ඇතුළත් කරන්න:',
       logH0: 'තල වීදුරු පාඨාංකය (h₀) වෙත',
-      logH1: 'ගෝලීය පාඨාංකය (h₁) වෙත',
+      logH1: investigationType === 'curvature' ? 'ගෝලීය පාඨාංකය (h₁) වෙත' : 'තහඩු පාඨාංකය (h₁) වෙත',
       obsTableLegs: 'වගුව 1: බාහිර පාද අතර දුර (a)',
       side1: 'පාදය a₁ (mm)',
       side2: 'පාදය a₂ (mm)',
       side3: 'පාදය a₃ (mm)',
       meanA: 'මධ්‍යන්‍ය පාද දුර a (mm)',
-      obsTableH: 'වගුව 2: එසවීම / උස (h) පාඨාංක',
+      obsTableH: investigationType === 'curvature' ? 'වගුව 2: එසවීම / උස (h) පාඨාංක' : 'වගුව: තහඩු ඝනකම (t) පාඨාංක',
       planeZero: 'තල වීදුරු පාඨාංකය h₀ (mm):',
-      sphericalTrial1: 'ගෝලීය පාඨාංකය 1 (mm)',
-      sphericalTrial2: 'ගෝලීය පාඨාංකය 2 (mm)',
-      sphericalTrial3: 'ගෝලීය පාඨාංකය 3 (mm)',
-      meanH1: 'මධ්‍යන්‍ය ගෝලීය පාඨාංකය h₁ (mm)',
-      elevationH: 'එසවීම h = |h₁ - h₀| (mm)',
-      calcTitle: 'වක්‍රතා අරය ගණනය කිරීම',
+      sphericalTrial1: investigationType === 'curvature' ? 'ගෝලීය පාඨාංකය 1 (mm)' : 'තහඩු පාඨාංකය 1 (mm)',
+      sphericalTrial2: investigationType === 'curvature' ? 'ගෝලීය පාඨාංකය 2 (mm)' : 'තහඩු පාඨාංකය 2 (mm)',
+      sphericalTrial3: investigationType === 'curvature' ? 'ගෝලීය පාඨාංකය 3 (mm)' : 'තහඩු පාඨාංකය 3 (mm)',
+      meanH1: investigationType === 'curvature' ? 'මධ්‍යන්‍ය ගෝලීය පාඨාංකය h₁ (mm)' : 'මධ්‍යන්‍ය තහඩු පාඨාංකය h₁ (mm)',
+      elevationH: investigationType === 'curvature' ? 'එසවීම h = |h₁ - h₀| (mm)' : 'ඝනකම t = |h₁ - h₀| (mm)',
+      calcTitle: investigationType === 'curvature' ? 'වක්‍රතා අරය ගණනය කිරීම' : 'තහඩුවේ ඝනකම ගණනය කිරීම',
       radiusLabel: 'වක්‍රතා අරය (R):',
+      thicknessLabel: 'වීදුරු තහඩුවේ ඝනකම (t):',
       formulaBreakdown: 'සමීකරණය: R = (a² / 6h) + (h / 2)',
+      thicknessFormula: 'සමීකරණය: t = |h₁ - h₀|',
       checkCalcs: 'මගේ ගණනය කිරීම් පරීක්ෂා කරන්න',
       revealSolution: 'ආදර්ශ පිළිතුර පෙන්වන්න',
       hideSolution: 'ආදර්ශ පිළිතුර සඟවන්න',
@@ -175,12 +192,26 @@ export const SpherometerCurvaturePractical: React.FC<SpherometerCurvaturePractic
     },
   }[locale];
 
+  const handleSelectInvestigation = (type: SpherometerInvestigation) => {
+    updateObservations({ investigationType: type });
+  };
+
   const handleLoadSample = () => {
-    loadSampleObservations({
-      aTrials: ['40.1', '39.9', '40.0'],
-      h0: '0.00',
-      h1Trials: ['1.35', '1.34', '1.33'],
-    });
+    if (investigationType === 'curvature') {
+      loadSampleObservations({
+        investigationType: 'curvature',
+        aTrials: ['40.1', '39.9', '40.0'],
+        h0: '0.00',
+        h1Trials: ['1.35', '1.34', '1.33'],
+      });
+    } else {
+      loadSampleObservations({
+        investigationType: 'thickness',
+        aTrials: ['', '', ''],
+        h0: '0.00',
+        h1Trials: ['1.22', '1.24', '1.23'],
+      });
+    }
   };
 
   const handleClear = () => {
@@ -205,6 +236,8 @@ export const SpherometerCurvaturePractical: React.FC<SpherometerCurvaturePractic
       ? calculateSpherometerCurvature(expectedMeanA, expectedSagitta, 0.01)
       : null;
 
+  const expectedSlideThickness = expectedSagitta;
+
   // Log reading from live spherometer
   const handleLogH0 = () => {
     updateObservations({ h0: liveReading.hMm.toFixed(2) });
@@ -228,40 +261,54 @@ export const SpherometerCurvaturePractical: React.FC<SpherometerCurvaturePractic
     const results: Record<string, boolean> = {};
     const feedback: Record<string, { en: string; si: string }> = {};
 
-    const stuMeanA = parseFloat(calculations.meanA || '');
-    if (expectedMeanA !== null) {
-      const isMeanCorrect = !isNaN(stuMeanA) && Math.abs(stuMeanA - expectedMeanA) <= 0.05;
-      results.meanA = isMeanCorrect;
-      if (!isMeanCorrect) {
-        feedback.meanA = {
-          en: `Mean leg distance a = (${aTrials.join(' + ')}) / 3 = ${expectedMeanA} mm.`,
-          si: `මධ්‍යන්‍ය පාද දුර a = (${aTrials.join(' + ')}) / 3 = ${expectedMeanA} mm විය යුතුය.`,
-        };
+    if (investigationType === 'curvature') {
+      const stuMeanA = parseFloat(calculations.meanA || '');
+      if (expectedMeanA !== null) {
+        const isMeanCorrect = !isNaN(stuMeanA) && Math.abs(stuMeanA - expectedMeanA) <= 0.05;
+        results.meanA = isMeanCorrect;
+        if (!isMeanCorrect) {
+          feedback.meanA = {
+            en: `Mean leg distance a = (${aTrials.join(' + ')}) / 3 = ${expectedMeanA} mm.`,
+            si: `මධ්‍යන්‍ය පාද දුර a = (${aTrials.join(' + ')}) / 3 = ${expectedMeanA} mm විය යුතුය.`,
+          };
+        }
       }
-    }
 
-    const stuH = parseFloat(calculations.elevationH || '');
-    if (expectedSagitta !== null) {
-      const isHCorrect = !isNaN(stuH) && Math.abs(stuH - expectedSagitta) <= 0.02;
-      results.elevationH = isHCorrect;
-      if (!isHCorrect) {
-        feedback.elevationH = {
-          en: `Elevation h = |h₁ (${expectedMeanH1}) - h₀ (${zeroH0})| = ${expectedSagitta} mm.`,
-          si: `එසවීම h = |h₁ (${expectedMeanH1}) - h₀ (${zeroH0})| = ${expectedSagitta} mm විය යුතුය.`,
-        };
+      const stuH = parseFloat(calculations.elevationH || '');
+      if (expectedSagitta !== null) {
+        const isHCorrect = !isNaN(stuH) && Math.abs(stuH - expectedSagitta) <= 0.02;
+        results.elevationH = isHCorrect;
+        if (!isHCorrect) {
+          feedback.elevationH = {
+            en: `Elevation h = |h₁ (${expectedMeanH1}) - h₀ (${zeroH0})| = ${expectedSagitta} mm.`,
+            si: `එසවීම h = |h₁ (${expectedMeanH1}) - h₀ (${zeroH0})| = ${expectedSagitta} mm විය යුතුය.`,
+          };
+        }
       }
-    }
 
-    const stuR = parseFloat(calculations.radiusOfCurvature || '');
-    if (expectedResult && expectedResult.radiusMm !== null) {
-      const expR = expectedResult.radiusMm;
-      const isRCorrect = !isNaN(stuR) && Math.abs(stuR - expR) / expR <= 0.03;
-      results.radiusOfCurvature = isRCorrect;
-      if (!isRCorrect) {
-        feedback.radiusOfCurvature = {
-          en: `Radius R = (a² / 6h) + (h / 2) ≈ ${expR} mm. Verify powers and division.`,
-          si: `වක්‍රතා අරය R = (a² / 6h) + (h / 2) ≈ ${expR} mm වේ. සූත්‍රය පරීක්ෂා කරන්න.`,
-        };
+      const stuR = parseFloat(calculations.radiusOfCurvature || '');
+      if (expectedResult && expectedResult.radiusMm !== null) {
+        const isRCorrect = !isNaN(stuR) && Math.abs(stuR - expectedResult.radiusMm) / expectedResult.radiusMm <= 0.03;
+        results.radiusOfCurvature = isRCorrect;
+        if (!isRCorrect) {
+          feedback.radiusOfCurvature = {
+            en: `Expected R = (a² / 6h) + (h / 2) ≈ ${expectedResult.radiusMm} mm. Check a and h.`,
+            si: `බලාපොරොත්තු අරය R = (a² / 6h) + (h / 2) ≈ ${expectedResult.radiusMm} mm වේ. a සහ h පරීක්ෂා කරන්න.`,
+          };
+        }
+      }
+    } else {
+      // Thickness mode
+      const stuThick = parseFloat(calculations.slideThickness || calculations.elevationH || '');
+      if (expectedSlideThickness !== null) {
+        const isThickCorrect = !isNaN(stuThick) && Math.abs(stuThick - expectedSlideThickness) <= 0.02;
+        results.slideThickness = isThickCorrect;
+        if (!isThickCorrect) {
+          feedback.slideThickness = {
+            en: `Slide thickness t = |h₁ (${expectedMeanH1}) - h₀ (${zeroH0})| = ${expectedSlideThickness} mm.`,
+            si: `තහඩු ඝනකම t = |h₁ (${expectedMeanH1}) - h₀ (${zeroH0})| = ${expectedSlideThickness} mm විය යුතුය.`,
+          };
+        }
       }
     }
 
@@ -296,6 +343,32 @@ export const SpherometerCurvaturePractical: React.FC<SpherometerCurvaturePractic
           <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">
             {t.procedure}
           </p>
+
+          {/* Investigation Selector Pills */}
+          <div className="pt-2 border-t border-[#DFE8EF] dark:border-[#1E334D] space-y-2">
+            <span className="text-xs font-semibold text-[#14243A] dark:text-[#F8FAFC] block">
+              {t.invSelector}
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { id: 'curvature', label: t.invCurvature },
+                { id: 'thickness', label: t.invThickness },
+              ].map((inv) => (
+                <button
+                  key={inv.id}
+                  type="button"
+                  onClick={() => handleSelectInvestigation(inv.id as SpherometerInvestigation)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    investigationType === inv.id
+                      ? 'bg-[#0F766E] text-white shadow-xs'
+                      : 'bg-[#F6FAFD] dark:bg-[#0B131E] text-[#64748B] dark:text-[#94A3B8] hover:text-[#14243A] dark:hover:text-[#F8FAFC] border border-[#DFE8EF] dark:border-[#1E334D]'
+                  }`}
+                >
+                  {inv.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* Mode Switcher */}
           <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[#DFE8EF] dark:border-[#1E334D]">
@@ -368,7 +441,9 @@ export const SpherometerCurvaturePractical: React.FC<SpherometerCurvaturePractic
         <CardHeader className="p-6 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-[#DFE8EF] dark:border-[#1E334D]">
           <div>
             <CardTitle className="text-base font-bold text-[#14243A] dark:text-[#F8FAFC]">
-              {t.obsTableLegs} &amp; {t.obsTableH}
+              {investigationType === 'curvature'
+                ? `${t.obsTableLegs} & ${t.obsTableH}`
+                : t.obsTableH}
             </CardTitle>
           </div>
 
@@ -401,57 +476,59 @@ export const SpherometerCurvaturePractical: React.FC<SpherometerCurvaturePractic
         </CardHeader>
 
         <CardContent className="p-6 space-y-6">
-          {/* Table 1: Legs */}
-          <div className="space-y-2">
-            <span className="text-xs font-bold text-[#14243A] dark:text-[#F8FAFC] block">
-              {t.obsTableLegs}
-            </span>
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse min-w-[400px]">
-                <thead>
-                  <tr className="border-b border-[#DFE8EF] dark:border-[#1E334D] bg-[#F6FAFD] dark:bg-[#0B131E] text-[#64748B] dark:text-[#94A3B8]">
-                    <th className="p-3 font-semibold">{t.side1}</th>
-                    <th className="p-3 font-semibold">{t.side2}</th>
-                    <th className="p-3 font-semibold">{t.side3}</th>
-                    <th className="p-3 font-semibold text-[#0F766E]">{t.meanA}</th>
-                  </tr>
-                </thead>
-                <tbody className="font-mono">
-                  <tr>
-                    <td className="p-2">
-                      <input
-                        type="text"
-                        value={aTrials[0]}
-                        onChange={(e) => updateObservations({ aTrials: [e.target.value, aTrials[1], aTrials[2]] })}
-                        className="w-20 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
-                      />
-                    </td>
-                    <td className="p-2">
-                      <input
-                        type="text"
-                        value={aTrials[1]}
-                        onChange={(e) => updateObservations({ aTrials: [aTrials[0], e.target.value, aTrials[2]] })}
-                        className="w-20 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
-                      />
-                    </td>
-                    <td className="p-2">
-                      <input
-                        type="text"
-                        value={aTrials[2]}
-                        onChange={(e) => updateObservations({ aTrials: [aTrials[0], aTrials[1], e.target.value] })}
-                        className="w-20 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
-                      />
-                    </td>
-                    <td className="p-3 font-bold text-[#0F766E]">
-                      {expectedMeanA !== null ? `${expectedMeanA} mm` : '—'}
-                    </td>
-                  </tr>
-                </tbody>
-              </table>
+          {/* Table 1: Legs (Shown for Curvature) */}
+          {investigationType === 'curvature' && (
+            <div className="space-y-2">
+              <span className="text-xs font-bold text-[#14243A] dark:text-[#F8FAFC] block">
+                {t.obsTableLegs}
+              </span>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left text-xs border-collapse min-w-[400px]">
+                  <thead>
+                    <tr className="border-b border-[#DFE8EF] dark:border-[#1E334D] bg-[#F6FAFD] dark:bg-[#0B131E] text-[#64748B] dark:text-[#94A3B8]">
+                      <th className="p-3 font-semibold">{t.side1}</th>
+                      <th className="p-3 font-semibold">{t.side2}</th>
+                      <th className="p-3 font-semibold">{t.side3}</th>
+                      <th className="p-3 font-semibold text-[#0F766E]">{t.meanA}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="font-mono">
+                    <tr>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          value={aTrials[0]}
+                          onChange={(e) => updateObservations({ aTrials: [e.target.value, aTrials[1], aTrials[2]] })}
+                          className="w-20 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          value={aTrials[1]}
+                          onChange={(e) => updateObservations({ aTrials: [aTrials[0], e.target.value, aTrials[2]] })}
+                          className="w-20 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          value={aTrials[2]}
+                          onChange={(e) => updateObservations({ aTrials: [aTrials[0], aTrials[1], e.target.value] })}
+                          className="w-20 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                        />
+                      </td>
+                      <td className="p-3 font-bold text-[#0F766E]">
+                        {expectedMeanA !== null ? `${expectedMeanA} mm` : '—'}
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Table 2: Sagitta H */}
+          {/* Table 2: Sagitta / Slide Thickness */}
           <div className="space-y-2">
             <span className="text-xs font-bold text-[#14243A] dark:text-[#F8FAFC] block">
               {t.obsTableH}
@@ -513,13 +590,26 @@ export const SpherometerCurvaturePractical: React.FC<SpherometerCurvaturePractic
                       ) : (
                         <input
                           type="text"
-                          value={calculations.elevationH || ''}
-                          onChange={(e) => updateCalculation('elevationH', e.target.value)}
-                          placeholder="h (mm)"
+                          value={
+                            investigationType === 'curvature'
+                              ? calculations.elevationH || ''
+                              : calculations.slideThickness || ''
+                          }
+                          onChange={(e) =>
+                            updateCalculation(
+                              investigationType === 'curvature' ? 'elevationH' : 'slideThickness',
+                              e.target.value
+                            )
+                          }
+                          placeholder={investigationType === 'curvature' ? 'h (mm)' : 't (mm)'}
                           className={`w-20 px-2 py-1 rounded border text-xs ${
-                            calculationResults?.elevationH === true
+                            (investigationType === 'curvature'
+                              ? calculationResults?.elevationH
+                              : calculationResults?.slideThickness) === true
                               ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30'
-                              : calculationResults?.elevationH === false
+                              : (investigationType === 'curvature'
+                                  ? calculationResults?.elevationH
+                                  : calculationResults?.slideThickness) === false
                               ? 'border-rose-500 bg-rose-50 dark:bg-rose-950/30'
                               : 'border-[#DFE8EF] dark:border-[#1E334D]'
                           }`}
@@ -573,23 +663,33 @@ export const SpherometerCurvaturePractical: React.FC<SpherometerCurvaturePractic
               )}
             </div>
 
-            <div className="p-3 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60 space-y-1 text-xs font-mono">
-              <span className="text-[10px] text-[#64748B] block font-sans">{t.radiusLabel}</span>
-              {mode === 'guided' || showSolution ? (
+            {investigationType === 'curvature' ? (
+              <div className="p-3 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60 space-y-1 text-xs font-mono">
+                <span className="text-[10px] text-[#64748B] block font-sans">{t.radiusLabel}</span>
+                {mode === 'guided' || showSolution ? (
+                  <span className="text-sm font-bold text-[#0F766E] dark:text-[#14B8A6]">
+                    {expectedResult && expectedResult.radiusMm !== null ? `${expectedResult.radiusMm} mm` : '—'}
+                  </span>
+                ) : (
+                  <input
+                    type="text"
+                    value={calculations.radiusOfCurvature || ''}
+                    onChange={(e) => updateCalculation('radiusOfCurvature', e.target.value)}
+                    placeholder="R (mm)"
+                    className="w-32 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] text-xs font-mono"
+                  />
+                )}
+                <span className="text-[11px] text-[#64748B] block font-sans">{t.formulaBreakdown}</span>
+              </div>
+            ) : (
+              <div className="p-3 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60 space-y-1 text-xs font-mono">
+                <span className="text-[10px] text-[#64748B] block font-sans">{t.thicknessLabel}</span>
                 <span className="text-sm font-bold text-[#0F766E] dark:text-[#14B8A6]">
-                  {expectedResult && expectedResult.radiusMm !== null ? `${expectedResult.radiusMm} mm` : '—'}
+                  {expectedSlideThickness !== null ? `${expectedSlideThickness} mm` : '—'}
                 </span>
-              ) : (
-                <input
-                  type="text"
-                  value={calculations.radiusOfCurvature || ''}
-                  onChange={(e) => updateCalculation('radiusOfCurvature', e.target.value)}
-                  placeholder="R (mm)"
-                  className="w-32 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] text-xs font-mono"
-                />
-              )}
-              <span className="text-[11px] text-[#64748B] block font-sans">{t.formulaBreakdown}</span>
-            </div>
+                <span className="text-[11px] text-[#64748B] block font-sans">{t.thicknessFormula}</span>
+              </div>
+            )}
           </div>
 
           {/* Precautions & Self-Evaluation Rubrics */}

@@ -15,6 +15,11 @@ import {
   addVectors,
   subtractVectors,
   parseNumericalInput,
+  calculateBlockVolume,
+  calculateSphereVolume,
+  calculateWireCrossSection,
+  calculatePaperThickness,
+  calculateCapillaryBoreDimensions,
 } from '../physics/calculations';
 
 describe('Unit 1 Measurement - Instrument Physics & Metrology', () => {
@@ -316,6 +321,40 @@ describe('Unit 1 Measurement - Instrument Physics & Metrology', () => {
     it('strips trailing units gracefully', () => {
       expect(parseNumericalInput('28.6 mm')).toBe(28.6);
       expect(parseNumericalInput('2700 kg m⁻³')).toBe(2700);
+    });
+  });
+
+  describe('Comprehensive Measurement Practical Calculations', () => {
+    it('calculates rectangular block volume', () => {
+      // 50 mm x 20 mm x 10 mm = 10,000 mm^3
+      expect(calculateBlockVolume(50, 20, 10)).toBe(10000);
+      expect(calculateBlockVolume(0, 20, 10)).toBe(0);
+    });
+
+    it('calculates solid sphere volume', () => {
+      // D = 20 mm -> r = 10 mm -> V = (4/3)*pi*1000 = 4188.79 mm^3
+      expect(calculateSphereVolume(20)).toBe(4188.79);
+      expect(calculateSphereVolume(0)).toBe(0);
+    });
+
+    it('calculates wire cross-sectional area', () => {
+      // d = 0.5 mm -> A = (pi/4)*0.25 = 0.1963 mm^2
+      expect(calculateWireCrossSection(0.5)).toBe(0.1963);
+      expect(calculateWireCrossSection(0)).toBe(0);
+    });
+
+    it('calculates paper thickness from 100-sheet stack', () => {
+      // stack = 9.80 mm, 100 sheets -> 0.0980 mm
+      expect(calculatePaperThickness(9.8, 100)).toBe(0.098);
+      expect(calculatePaperThickness(0, 100)).toBe(0);
+    });
+
+    it('calculates capillary bore dimensions from horizontal and vertical traverses', () => {
+      // dh = 0.62 mm, dv = 0.60 mm -> mean = 0.61 mm, r = 0.305 mm
+      const res = calculateCapillaryBoreDimensions(0.62, 0.6);
+      expect(res.meanDiameterMm).toBe(0.61);
+      expect(res.radiusMm).toBe(0.305);
+      expect(res.crossSectionAreaMm2).toBeCloseTo(0.2922, 3);
     });
   });
 });

@@ -16,8 +16,16 @@ import {
   GraduationCap,
   AlertTriangle,
 } from 'lucide-react';
-import { applyZeroCorrection, calculateCoinVolumeAndUncertainty } from '../physics/calculations';
+import {
+  applyZeroCorrection,
+  calculateCoinVolumeAndUncertainty,
+  calculateWireCrossSection,
+  calculateSphereVolume,
+  calculatePaperThickness,
+} from '../physics/calculations';
 import { usePracticalWork } from '@/shared/practicals';
+
+export type MicrometerSpecimen = 'coin' | 'wire' | 'ball' | 'slide' | 'paper';
 
 interface MicrometerCoinPracticalProps {
   locale?: Locale;
@@ -35,7 +43,6 @@ export const MicrometerCoinPractical: React.FC<MicrometerCoinPracticalProps> = (
     updateObservations,
     calculations,
     updateCalculation,
-    calculationResults,
     calculationFeedback,
     setCalculationCheck,
     rubricScores,
@@ -49,8 +56,13 @@ export const MicrometerCoinPractical: React.FC<MicrometerCoinPracticalProps> = (
     defaultMode: 'guided',
     defaultZeroError: '0.00',
     defaultObservations: {
+      specimenType: 'coin',
       diaTrials: ['', '', ''],
       thickTrials: ['', '', ''],
+      wireDiaTrials: ['', '', ''],
+      ballDiaTrials: ['', '', ''],
+      slideThickTrials: ['', '', ''],
+      paperStackTrials: ['', '', ''],
     },
     defaultCalculations: {
       meanDia: '',
@@ -59,17 +71,55 @@ export const MicrometerCoinPractical: React.FC<MicrometerCoinPracticalProps> = (
       corrThick: '',
       volume: '',
       percentageUncertainty: '',
+      meanWireDia: '',
+      corrWireDia: '',
+      wireArea: '',
+      meanBallDia: '',
+      corrBallDia: '',
+      ballVolume: '',
+      meanSlideThick: '',
+      corrSlideThick: '',
+      meanPaperStack: '',
+      corrPaperStack: '',
+      paperSingleThick: '',
     },
   });
+
+  const specimenType: MicrometerSpecimen = (observations.specimenType as MicrometerSpecimen) || 'coin';
 
   const diaTrials: [string, string, string] = (
     Array.isArray(observations.diaTrials) && observations.diaTrials.length === 3
       ? observations.diaTrials
       : ['', '', '']
   ) as [string, string, string];
+
   const thickTrials: [string, string, string] = (
     Array.isArray(observations.thickTrials) && observations.thickTrials.length === 3
       ? observations.thickTrials
+      : ['', '', '']
+  ) as [string, string, string];
+
+  const wireDiaTrials: [string, string, string] = (
+    Array.isArray(observations.wireDiaTrials) && observations.wireDiaTrials.length === 3
+      ? observations.wireDiaTrials
+      : ['', '', '']
+  ) as [string, string, string];
+
+  const ballDiaTrials: [string, string, string] = (
+    Array.isArray(observations.ballDiaTrials) && observations.ballDiaTrials.length === 3
+      ? observations.ballDiaTrials
+      : ['', '', '']
+  ) as [string, string, string];
+
+  const slideThickTrials: [string, string, string] = (
+    Array.isArray(observations.slideThickTrials) && observations.slideThickTrials.length === 3
+      ? observations.slideThickTrials
+      : ['', '', '']
+  ) as [string, string, string];
+
+  const paperStackTrials: [string, string, string] = (
+    Array.isArray(observations.paperStackTrials) && observations.paperStackTrials.length === 3
+      ? observations.paperStackTrials
       : ['', '', '']
   ) as [string, string, string];
 
@@ -83,33 +133,48 @@ export const MicrometerCoinPractical: React.FC<MicrometerCoinPracticalProps> = (
 
   const t = {
     en: {
-      title: 'Practical 2: Diameter & Thickness of a Coin',
-      aim: 'Aim: To measure the diameter and thickness of a coin accurately using a micrometer screw gauge and determine its volume and fractional uncertainty.',
-      apparatus: 'Apparatus: Micrometer Screw Gauge (0–25 mm range, Least Count 0.01 mm), Standard Coin (e.g. 10 Rupee coin).',
+      title: 'Practical 2: Measurement of Small Lengths Using a Micrometer Screw Gauge',
+      aim: 'Aim: To measure the dimensions of small objects (coin, thin wire, small sphere, glass slide, paper stack) accurately using a micrometer screw gauge and determine derived physical quantities.',
+      apparatus: 'Apparatus: Micrometer Screw Gauge (0–25 mm range, Least Count 0.01 mm), Standard Coin, Resistance Wire, Steel Ball Bearing, Microscope Glass Slide, Stack of 100 Uniform Paper Sheets.',
       theoryTitle: 'Theory & Experimental Precautions',
-      theoryText: 'The ratchet clutch must always be used when tightening the spindle onto the coin to prevent deformation and avoid false pitch advancement. To account for non-circularity, diameter is measured across three coplanar diameter orientations (at 0°, 60°, and 120° across the face of the coin). Thickness is measured separately at three distinct positions along the outer rim. Since the standard micrometer has a measuring range of 0–25.00 mm, specimens must have diameter < 25 mm; for larger specimens, a 25–50 mm micrometer or Vernier caliper is selected. Volume V = π(D/2)²t. Maximum fractional uncertainty is ΔV/V = 2(ΔD/D) + (Δt/t), where ΔD = Δt = 0.01 mm.',
-      procedure: 'Procedure: 1. Determine least count and check zero error using the ratchet. 2. Measure diameter along 3 distinct diameter orientations (0°, 60°, 120°). 3. Measure thickness at 3 distinct positions along the rim. 4. Correct for signed zero error. 5. Compute mean dimensions, volume, and percentage uncertainty.',
+      theoryText: 'The ratchet clutch must always be used when tightening the spindle onto any specimen to prevent deformation and avoid false pitch advancement. For circular objects (coin, wire, sphere), measurements must be taken in at least three different orientations or positions to detect and average out non-circularity or taper. For thin sheets of paper, a single sheet reading has high relative uncertainty; thus 100 sheets are measured together and divided by 100. Zero error must be observed with clean anvils before testing and applied algebraically: Corrected = Observed - Zero Error.',
+      procedure: 'Procedure: 1. Determine least count and check zero error using the ratchet. 2. Select specimen type. 3. Take 3 independent readings across orthogonal axes or rim positions. 4. Correct for signed zero error. 5. Compute mean dimensions and derived properties (volume, cross-section area, single sheet thickness).',
       modeSelector: 'Learning Mode:',
       guidedMode: 'Guided Mode (Hints & Auto-Calculation)',
       independentMode: 'Independent Practice (Manual Calculations & Check)',
+      specimenSelector: 'Specimen / Investigation Target:',
+      specCoin: 'Coin (Diameter & Thickness)',
+      specWire: 'Thin Wire (Cross-Section Area)',
+      specBall: 'Small Bearing Sphere (Volume)',
+      specSlide: 'Microscope Glass Slide (Thickness)',
+      specPaper: 'Paper Sheet (100-Sheet Stack)',
       transferReading: 'Transfer Gauge Reading to Table:',
       logDia: 'Log to Diameter (D)',
       logThick: 'Log to Thickness (t)',
+      logWire: 'Log Wire Diameter (d)',
+      logBall: 'Log Sphere Diameter (D)',
+      logSlide: 'Log Slide Thickness (t)',
+      logPaper: 'Log Stack Thickness (t₁₀₀)',
       obsTable: 'Observation & Measurement Table',
       param: 'Parameter',
-      dia1: 'Orientation 0° (mm)',
-      dia2: 'Orientation 60° (mm)',
-      dia3: 'Orientation 120° (mm)',
-      thick1: 'Rim Pos 1 (mm)',
-      thick2: 'Rim Pos 2 (mm)',
-      thick3: 'Rim Pos 3 (mm)',
+      trial1: 'Reading 1 (mm)',
+      trial2: 'Reading 2 (mm)',
+      trial3: 'Reading 3 (mm)',
       meanObs: 'Mean Observed (mm)',
       correctedVal: 'Corrected Value (mm)',
       coinDia: 'Coin Diameter (D)',
       coinThick: 'Coin Thickness (t)',
+      wireDia: 'Wire Diameter (d)',
+      ballDia: 'Sphere Diameter (D)',
+      slideThick: 'Slide Thickness (t)',
+      paperStack: '100-Sheet Stack (t₁₀₀)',
       zeroErrorLabel: 'Signed Zero Error (mm):',
-      calcTitle: 'Volume & Uncertainty Analysis',
-      volumeLabel: 'Coin Volume (V):',
+      calcTitle: 'Derived Physical Quantities & Uncertainty',
+      volumeLabel: 'Volume (V):',
+      wireAreaLabel: 'Cross-Section Area (A = π/4·d²):',
+      ballVolLabel: 'Sphere Volume (V = 4/3·π·R³):',
+      slideThickLabel: 'Corrected Thickness (t):',
+      paperSingleLabel: 'Single Sheet Thickness (t₁ = t₁₀₀ / 100):',
       fractionalUncertainty: 'Fractional Uncertainty (ΔV/V):',
       percentageUncertainty: 'Percentage Uncertainty (%):',
       checkCalcs: 'Check My Calculations',
@@ -117,15 +182,15 @@ export const MicrometerCoinPractical: React.FC<MicrometerCoinPracticalProps> = (
       hideSolution: 'Hide Model Solution',
       rangeWarning: 'Note: Readings > 25.0 mm exceed the 0–25 mm micrometer gauge range; in a laboratory, use a 25–50 mm micrometer or Vernier caliper.',
       precautionsTitle: 'Laboratory Precautions & Self-Evaluation Rubrics',
-      q1Title: '1. Why must the ratchet head always be used to tighten the spindle onto the coin?',
+      q1Title: '1. Why must the ratchet head always be used to tighten the spindle onto the specimen?',
       q1Model: 'Model Answer: The ratchet mechanism slips when a predetermined uniform tightening torque is reached. This prevents specimen compression/deformation and avoids stripping or forcing the micrometer screw pitch.',
       q1Rubric: 'Rubric: Award 1 mark for uniform tightening / avoiding deformation; 1 mark for protecting instrument threads.',
-      q2Title: '2. Why is the diameter measured along 3 different orientations (0°, 60°, 120°)?',
-      q2Model: 'Model Answer: Minted coins often exhibit slight elliptical eccentricity or border variations. Measuring three symmetrically distributed coplanar axes eliminates non-circularity bias.',
-      q2Rubric: 'Rubric: Award 1 mark for non-circularity/elliptical shape; 1 mark for taking the mean to average out variations.',
-      q3Title: '3. Why does the fractional uncertainty formula have a factor of 2 before ΔD/D: ΔV/V = 2(ΔD/D) + (Δt/t)?',
-      q3Model: 'Model Answer: Volume depends on diameter squared (V = π/4 · D² · t). When propagating maximum fractional uncertainty of a power term xⁿ, the fractional error is multiplied by the index n (here n = 2).',
-      q3Rubric: 'Rubric: Award 1 mark for V ∝ D² dependence; 1 mark for power rule in uncertainty propagation.',
+      q2Title: '2. Why is wire or coin diameter measured along multiple different positions and orientations?',
+      q2Model: 'Model Answer: Drawn wires and minted coins often exhibit slight elliptical cross-sections, nonuniform wear, or thickness taper along their length. Taking measurements along multiple orientations and positions eliminates non-circularity bias.',
+      q2Rubric: 'Rubric: Award 1 mark for non-uniformity/non-circularity; 1 mark for taking the mean to eliminate bias.',
+      q3Title: '3. Why is the thickness of paper measured as a stack of 100 sheets rather than a single sheet?',
+      q3Model: 'Model Answer: The thickness of a single sheet (~0.1 mm) is comparable to the micrometer least count (0.01 mm), resulting in ~10% fractional uncertainty. Measuring 100 sheets (~10 mm) reduces the fractional measurement uncertainty by a factor of 100.',
+      q3Rubric: 'Rubric: Award 1 mark for high percentage uncertainty on a single sheet; 1 mark for 100-fold reduction in fractional uncertainty.',
       rubricMark: 'Mark Awarded:',
       submitLab: 'Submit Practical Record',
       submittedMsg: 'Practical record completed and saved to your laboratory log.',
@@ -134,33 +199,48 @@ export const MicrometerCoinPractical: React.FC<MicrometerCoinPracticalProps> = (
       printSheet: 'Print Laboratory Record',
     },
     si: {
-      title: 'ප්‍රායෝගික පරීක්ෂණය 2: කාසියක විෂ්කම්භය සහ ඝනකම නිර්ණය කිරීම',
-      aim: 'අරමුණ: මයික්‍රොමීටර් ඉස්කුරුප්පු ආමානය භාවිතයෙන් කාසියක විෂ්කම්භය සහ ඝනකම නිරවද්‍යව මැන, එහි පරිමාව සහ භාගික අවිනිශ්චිතතාව ගණනය කිරීම.',
-      apparatus: 'උපකරණ: මයික්‍රොමීටර් ඉස්කුරුප්පු ආමානය (0–25 mm පරාසය, කුඩාම මිනුම 0.01 mm), සම්මත කාසියක් (උදා: රුපියල් 10 කාසිය).',
+      title: 'ප්‍රායෝගික පරීක්ෂණය 2: මයික්‍රොමීටර් ඉස්කුරුප්පු ආමානය භාවිතයෙන් කුඩා දිගවල් මැනීම',
+      aim: 'අරමුණ: මයික්‍රොමීටර් ඉස්කුරුප්පු ආමානය භාවිතයෙන් කුඩා වස්තුවල (කාසිය, සිහින් කම්බිය, කුඩා ගෝලය, වීදුරු තහඩුව, කඩදාසි තට්ටුව) මාන නිරවද්‍යව මැන ව්‍යුත්පන්න භෞතික රාශීන් නිර්ණය කිරීම.',
+      apparatus: 'උපකරණ: මයික්‍රොමීටර් ඉස්කුරුප්පු ආමානය (0–25 mm පරාසය, කුඩාම මිනුම 0.01 mm), සම්මත කාසියක්, ප්‍රතිරෝධක කම්බියක්, කුඩා වානේ බෝලයක්/ගෝලයක්, අන්වීක්ෂ වීදුරු තහඩුවක්, ඒකාකාර කඩදාසි 100 ක තට්ටුවක්.',
       theoryTitle: 'මූලධර්මය සහ පූර්වෝපාය',
-      theoryText: 'කාසිය සිරකිරීමේදී විරූපණය වැළැක්වීමට සහ නිරවද්‍ය තෙරපුමක් පවත්වා ගැනීමට සෑම විටම රැචට් හිස භාවිත කළ යුතුය. කාසියේ අණ්ඩාකාර විකෘතිතා මඟහරවා ගැනීමට විෂ්කම්භය එකම තලයේ කෝණික දිශා 3ක් ඔස්සේ (0°, 60°, සහ 120° ඔස්සේ) මනිනු ලැබේ. ඝනකම වෙනමම කාසියේ දාරයේ වෙනස් ස්ථාන 3කින් මනිනු ලැබේ. සම්මත මයික්‍රොමීටරයේ පරාසය 0–25.0 mm බැවින් 25 mm ට අඩු මාන පමණක් මැනිය හැක (විශාල කාසි සඳහා 25–50 mm ආමානයක් හෝ වර්නියර් කැලිපරයක් තෝරා ගනී). පරිමාව V = π(D/2)²t වේ. උපරිම භාගික අවිනිශ්චිතතාව ΔV/V = 2(ΔD/D) + (Δt/t) වේ (මෙහි ΔD = Δt = 0.01 mm).',
-      procedure: 'ක්‍රමවේදය: 1. කුඩාම මිනුම සහ ශූන්‍ය දෝෂය පරීක්ෂා කිරීම. 2. විෂ්කම්භය කෝණික දිශා 3කින් (0°, 60°, 120°) මැනීම. 3. කාසියේ දාරයේ විවිධ ස්ථාන 3කින් ඝනකම මැනීම. 4. ශූන්‍ය දෝෂ ශෝධනය යෙදීම. 5. පරිමාව සහ ප්‍රතිශත අවිනිශ්චිතතාව ගණනය කිරීම.',
+      theoryText: 'වස්තුව සිරකිරීමේදී විරූපණය වැළැක්වීමට සහ නිරවද්‍ය ඒකාකාර තෙරපුමක් පවත්වා ගැනීමට සෑම විටම රැචට් හිස භාවිත කළ යුතුය. කම්බියක හෝ ගෝලයක විෂ්කම්භය මැනීමේදී අණ්ඩාකාර විකෘතිතා මඟහරවා ගැනීමට වෙනස් ස්ථාන හා දිශා ඔස්සේ පාඨාංක 3ක් ගෙන මධ්‍යන්‍යය ගනු ලැබේ. එක් කඩදාසියක ඝනකම මැනීමේදී ලැබෙන අධික ප්‍රතිශත දෝෂය අවම කිරීමට කඩදාසි 100ක තට්ටුවක ඝනකම මැන එය 100න් බෙදනු ලැබේ. ශූන්‍ය දෝෂය කලින් හඳුනාගෙන ශෝධිත අගය = නිරීක්ෂිත අගය - ශූන්‍ය දෝෂය ලෙස ගණනය කෙරේ.',
+      procedure: 'ක්‍රමවේදය: 1. කුඩාම මිනුම සහ ශූන්‍ය දෝෂය පරීක්ෂා කිරීම. 2. පරීක්ෂා කරන ද්‍රව්‍ය වර්ගය තෝරන්න. 3. අදාළ දිශා ඔස්සේ පාඨාංක 3ක් ලබා ගැනීම. 4. ශූන්‍ය දෝෂ ශෝධනය යෙදීම. 5. මධ්‍යන්‍ය මාන සහ ව්‍යුත්පන්න රාශි (පරිමාව, හරස්කඩ වර්ගඵලය, කඩදාසියක ඝනකම) ගණනය කිරීම.',
       modeSelector: 'ඉගෙනුම් ආකාරය:',
       guidedMode: 'මඟපෙන්වන ලද ආකාරය (ස්වයංක්‍රීය ගණනය)',
       independentMode: 'ස්වාධීන පුහුණුව (ස්වයං ගණනය සහ පරීක්ෂාව)',
+      specimenSelector: 'පරීක්ෂා කරන ද්‍රව්‍යය:',
+      specCoin: 'කාසිය (විෂ්කම්භය සහ ඝනකම)',
+      specWire: 'සිහින් කම්බිය (හරස්කඩ වර්ගඵලය)',
+      specBall: 'කුඩා ගෝලය/බෝලය (පරිමාව)',
+      specSlide: 'වීදුරු තහඩුව (ඝනකම)',
+      specPaper: 'කඩදාසි (100ක තට්ටුව)',
       transferReading: 'ආමාන පාඨාංකය වගුවට ඇතුළත් කරන්න:',
       logDia: 'විෂ්කම්භය (D) වෙත',
       logThick: 'ඝනකම (t) වෙත',
+      logWire: 'කම්බියේ විෂ්කම්භය (d) වෙත',
+      logBall: 'ගෝලයේ විෂ්කම්භය (D) වෙත',
+      logSlide: 'තහඩුවේ ඝනකම (t) වෙත',
+      logPaper: 'කඩදාසි 100 ඝනකම (t₁₀₀) වෙත',
       obsTable: 'නිරීක්ෂණ හා මිනුම් සටහන් වගුව',
       param: 'රාශිය',
-      dia1: '0° දිශාව (mm)',
-      dia2: '60° දිශාව (mm)',
-      dia3: '120° දිශාව (mm)',
-      thick1: 'දාරයේ ස්ථානය 1 (mm)',
-      thick2: 'දාරයේ ස්ථානය 2 (mm)',
-      thick3: 'දාරයේ ස්ථානය 3 (mm)',
+      trial1: 'පාඨාංකය 1 (mm)',
+      trial2: 'පාඨාංකය 2 (mm)',
+      trial3: 'පාඨාංකය 3 (mm)',
       meanObs: 'මධ්‍යන්‍ය නිරීක්ෂිත (mm)',
       correctedVal: 'ශෝධිත අගය (mm)',
       coinDia: 'කාසියේ විෂ්කම්භය (D)',
       coinThick: 'කාසියේ ඝනකම (t)',
+      wireDia: 'කම්බියේ විෂ්කම්භය (d)',
+      ballDia: 'ගෝලයේ විෂ්කම්භය (D)',
+      slideThick: 'වීදුරු තහඩුවේ ඝනකම (t)',
+      paperStack: 'කඩදාසි 100ක ඝනකම (t₁₀₀)',
       zeroErrorLabel: 'ලකුණ සහිත ශූන්‍ය දෝෂය (mm):',
-      calcTitle: 'පරිමාව සහ අවිනිශ්චිතතා විශ්ලේෂණය',
-      volumeLabel: 'කාසියේ පරිමාව (V):',
+      calcTitle: 'ව්‍යුත්පන්න භෞතික රාශි සහ අවිනිශ්චිතතාව',
+      volumeLabel: 'පරිමාව (V):',
+      wireAreaLabel: 'හරස්කඩ වර්ගඵලය (A = π/4·d²):',
+      ballVolLabel: 'ගෝලයේ පරිමාව (V = 4/3·π·R³):',
+      slideThickLabel: 'ශෝධිත ඝනකම (t):',
+      paperSingleLabel: 'එක් කඩදාසියක ඝනකම (t₁ = t₁₀₀ / 100):',
       fractionalUncertainty: 'භාගික අවිනිශ්චිතතාව (ΔV/V):',
       percentageUncertainty: 'ප්‍රතිශත අවිනිශ්චිතතාව (%):',
       checkCalcs: 'මගේ ගණනය කිරීම් පරීක්ෂා කරන්න',
@@ -168,15 +248,15 @@ export const MicrometerCoinPractical: React.FC<MicrometerCoinPracticalProps> = (
       hideSolution: 'ආදර්ශ පිළිතුර සඟවන්න',
       rangeWarning: 'සටහන: 25.0 mm ට වැඩි අගයන් 0–25 mm ආමාන පරාසය ඉක්මවයි; රසායනාගාරයේදී 25–50 mm ආමානයක් හෝ වර්නියර් කැලිපරය යොදා ගන්න.',
       precautionsTitle: 'රසායනාගාර පූර්වෝපාය සහ ස්වයං ඇගයීම් රූබ්රික',
-      q1Title: '1. කාසිය සිරකිරීමේදී රැචට් හිසම භාවිත කළ යුත්තේ ඇයි?',
-      q1Model: 'ආදර්ශ පිළිතුර: නියමිත පීඩනයක් ළඟාවූ විට රැචටය ලිස්සා යාමෙන් කාසිය විරූපණය වීම වැළකෙන අතර ආමානයේ ඉස්කුරුප්පු පොටවලට හානිවීම වැළකේ.',
+      q1Title: '1. වස්තුව සිරකිරීමේදී සෑම විටම රැචට් හිසම භාවිත කළ යුත්තේ ඇයි?',
+      q1Model: 'ආදර්ශ පිළිතුර: නියමිත පීඩනයක් ළඟාවූ විට රැචටය ලිස්සා යාමෙන් වස්තුව විරූපණය වීම වැළකෙන අතර ආමානයේ ඉස්කුරුප්පු පොටවලට හානිවීම වැළකේ.',
       q1Rubric: 'රූබ්රිකය: ඒකාකාර තෙරපුම/විරූපණය වැළැක්වීමට ලකුණු 1; ඉස්කුරුප්පු පොට ආරක්ෂාවට ලකුණු 1.',
-      q2Title: '2. විෂ්කම්භය කෝණික දිශා 3කින් (0°, 60°, 120°) මනින්නේ ඇයි?',
-      q2Model: 'ආදර්ශ පිළිතුර: කාසියේ අණ්ඩාකාර විකෘතිතා හෝ අක්‍රමිකතා හඳුනාගෙන ඒවායේ මධ්‍යන්‍යය ගැනීමෙන් විෂ්කම්භයේ නිරවද්‍යතාව තහවුරු කිරීමට.',
-      q2Rubric: 'රූබ්රිකය: අණ්ඩාකාර හැඩයට ලකුණු 1; මධ්‍යන්‍යයෙන් දෝෂය මඟහැරීමට ලකුණු 1.',
-      q3Title: '3. අවිනිශ්චිතතා සමීකරණයේ ΔD/D ඉදිරියට 2 සාධකයක් ලැබෙන්නේ ඇයි: ΔV/V = 2(ΔD/D) + (Δt/t)?',
-      q3Model: 'ආදර්ශ පිළිතුර: පරිමාව විෂ්කම්භයේ වර්ගයට සමානුපාතික බැවිනි (V ∝ D²). දර්ශක සහිත රාශියක උපරිම භාගික දෝෂය සෙවීමේදී දර්ශකය (2) ඉදිරියට ගුණවේ.',
-      q3Rubric: 'රූබ්රිකය: V ∝ D² පදනමට ලකුණු 1; දර්ශක නීතිය යෙදීමට ලකුණු 1.',
+      q2Title: '2. කම්බියක හෝ කාසියක විෂ්කම්භය වෙනස් ස්ථාන හා දිශා කිහිපයකින් මනින්නේ ඇයි?',
+      q2Model: 'ආදර්ශ පිළිතුර: කම්බි සහ කාසිවල පවතින අණ්ඩාකාර විකෘතිතා හෝ ඒකාකාර නොවන බව හඳුනාගෙන මධ්‍යන්‍යය ගැනීමෙන් දෝෂය අවම කිරීමට.',
+      q2Rubric: 'රූබ්රිකය: අණ්ඩාකාර/අසමානතා හඳුනාගැනීමට ලකුණු 1; මධ්‍යන්‍යයෙන් දෝෂය මඟහැරීමට ලකුණු 1.',
+      q3Title: '3. කඩදාසියක ඝනකම තනිව නොමැන කඩදාසි 100ක තට්ටුවක් ලෙස මනින්නේ ඇයි?',
+      q3Model: 'ආදර්ශ පිළිතුර: එක් කඩදාසියක ඝනකම (~0.1 mm) ආමානයේ කුඩාම මිනුමට (0.01 mm) ආසන්න බැවින් ප්‍රතිශත දෝෂය 10%ක් තරම් ඉහළ වේ. කඩදාසි 100ක තට්ටුවක් මැනීමෙන් භාගික අවිනිශ්චිතතාව 100 ගුණයකින් අඩු වේ.',
+      q3Rubric: 'රූබ්රිකය: එක් කඩදාසියක ප්‍රතිශත දෝෂය ඉහළ වීම දැක්වීමට ලකුණු 1; 100 ගුණයකින් දෝෂය අඩුවීම පෙන්වීමට ලකුණු 1.',
       rubricMark: 'ලබාගත් ලකුණු:',
       submitLab: 'ප්‍රායෝගික සටහන භාරදෙන්න',
       submittedMsg: 'ප්‍රායෝගික වාර්තාව සම්පූර්ණ කර රසායනාගාර සටහනට සුරකින ලදී.',
@@ -186,14 +266,53 @@ export const MicrometerCoinPractical: React.FC<MicrometerCoinPracticalProps> = (
     },
   }[locale];
 
+  const handleSelectSpecimen = (type: MicrometerSpecimen) => {
+    updateObservations({ specimenType: type });
+  };
+
   const handleLoadSample = () => {
-    loadSampleObservations(
-      {
-        diaTrials: ['24.32', '24.30', '24.34'],
-        thickTrials: ['1.86', '1.84', '1.85'],
-      },
-      '+0.02'
-    );
+    if (specimenType === 'coin') {
+      loadSampleObservations(
+        {
+          specimenType: 'coin',
+          diaTrials: ['24.32', '24.30', '24.34'],
+          thickTrials: ['1.86', '1.84', '1.85'],
+        },
+        '+0.02'
+      );
+    } else if (specimenType === 'wire') {
+      loadSampleObservations(
+        {
+          specimenType: 'wire',
+          wireDiaTrials: ['0.48', '0.47', '0.49'],
+        },
+        '+0.01'
+      );
+    } else if (specimenType === 'ball') {
+      loadSampleObservations(
+        {
+          specimenType: 'ball',
+          ballDiaTrials: ['6.34', '6.35', '6.33'],
+        },
+        '+0.01'
+      );
+    } else if (specimenType === 'slide') {
+      loadSampleObservations(
+        {
+          specimenType: 'slide',
+          slideThickTrials: ['1.18', '1.17', '1.19'],
+        },
+        '+0.01'
+      );
+    } else if (specimenType === 'paper') {
+      loadSampleObservations(
+        {
+          specimenType: 'paper',
+          paperStackTrials: ['9.80', '9.78', '9.82'],
+        },
+        '+0.02'
+      );
+    }
   };
 
   const handleClear = () => {
@@ -204,24 +323,51 @@ export const MicrometerCoinPractical: React.FC<MicrometerCoinPracticalProps> = (
     const nums = trials.map((t) => parseFloat(t)).filter((n) => !isNaN(n));
     if (nums.length === 0) return null;
     const sum = nums.reduce((acc, curr) => acc + curr, 0);
-    return Number((sum / nums.length).toFixed(2));
+    return Number((sum / nums.length).toFixed(3));
   };
 
   const ze = parseFloat(zeroError) || 0.0;
+
+  // Coin calculations
   const expectedMeanDia = parseMean(diaTrials);
   const expectedMeanThick = parseMean(thickTrials);
-
   const expectedCorrDia = expectedMeanDia !== null ? applyZeroCorrection(expectedMeanDia, ze) : null;
   const expectedCorrThick = expectedMeanThick !== null ? applyZeroCorrection(expectedMeanThick, ze) : null;
-
   const expectedAnalysis =
     expectedCorrDia !== null && expectedCorrThick !== null
       ? calculateCoinVolumeAndUncertainty(expectedCorrDia, expectedCorrThick, leastCount)
       : null;
 
+  // Wire calculations
+  const expectedMeanWireDia = parseMean(wireDiaTrials);
+  const expectedCorrWireDia = expectedMeanWireDia !== null ? applyZeroCorrection(expectedMeanWireDia, ze) : null;
+  const expectedWireArea = expectedCorrWireDia !== null ? calculateWireCrossSection(expectedCorrWireDia) : null;
+
+  // Ball calculations
+  const expectedMeanBallDia = parseMean(ballDiaTrials);
+  const expectedCorrBallDia = expectedMeanBallDia !== null ? applyZeroCorrection(expectedMeanBallDia, ze) : null;
+  const expectedBallVol = expectedCorrBallDia !== null ? calculateSphereVolume(expectedCorrBallDia) : null;
+
+  // Slide calculations
+  const expectedMeanSlideThick = parseMean(slideThickTrials);
+  const expectedCorrSlideThick = expectedMeanSlideThick !== null ? applyZeroCorrection(expectedMeanSlideThick, ze) : null;
+
+  // Paper calculations
+  const expectedMeanPaperStack = parseMean(paperStackTrials);
+  const expectedCorrPaperStack = expectedMeanPaperStack !== null ? applyZeroCorrection(expectedMeanPaperStack, ze) : null;
+  const expectedPaperSingleThick = expectedCorrPaperStack !== null ? calculatePaperThickness(expectedCorrPaperStack, 100) : null;
+
   // Append reading to first empty trial slot of a target array
-  const handleLogReading = (targetKey: 'diaTrials' | 'thickTrials') => {
-    const raw = observations[targetKey] || ['', '', ''];
+  const handleLogReading = (
+    targetKey:
+      | 'diaTrials'
+      | 'thickTrials'
+      | 'wireDiaTrials'
+      | 'ballDiaTrials'
+      | 'slideThickTrials'
+      | 'paperStackTrials'
+  ) => {
+    const raw = (observations[targetKey] as string[]) || ['', '', ''];
     const currentTrials: [string, string, string] = [raw[0] || '', raw[1] || '', raw[2] || ''];
     const valStr = liveReading.readingMm.toFixed(2);
     const emptyIndex = currentTrials.findIndex((val) => val === '');
@@ -238,53 +384,91 @@ export const MicrometerCoinPractical: React.FC<MicrometerCoinPracticalProps> = (
     const results: Record<string, boolean> = {};
     const feedback: Record<string, { en: string; si: string }> = {};
 
-    const stuMeanDia = parseFloat(calculations.meanDia || '');
-    if (expectedMeanDia !== null) {
-      const isMeanCorrect = !isNaN(stuMeanDia) && Math.abs(stuMeanDia - expectedMeanDia) <= 0.02;
-      results.meanDia = isMeanCorrect;
-      if (!isMeanCorrect) {
-        feedback.meanDia = {
-          en: `Mean observed diameter should be (${diaTrials.join(' + ')}) / 3 = ${expectedMeanDia} mm.`,
-          si: `මධ්‍යන්‍ය නිරීක්ෂිත විෂ්කම්භය (${diaTrials.join(' + ')}) / 3 = ${expectedMeanDia} mm විය යුතුය.`,
-        };
+    if (specimenType === 'coin') {
+      const stuMeanDia = parseFloat(calculations.meanDia || '');
+      if (expectedMeanDia !== null) {
+        const isMeanCorrect = !isNaN(stuMeanDia) && Math.abs(stuMeanDia - expectedMeanDia) <= 0.02;
+        results.meanDia = isMeanCorrect;
+        if (!isMeanCorrect) {
+          feedback.meanDia = {
+            en: `Mean observed diameter should be (${diaTrials.join(' + ')}) / 3 = ${expectedMeanDia} mm.`,
+            si: `මධ්‍යන්‍ය නිරීක්ෂිත විෂ්කම්භය (${diaTrials.join(' + ')}) / 3 = ${expectedMeanDia} mm විය යුතුය.`,
+          };
+        }
       }
-    }
 
-    const stuCorrDia = parseFloat(calculations.corrDia || '');
-    if (expectedCorrDia !== null) {
-      const isCorrCorrect = !isNaN(stuCorrDia) && Math.abs(stuCorrDia - expectedCorrDia) <= 0.02;
-      results.corrDia = isCorrCorrect;
-      if (!isCorrCorrect) {
-        feedback.corrDia = {
-          en: `Corrected diameter = Observed (${expectedMeanDia}) - Zero error (${zeroError}) = ${expectedCorrDia} mm.`,
-          si: `ශෝධිත විෂ්කම්භය = නිරීක්ෂිත (${expectedMeanDia}) - ශූන්‍ය දෝෂය (${zeroError}) = ${expectedCorrDia} mm.`,
-        };
+      const stuCorrDia = parseFloat(calculations.corrDia || '');
+      if (expectedCorrDia !== null) {
+        const isCorrCorrect = !isNaN(stuCorrDia) && Math.abs(stuCorrDia - expectedCorrDia) <= 0.02;
+        results.corrDia = isCorrCorrect;
+        if (!isCorrCorrect) {
+          feedback.corrDia = {
+            en: `Corrected diameter = Observed (${expectedMeanDia}) - Zero error (${zeroError}) = ${expectedCorrDia} mm.`,
+            si: `ශෝධිත විෂ්කම්භය = නිරීක්ෂිත (${expectedMeanDia}) - ශූන්‍ය දෝෂය (${zeroError}) = ${expectedCorrDia} mm.`,
+          };
+        }
       }
-    }
 
-    const stuVol = parseFloat(calculations.volume || '');
-    if (expectedAnalysis && expectedAnalysis.volumeMm3 !== null) {
-      const expVol = expectedAnalysis.volumeMm3;
-      const isVolCorrect = !isNaN(stuVol) && Math.abs(stuVol - expVol) / expVol <= 0.03;
-      results.volume = isVolCorrect;
-      if (!isVolCorrect) {
-        feedback.volume = {
-          en: `Expected volume V = π(D/2)²t ≈ ${expVol} mm³. Verify radius and thickness.`,
-          si: `බලාපොරොත්තු පරිමාව V = π(D/2)²t ≈ ${expVol} mm³ වේ. අරය සහ ඝනකම පරීක්ෂා කරන්න.`,
-        };
+      const stuVol = parseFloat(calculations.volume || '');
+      if (expectedAnalysis && expectedAnalysis.volumeMm3 !== null) {
+        const expVol = expectedAnalysis.volumeMm3;
+        const isVolCorrect = !isNaN(stuVol) && Math.abs(stuVol - expVol) / expVol <= 0.03;
+        results.volume = isVolCorrect;
+        if (!isVolCorrect) {
+          feedback.volume = {
+            en: `Expected volume V = π(D/2)²t ≈ ${expVol} mm³. Verify radius and thickness.`,
+            si: `බලාපොරොත්තු පරිමාව V = π(D/2)²t ≈ ${expVol} mm³ වේ. අරය සහ ඝනකම පරීක්ෂා කරන්න.`,
+          };
+        }
       }
-    }
 
-    const stuPct = parseFloat(calculations.percentageUncertainty || '');
-    if (expectedAnalysis && expectedAnalysis.percentageUncertainty !== null) {
-      const expPct = expectedAnalysis.percentageUncertainty;
-      const isPctCorrect = !isNaN(stuPct) && Math.abs(stuPct - expPct) <= 0.2;
-      results.percentageUncertainty = isPctCorrect;
-      if (!isPctCorrect) {
-        feedback.percentageUncertainty = {
-          en: `Percentage uncertainty = [2(ΔD/D) + (Δt/t)] × 100% ≈ ${expPct}%.`,
-          si: `ප්‍රතිශත අවිනිශ්චිතතාව = [2(ΔD/D) + (Δt/t)] × 100% ≈ ${expPct}%.`,
-        };
+      const stuPct = parseFloat(calculations.percentageUncertainty || '');
+      if (expectedAnalysis && expectedAnalysis.percentageUncertainty !== null) {
+        const expPct = expectedAnalysis.percentageUncertainty;
+        const isPctCorrect = !isNaN(stuPct) && Math.abs(stuPct - expPct) <= 0.2;
+        results.percentageUncertainty = isPctCorrect;
+        if (!isPctCorrect) {
+          feedback.percentageUncertainty = {
+            en: `Percentage uncertainty = [2(ΔD/D) + (Δt/t)] × 100% ≈ ${expPct}%.`,
+            si: `ප්‍රතිශත අවිනිශ්චිතතාව = [2(ΔD/D) + (Δt/t)] × 100% ≈ ${expPct}%.`,
+          };
+        }
+      }
+    } else if (specimenType === 'wire') {
+      const stuArea = parseFloat(calculations.wireArea || '');
+      if (expectedWireArea !== null) {
+        const isAreaCorrect = !isNaN(stuArea) && Math.abs(stuArea - expectedWireArea) <= 0.01;
+        results.wireArea = isAreaCorrect;
+        if (!isAreaCorrect) {
+          feedback.wireArea = {
+            en: `Wire cross-section A = (π/4)·d² ≈ ${expectedWireArea} mm². Check corrected diameter (${expectedCorrWireDia} mm).`,
+            si: `කම්බියේ හරස්කඩ වර්ගඵලය A = (π/4)·d² ≈ ${expectedWireArea} mm² විය යුතුය. ශෝධිත විෂ්කම්භය (${expectedCorrWireDia} mm) පරීක්ෂා කරන්න.`,
+          };
+        }
+      }
+    } else if (specimenType === 'ball') {
+      const stuVol = parseFloat(calculations.ballVolume || '');
+      if (expectedBallVol !== null) {
+        const isVolCorrect = !isNaN(stuVol) && Math.abs(stuVol - expectedBallVol) <= 0.5;
+        results.ballVolume = isVolCorrect;
+        if (!isVolCorrect) {
+          feedback.ballVolume = {
+            en: `Sphere volume V = (4/3)·π·R³ ≈ ${expectedBallVol} mm³. Check radius R = ${expectedCorrBallDia ? (expectedCorrBallDia / 2).toFixed(2) : ''} mm.`,
+            si: `ගෝලයේ පරිමාව V = (4/3)·π·R³ ≈ ${expectedBallVol} mm³ විය යුතුය. අරය R = ${expectedCorrBallDia ? (expectedCorrBallDia / 2).toFixed(2) : ''} mm පරීක්ෂා කරන්න.`,
+          };
+        }
+      }
+    } else if (specimenType === 'paper') {
+      const stuSingle = parseFloat(calculations.paperSingleThick || '');
+      if (expectedPaperSingleThick !== null) {
+        const isSingleCorrect = !isNaN(stuSingle) && Math.abs(stuSingle - expectedPaperSingleThick) <= 0.005;
+        results.paperSingleThick = isSingleCorrect;
+        if (!isSingleCorrect) {
+          feedback.paperSingleThick = {
+            en: `Single sheet thickness = Stack (${expectedCorrPaperStack} mm) / 100 = ${expectedPaperSingleThick} mm.`,
+            si: `එක් කඩදාසියක ඝනකම = තට්ටුව (${expectedCorrPaperStack} mm) / 100 = ${expectedPaperSingleThick} mm විය යුතුය.`,
+          };
+        }
       }
     }
 
@@ -319,6 +503,35 @@ export const MicrometerCoinPractical: React.FC<MicrometerCoinPracticalProps> = (
           <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">
             {t.procedure}
           </p>
+
+          {/* Specimen Selector Tabs */}
+          <div className="pt-2 border-t border-[#DFE8EF] dark:border-[#1E334D] space-y-2">
+            <span className="text-xs font-semibold text-[#14243A] dark:text-[#F8FAFC] block">
+              {t.specimenSelector}
+            </span>
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                { id: 'coin', label: t.specCoin },
+                { id: 'wire', label: t.specWire },
+                { id: 'ball', label: t.specBall },
+                { id: 'slide', label: t.specSlide },
+                { id: 'paper', label: t.specPaper },
+              ].map((s) => (
+                <button
+                  key={s.id}
+                  type="button"
+                  onClick={() => handleSelectSpecimen(s.id as MicrometerSpecimen)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+                    specimenType === s.id
+                      ? 'bg-[#0F766E] text-white shadow-xs'
+                      : 'bg-[#F6FAFD] dark:bg-[#0B131E] text-[#64748B] dark:text-[#94A3B8] hover:text-[#14243A] dark:hover:text-[#F8FAFC] border border-[#DFE8EF] dark:border-[#1E334D]'
+                  }`}
+                >
+                  {s.label}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* Mode Switcher */}
           <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[#DFE8EF] dark:border-[#1E334D]">
@@ -366,22 +579,66 @@ export const MicrometerCoinPractical: React.FC<MicrometerCoinPracticalProps> = (
             </span>
           </div>
           <div className="flex flex-wrap gap-1.5">
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs h-7"
-              onClick={() => handleLogReading('diaTrials')}
-            >
-              {t.logDia}
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="text-xs h-7"
-              onClick={() => handleLogReading('thickTrials')}
-            >
-              {t.logThick}
-            </Button>
+            {specimenType === 'coin' && (
+              <>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-xs h-7"
+                  onClick={() => handleLogReading('diaTrials')}
+                >
+                  {t.logDia}
+                </Button>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-xs h-7"
+                  onClick={() => handleLogReading('thickTrials')}
+                >
+                  {t.logThick}
+                </Button>
+              </>
+            )}
+            {specimenType === 'wire' && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs h-7"
+                onClick={() => handleLogReading('wireDiaTrials')}
+              >
+                {t.logWire}
+              </Button>
+            )}
+            {specimenType === 'ball' && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs h-7"
+                onClick={() => handleLogReading('ballDiaTrials')}
+              >
+                {t.logBall}
+              </Button>
+            )}
+            {specimenType === 'slide' && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs h-7"
+                onClick={() => handleLogReading('slideThickTrials')}
+              >
+                {t.logSlide}
+              </Button>
+            )}
+            {specimenType === 'paper' && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-xs h-7"
+                onClick={() => handleLogReading('paperStackTrials')}
+              >
+                {t.logPaper}
+              </Button>
+            )}
           </div>
         </div>
       </div>
@@ -444,111 +701,204 @@ export const MicrometerCoinPractical: React.FC<MicrometerCoinPracticalProps> = (
               <thead>
                 <tr className="border-b border-[#DFE8EF] dark:border-[#1E334D] bg-[#F6FAFD] dark:bg-[#0B131E] text-[#64748B] dark:text-[#94A3B8]">
                   <th className="p-3 font-semibold">{t.param}</th>
-                  <th className="p-3 font-semibold">{t.dia1}</th>
-                  <th className="p-3 font-semibold">{t.dia2}</th>
-                  <th className="p-3 font-semibold">{t.dia3}</th>
+                  <th className="p-3 font-semibold">{t.trial1}</th>
+                  <th className="p-3 font-semibold">{t.trial2}</th>
+                  <th className="p-3 font-semibold">{t.trial3}</th>
                   <th className="p-3 font-semibold">{t.meanObs}</th>
                   <th className="p-3 font-semibold text-[#0F766E]">{t.correctedVal}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#DFE8EF] dark:divide-[#1E334D] font-mono">
-                {/* Diameter */}
-                <tr>
-                  <td className="p-3 font-sans font-medium text-[#14243A] dark:text-[#F8FAFC]">{t.coinDia}</td>
-                  <td className="p-2">
-                    <input
-                      type="text"
-                      value={diaTrials[0]}
-                      onChange={(e) => updateObservations({ diaTrials: [e.target.value, diaTrials[1], diaTrials[2]] })}
-                      className="w-16 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
-                    />
-                  </td>
-                  <td className="p-2">
-                    <input
-                      type="text"
-                      value={diaTrials[1]}
-                      onChange={(e) => updateObservations({ diaTrials: [diaTrials[0], e.target.value, diaTrials[2]] })}
-                      className="w-16 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
-                    />
-                  </td>
-                  <td className="p-2">
-                    <input
-                      type="text"
-                      value={diaTrials[2]}
-                      onChange={(e) => updateObservations({ diaTrials: [diaTrials[0], diaTrials[1], e.target.value] })}
-                      className="w-16 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
-                    />
-                  </td>
-                  <td className="p-3 font-bold">
-                    {mode === 'guided' ? (
-                      expectedMeanDia !== null ? `${expectedMeanDia} mm` : '—'
-                    ) : (
-                      <input
-                        type="text"
-                        value={calculations.meanDia || ''}
-                        onChange={(e) => updateCalculation('meanDia', e.target.value)}
-                        placeholder="Mean mm"
-                        className={`w-20 px-2 py-1 rounded border text-xs ${
-                          calculationResults?.meanDia === true
-                            ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30'
-                            : calculationResults?.meanDia === false
-                            ? 'border-rose-500 bg-rose-50 dark:bg-rose-950/30'
-                            : 'border-[#DFE8EF] dark:border-[#1E334D]'
-                        }`}
-                      />
-                    )}
-                  </td>
-                  <td className="p-3 font-bold text-[#0F766E]">
-                    {mode === 'guided' ? (
-                      expectedCorrDia !== null ? `${expectedCorrDia} mm` : '—'
-                    ) : (
-                      <input
-                        type="text"
-                        value={calculations.corrDia || ''}
-                        onChange={(e) => updateCalculation('corrDia', e.target.value)}
-                        placeholder="Corr mm"
-                        className={`w-20 px-2 py-1 rounded border text-xs ${
-                          calculationResults?.corrDia === true
-                            ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-950/30'
-                            : calculationResults?.corrDia === false
-                            ? 'border-rose-500 bg-rose-50 dark:bg-rose-950/30'
-                            : 'border-[#DFE8EF] dark:border-[#1E334D]'
-                        }`}
-                      />
-                    )}
-                  </td>
-                </tr>
+                {specimenType === 'coin' && (
+                  <>
+                    <tr>
+                      <td className="p-3 font-sans font-medium text-[#14243A] dark:text-[#F8FAFC]">{t.coinDia}</td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          value={diaTrials[0]}
+                          onChange={(e) => updateObservations({ diaTrials: [e.target.value, diaTrials[1], diaTrials[2]] })}
+                          className="w-16 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          value={diaTrials[1]}
+                          onChange={(e) => updateObservations({ diaTrials: [diaTrials[0], e.target.value, diaTrials[2]] })}
+                          className="w-16 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          value={diaTrials[2]}
+                          onChange={(e) => updateObservations({ diaTrials: [diaTrials[0], diaTrials[1], e.target.value] })}
+                          className="w-16 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                        />
+                      </td>
+                      <td className="p-3 font-bold">{expectedMeanDia !== null ? `${expectedMeanDia} mm` : '—'}</td>
+                      <td className="p-3 font-bold text-[#0F766E]">{expectedCorrDia !== null ? `${expectedCorrDia} mm` : '—'}</td>
+                    </tr>
+                    <tr>
+                      <td className="p-3 font-sans font-medium text-[#14243A] dark:text-[#F8FAFC]">{t.coinThick}</td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          value={thickTrials[0]}
+                          onChange={(e) => updateObservations({ thickTrials: [e.target.value, thickTrials[1], thickTrials[2]] })}
+                          className="w-16 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          value={thickTrials[1]}
+                          onChange={(e) => updateObservations({ thickTrials: [thickTrials[0], e.target.value, thickTrials[2]] })}
+                          className="w-16 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                        />
+                      </td>
+                      <td className="p-2">
+                        <input
+                          type="text"
+                          value={thickTrials[2]}
+                          onChange={(e) => updateObservations({ thickTrials: [thickTrials[0], thickTrials[1], e.target.value] })}
+                          className="w-16 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                        />
+                      </td>
+                      <td className="p-3 font-bold">{expectedMeanThick !== null ? `${expectedMeanThick} mm` : '—'}</td>
+                      <td className="p-3 font-bold text-[#0F766E]">{expectedCorrThick !== null ? `${expectedCorrThick} mm` : '—'}</td>
+                    </tr>
+                  </>
+                )}
 
-                {/* Thickness */}
-                <tr>
-                  <td className="p-3 font-sans font-medium text-[#14243A] dark:text-[#F8FAFC]">{t.coinThick}</td>
-                  <td className="p-2">
-                    <input
-                      type="text"
-                      value={thickTrials[0]}
-                      onChange={(e) => updateObservations({ thickTrials: [e.target.value, thickTrials[1], thickTrials[2]] })}
-                      className="w-16 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
-                    />
-                  </td>
-                  <td className="p-2">
-                    <input
-                      type="text"
-                      value={thickTrials[1]}
-                      onChange={(e) => updateObservations({ thickTrials: [thickTrials[0], e.target.value, thickTrials[2]] })}
-                      className="w-16 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
-                    />
-                  </td>
-                  <td className="p-2">
-                    <input
-                      type="text"
-                      value={thickTrials[2]}
-                      onChange={(e) => updateObservations({ thickTrials: [thickTrials[0], thickTrials[1], e.target.value] })}
-                      className="w-16 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
-                    />
-                  </td>
-                  <td className="p-3 font-bold">{expectedMeanThick !== null ? `${expectedMeanThick} mm` : '—'}</td>
-                  <td className="p-3 font-bold text-[#0F766E]">{expectedCorrThick !== null ? `${expectedCorrThick} mm` : '—'}</td>
-                </tr>
+                {specimenType === 'wire' && (
+                  <tr>
+                    <td className="p-3 font-sans font-medium text-[#14243A] dark:text-[#F8FAFC]">{t.wireDia}</td>
+                    <td className="p-2">
+                      <input
+                        type="text"
+                        value={wireDiaTrials[0]}
+                        onChange={(e) => updateObservations({ wireDiaTrials: [e.target.value, wireDiaTrials[1], wireDiaTrials[2]] })}
+                        className="w-16 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="text"
+                        value={wireDiaTrials[1]}
+                        onChange={(e) => updateObservations({ wireDiaTrials: [wireDiaTrials[0], e.target.value, wireDiaTrials[2]] })}
+                        className="w-16 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="text"
+                        value={wireDiaTrials[2]}
+                        onChange={(e) => updateObservations({ wireDiaTrials: [wireDiaTrials[0], wireDiaTrials[1], e.target.value] })}
+                        className="w-16 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                      />
+                    </td>
+                    <td className="p-3 font-bold">{expectedMeanWireDia !== null ? `${expectedMeanWireDia} mm` : '—'}</td>
+                    <td className="p-3 font-bold text-[#0F766E]">{expectedCorrWireDia !== null ? `${expectedCorrWireDia} mm` : '—'}</td>
+                  </tr>
+                )}
+
+                {specimenType === 'ball' && (
+                  <tr>
+                    <td className="p-3 font-sans font-medium text-[#14243A] dark:text-[#F8FAFC]">{t.ballDia}</td>
+                    <td className="p-2">
+                      <input
+                        type="text"
+                        value={ballDiaTrials[0]}
+                        onChange={(e) => updateObservations({ ballDiaTrials: [e.target.value, ballDiaTrials[1], ballDiaTrials[2]] })}
+                        className="w-16 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="text"
+                        value={ballDiaTrials[1]}
+                        onChange={(e) => updateObservations({ ballDiaTrials: [ballDiaTrials[0], e.target.value, ballDiaTrials[2]] })}
+                        className="w-16 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="text"
+                        value={ballDiaTrials[2]}
+                        onChange={(e) => updateObservations({ ballDiaTrials: [ballDiaTrials[0], ballDiaTrials[1], e.target.value] })}
+                        className="w-16 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                      />
+                    </td>
+                    <td className="p-3 font-bold">{expectedMeanBallDia !== null ? `${expectedMeanBallDia} mm` : '—'}</td>
+                    <td className="p-3 font-bold text-[#0F766E]">{expectedCorrBallDia !== null ? `${expectedCorrBallDia} mm` : '—'}</td>
+                  </tr>
+                )}
+
+                {specimenType === 'slide' && (
+                  <tr>
+                    <td className="p-3 font-sans font-medium text-[#14243A] dark:text-[#F8FAFC]">{t.slideThick}</td>
+                    <td className="p-2">
+                      <input
+                        type="text"
+                        value={slideThickTrials[0]}
+                        onChange={(e) => updateObservations({ slideThickTrials: [e.target.value, slideThickTrials[1], slideThickTrials[2]] })}
+                        className="w-16 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="text"
+                        value={slideThickTrials[1]}
+                        onChange={(e) => updateObservations({ slideThickTrials: [slideThickTrials[0], e.target.value, slideThickTrials[2]] })}
+                        className="w-16 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="text"
+                        value={slideThickTrials[2]}
+                        onChange={(e) => updateObservations({ slideThickTrials: [slideThickTrials[0], slideThickTrials[1], e.target.value] })}
+                        className="w-16 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                      />
+                    </td>
+                    <td className="p-3 font-bold">{expectedMeanSlideThick !== null ? `${expectedMeanSlideThick} mm` : '—'}</td>
+                    <td className="p-3 font-bold text-[#0F766E]">{expectedCorrSlideThick !== null ? `${expectedCorrSlideThick} mm` : '—'}</td>
+                  </tr>
+                )}
+
+                {specimenType === 'paper' && (
+                  <tr>
+                    <td className="p-3 font-sans font-medium text-[#14243A] dark:text-[#F8FAFC]">{t.paperStack}</td>
+                    <td className="p-2">
+                      <input
+                        type="text"
+                        value={paperStackTrials[0]}
+                        onChange={(e) => updateObservations({ paperStackTrials: [e.target.value, paperStackTrials[1], paperStackTrials[2]] })}
+                        className="w-16 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="text"
+                        value={paperStackTrials[1]}
+                        onChange={(e) => updateObservations({ paperStackTrials: [paperStackTrials[0], e.target.value, paperStackTrials[2]] })}
+                        className="w-16 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                      />
+                    </td>
+                    <td className="p-2">
+                      <input
+                        type="text"
+                        value={paperStackTrials[2]}
+                        onChange={(e) => updateObservations({ paperStackTrials: [paperStackTrials[0], paperStackTrials[1], e.target.value] })}
+                        className="w-16 px-2 py-1 rounded border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                      />
+                    </td>
+                    <td className="p-3 font-bold">{expectedMeanPaperStack !== null ? `${expectedMeanPaperStack} mm` : '—'}</td>
+                    <td className="p-3 font-bold text-[#0F766E]">{expectedCorrPaperStack !== null ? `${expectedCorrPaperStack} mm` : '—'}</td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -594,46 +944,146 @@ export const MicrometerCoinPractical: React.FC<MicrometerCoinPracticalProps> = (
               )}
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
-              <div className="p-2.5 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
-                <span className="text-[10px] text-[#64748B] block font-sans">{t.volumeLabel}</span>
-                {mode === 'guided' || showSolution ? (
+            {specimenType === 'coin' && (
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
+                <div className="p-2.5 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                  <span className="text-[10px] text-[#64748B] block font-sans">{t.volumeLabel}</span>
+                  {mode === 'guided' || showSolution ? (
+                    <span className="font-bold text-[#14243A] dark:text-[#F8FAFC]">
+                      {expectedAnalysis ? `${expectedAnalysis.volumeMm3} mm³` : '—'}
+                    </span>
+                  ) : (
+                    <input
+                      type="text"
+                      value={calculations.volume || ''}
+                      onChange={(e) => updateCalculation('volume', e.target.value)}
+                      placeholder="V (mm³)"
+                      className="w-full px-1.5 py-0.5 rounded border border-[#DFE8EF] dark:border-[#1E334D] text-xs font-mono"
+                    />
+                  )}
+                </div>
+                <div className="p-2.5 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                  <span className="text-[10px] text-[#64748B] block font-sans">{t.fractionalUncertainty}</span>
                   <span className="font-bold text-[#14243A] dark:text-[#F8FAFC]">
-                    {expectedAnalysis ? `${expectedAnalysis.volumeMm3} mm³` : '—'}
+                    {expectedAnalysis ? `${expectedAnalysis.fractionalUncertainty}` : '—'}
                   </span>
-                ) : (
-                  <input
-                    type="text"
-                    value={calculations.volume || ''}
-                    onChange={(e) => updateCalculation('volume', e.target.value)}
-                    placeholder="V (mm³)"
-                    className="w-full px-1.5 py-0.5 rounded border border-[#DFE8EF] dark:border-[#1E334D] text-xs font-mono"
-                  />
-                )}
+                </div>
+                <div className="p-2.5 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                  <span className="text-[10px] text-[#64748B] block font-sans">{t.percentageUncertainty}</span>
+                  {mode === 'guided' || showSolution ? (
+                    <span className="font-bold text-[#0F766E] dark:text-[#14B8A6]">
+                      {expectedAnalysis ? `${expectedAnalysis.percentageUncertainty}%` : '—'}
+                    </span>
+                  ) : (
+                    <input
+                      type="text"
+                      value={calculations.percentageUncertainty || ''}
+                      onChange={(e) => updateCalculation('percentageUncertainty', e.target.value)}
+                      placeholder="% Error"
+                      className="w-full px-1.5 py-0.5 rounded border border-[#DFE8EF] dark:border-[#1E334D] text-xs font-mono"
+                    />
+                  )}
+                </div>
               </div>
-              <div className="p-2.5 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
-                <span className="text-[10px] text-[#64748B] block font-sans">{t.fractionalUncertainty}</span>
-                <span className="font-bold text-[#14243A] dark:text-[#F8FAFC]">
-                  {expectedAnalysis ? `${expectedAnalysis.fractionalUncertainty}` : '—'}
-                </span>
+            )}
+
+            {specimenType === 'wire' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
+                <div className="p-2.5 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                  <span className="text-[10px] text-[#64748B] block font-sans">{t.wireDia} (d)</span>
+                  <span className="font-bold text-[#14243A] dark:text-[#F8FAFC]">
+                    {expectedCorrWireDia !== null ? `${expectedCorrWireDia} mm` : '—'}
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                  <span className="text-[10px] text-[#64748B] block font-sans">{t.wireAreaLabel}</span>
+                  {mode === 'guided' || showSolution ? (
+                    <span className="font-bold text-[#0F766E] dark:text-[#14B8A6]">
+                      {expectedWireArea !== null ? `${expectedWireArea} mm²` : '—'}
+                    </span>
+                  ) : (
+                    <input
+                      type="text"
+                      value={calculations.wireArea || ''}
+                      onChange={(e) => updateCalculation('wireArea', e.target.value)}
+                      placeholder="A (mm²)"
+                      className="w-full px-1.5 py-0.5 rounded border border-[#DFE8EF] dark:border-[#1E334D] text-xs font-mono"
+                    />
+                  )}
+                </div>
               </div>
-              <div className="p-2.5 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
-                <span className="text-[10px] text-[#64748B] block font-sans">{t.percentageUncertainty}</span>
-                {mode === 'guided' || showSolution ? (
+            )}
+
+            {specimenType === 'ball' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
+                <div className="p-2.5 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                  <span className="text-[10px] text-[#64748B] block font-sans">{t.ballDia} (D)</span>
+                  <span className="font-bold text-[#14243A] dark:text-[#F8FAFC]">
+                    {expectedCorrBallDia !== null ? `${expectedCorrBallDia} mm` : '—'}
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                  <span className="text-[10px] text-[#64748B] block font-sans">{t.ballVolLabel}</span>
+                  {mode === 'guided' || showSolution ? (
+                    <span className="font-bold text-[#0F766E] dark:text-[#14B8A6]">
+                      {expectedBallVol !== null ? `${expectedBallVol} mm³` : '—'}
+                    </span>
+                  ) : (
+                    <input
+                      type="text"
+                      value={calculations.ballVolume || ''}
+                      onChange={(e) => updateCalculation('ballVolume', e.target.value)}
+                      placeholder="V (mm³)"
+                      className="w-full px-1.5 py-0.5 rounded border border-[#DFE8EF] dark:border-[#1E334D] text-xs font-mono"
+                    />
+                  )}
+                </div>
+              </div>
+            )}
+
+            {specimenType === 'slide' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
+                <div className="p-2.5 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                  <span className="text-[10px] text-[#64748B] block font-sans">{t.meanObs}</span>
+                  <span className="font-bold text-[#14243A] dark:text-[#F8FAFC]">
+                    {expectedMeanSlideThick !== null ? `${expectedMeanSlideThick} mm` : '—'}
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                  <span className="text-[10px] text-[#64748B] block font-sans">{t.slideThickLabel}</span>
                   <span className="font-bold text-[#0F766E] dark:text-[#14B8A6]">
-                    {expectedAnalysis ? `${expectedAnalysis.percentageUncertainty}%` : '—'}
+                    {expectedCorrSlideThick !== null ? `${expectedCorrSlideThick} mm` : '—'}
                   </span>
-                ) : (
-                  <input
-                    type="text"
-                    value={calculations.percentageUncertainty || ''}
-                    onChange={(e) => updateCalculation('percentageUncertainty', e.target.value)}
-                    placeholder="% Error"
-                    className="w-full px-1.5 py-0.5 rounded border border-[#DFE8EF] dark:border-[#1E334D] text-xs font-mono"
-                  />
-                )}
+                </div>
               </div>
-            </div>
+            )}
+
+            {specimenType === 'paper' && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs font-mono">
+                <div className="p-2.5 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                  <span className="text-[10px] text-[#64748B] block font-sans">{t.paperStack} (t₁₀₀)</span>
+                  <span className="font-bold text-[#14243A] dark:text-[#F8FAFC]">
+                    {expectedCorrPaperStack !== null ? `${expectedCorrPaperStack} mm` : '—'}
+                  </span>
+                </div>
+                <div className="p-2.5 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                  <span className="text-[10px] text-[#64748B] block font-sans">{t.paperSingleLabel}</span>
+                  {mode === 'guided' || showSolution ? (
+                    <span className="font-bold text-[#0F766E] dark:text-[#14B8A6]">
+                      {expectedPaperSingleThick !== null ? `${expectedPaperSingleThick} mm` : '—'}
+                    </span>
+                  ) : (
+                    <input
+                      type="text"
+                      value={calculations.paperSingleThick || ''}
+                      onChange={(e) => updateCalculation('paperSingleThick', e.target.value)}
+                      placeholder="t₁ (mm)"
+                      className="w-full px-1.5 py-0.5 rounded border border-[#DFE8EF] dark:border-[#1E334D] text-xs font-mono"
+                    />
+                  )}
+                </div>
+              </div>
+            )}
 
             <p className="text-[11px] text-[#64748B] dark:text-[#94A3B8]">
               {t.rangeWarning}
