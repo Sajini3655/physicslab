@@ -704,3 +704,44 @@ export function calculatePrincipleOfMoments(params: {
     isBalanced,
   };
 }
+
+/**
+ * Determination of an unknown body's mass using principle of moments and distance graph:
+ * M_x * d1 = m * d2 => d2 = (M_x / m) * d1
+ * Linear regression through origin: slope m_grad = sum(d1 * d2) / sum(d1^2)
+ * M_x = m * m_grad
+ */
+export function calculateMomentsDistanceGraph(
+  counterMassG: number,
+  trials: Array<{ d1Cm: number; d2Cm: number }>
+): {
+  slope: number;
+  calculatedMassG: number;
+  rSquared: number;
+} {
+  const valid = trials.filter((t) => t.d1Cm > 0 && t.d2Cm > 0);
+  if (valid.length < 2 || counterMassG <= 0) {
+    return { slope: 0, calculatedMassG: 0, rSquared: 0 };
+  }
+
+  let sumD1D2 = 0;
+  let sumD1Sq = 0;
+  let sumD2Sq = 0;
+
+  for (const t of valid) {
+    sumD1D2 += t.d1Cm * t.d2Cm;
+    sumD1Sq += t.d1Cm * t.d1Cm;
+    sumD2Sq += t.d2Cm * t.d2Cm;
+  }
+
+  const slope = sumD1Sq > 0 ? sumD1D2 / sumD1Sq : 0;
+  const calculatedMassG = counterMassG * slope;
+  const rSquared = sumD1Sq > 0 && sumD2Sq > 0 ? (sumD1D2 * sumD1D2) / (sumD1Sq * sumD2Sq) : 1;
+
+  return {
+    slope: Number(slope.toFixed(4)),
+    calculatedMassG: Number(calculatedMassG.toFixed(2)),
+    rSquared: Number(rSquared.toFixed(4)),
+  };
+}
+

@@ -1,11 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Locale } from '@/shared/curriculum';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Printer, RotateCcw, Database, Music, CheckCircle2, AlertCircle } from 'lucide-react';
+import { RotateCcw, Database, Music, CheckCircle2, AlertCircle } from 'lucide-react';
 import { calculateStringFundamentalFrequency } from '../physics/calculations';
+import { usePracticalWork } from '@/shared/practicals';
 
 interface SonometerPracticalProps {
   locale?: Locale;
@@ -18,325 +19,501 @@ interface SonometerTrial {
   tensionKg: string;
 }
 
+interface TensionTrial {
+  id: number;
+  tensionKg: string;
+  resLengthCm: string;
+}
+
 export const SonometerPractical: React.FC<SonometerPracticalProps> = ({
   locale = 'en',
 }) => {
-  const [wireLinearDensity, setWireLinearDensity] = useState<string>('0.0012'); // kg/m (steel wire)
+  const {
+    observations,
+    updateObservations,
+    loadSampleObservations,
+    reset,
+    isCompleted,
+    setCompleted,
+  } = usePracticalWork({
+    experimentId: 'exp-12-sonometer',
+    defaultObservations: {
+      subMode: 'law_of_length',
+      wireLinearDensity: '0.0012',
+      trials: [
+        { id: 1, forkFreqHz: '256', resLengthCm: '38.0', tensionKg: '3.0' },
+        { id: 2, forkFreqHz: '320', resLengthCm: '30.4', tensionKg: '3.0' },
+        { id: 3, forkFreqHz: '384', resLengthCm: '25.3', tensionKg: '3.0' },
+        { id: 4, forkFreqHz: '512', resLengthCm: '19.0', tensionKg: '3.0' },
+      ],
+      tensionTrials: [
+        { id: 1, tensionKg: '1.0', resLengthCm: '22.0' },
+        { id: 2, tensionKg: '2.0', resLengthCm: '31.1' },
+        { id: 3, tensionKg: '3.0', resLengthCm: '38.1' },
+        { id: 4, tensionKg: '4.0', resLengthCm: '44.0' },
+      ],
+      fixedForkHz: '256',
+    },
+  });
 
-  const [trials, setTrials] = useState<SonometerTrial[]>([
+  const subMode = (observations.subMode || 'law_of_length') as 'law_of_length' | 'law_of_tension';
+  const setSubMode = (mode: 'law_of_length' | 'law_of_tension') => updateObservations({ subMode: mode });
+
+  const wireLinearDensity = observations.wireLinearDensity || '0.0012';
+
+  const trials: SonometerTrial[] = observations.trials || [
     { id: 1, forkFreqHz: '256', resLengthCm: '38.0', tensionKg: '3.0' },
     { id: 2, forkFreqHz: '320', resLengthCm: '30.4', tensionKg: '3.0' },
     { id: 3, forkFreqHz: '384', resLengthCm: '25.3', tensionKg: '3.0' },
     { id: 4, forkFreqHz: '512', resLengthCm: '19.0', tensionKg: '3.0' },
-  ]);
+  ];
+
+  const tensionTrials: TensionTrial[] = observations.tensionTrials || [
+    { id: 1, tensionKg: '1.0', resLengthCm: '22.0' },
+    { id: 2, tensionKg: '2.0', resLengthCm: '31.1' },
+    { id: 3, tensionKg: '3.0', resLengthCm: '38.1' },
+    { id: 4, tensionKg: '4.0', resLengthCm: '44.0' },
+  ];
 
   const t = {
     en: {
-      title: 'Practical 3.1: Laws of Transverse Vibrations of a Stretched String (Sonometer)',
-      aim: 'Aim: To verify the laws of transverse vibration of a stretched string (f ∝ 1/L and f ∝ √T) and determine the linear mass density of the wire using a sonometer.',
-      apparatus: 'Apparatus: Sonometer wooden sounding box with two movable bridges and pulley, set of standard tuning forks (256–512 Hz), rubber mallet, slotted weight hanger and weights, paper rider, meter rule.',
-      theoryTitle: 'Physical Principle & Sonometer Resonance',
-      theoryText: 'A stretched string of length L between bridges vibrates in its fundamental mode when a stationary wave forms with nodes at the bridges and an antinode at the center (λ = 2L):\n\nv = √(T / μ)   and   v = f · λ = 2 · f · L\n\nTherefore, the fundamental frequency is:\nf = (1 / 2L) · √(T / μ)\n\n• Law of Length: At constant tension T, f · L = constant (f ∝ 1/L).\n• Law of Tension: At constant length L, f / √T = constant (f ∝ √T).\n\nWhen a vibrating tuning fork is placed on the sounding box, resonance occurs when the natural frequency of the string segment matches the fork frequency. At resonance, the antinodal amplitude becomes maximum and tosses off the small paper rider placed at the midpoint.',
-      procedure: 'Procedure: 1. Place a known mass (e.g. 3.0 kg) on the hanger to establish tension T = M·g. 2. Place a small V-shaped paper rider at the midpoint between the two movable knife-edge bridges. 3. Strike a tuning fork of frequency f on a rubber mallet and hold its stem firmly against the sonometer sounding board. 4. Adjust the movable bridge until the paper rider flutters vigorously and flies off. 5. Measure the distance L between the bridge knife edges. 6. Repeat for various tuning forks to verify f · L = const.',
-      obsTitle: 'Experimental Observations (Frequency vs Resonance Length)',
+      title: 'Practical 12 & 13: Laws of Transverse Vibrations of a Stretched String (Sonometer)',
+      aim: 'Aim: To verify the Law of Length (f ∝ 1/L at constant tension, Exp 12) and the Law of Tension (L ∝ √T at constant frequency, Exp 13) and determine the linear mass density of the wire.',
+      apparatus: 'Apparatus: Sonometer wooden sounding box with two movable knife-edge bridges and low-friction pulley, set of standard tuning forks (256–512 Hz), rubber mallet, slotted weight hanger and masses, paper rider, meter rule.',
+      modeLength: 'Exp 12: Law of Length (f ∝ 1/L)',
+      modeTension: 'Exp 13: Law of Tension (L ∝ √T)',
+      theoryTitleLength: 'Law of Length (Exp 12: Constant Tension T)',
+      theoryTextLength: 'For a wire under constant tension T, fundamental frequency f = (1 / 2L) · √(T / μ). Rearranging gives f · L = 0.5 · √(T / μ) = constant. A graph of L against 1/f gives a straight line through the origin with slope k = 0.5 · √(T / μ).',
+      theoryTitleTension: 'Law of Tension (Exp 13: Constant Frequency f)',
+      theoryTextTension: 'For a wire excited at fixed frequency f, resonance length L = (1 / 2f) · √(T / μ) = (√(M·g) / 2f√μ). Hence L ∝ √M, or L / √M = constant. A graph of L against √M yields a straight line through the origin.',
+      procedureLength: 'Procedure: 1. Hang constant mass M = 3.0 kg (T = M·g). 2. Place light paper rider at midpoint between bridges. 3. Strike tuning fork on rubber mallet, press stem to sounding box. 4. Adjust bridge until paper rider flies off at resonance. 5. Record L for each fork frequency.',
+      procedureTension: 'Procedure: 1. Keep tuning fork frequency fixed (e.g. 256 Hz). 2. Vary suspended mass M (1.0 to 4.0 kg). 3. At each tension, adjust bridge distance L until paper rider flutters and is thrown off. 4. Verify L / √M = constant.',
+      obsTitleLength: 'Observations: Frequency vs Resonance Length (Constant Tension = 3.0 kg)',
+      obsTitleTension: 'Observations: Tension vs Resonance Length (Fixed Fork f = 256 Hz)',
       trialCol: 'Trial',
       forkCol: 'Fork Frequency f (Hz)',
       lengthCol: 'Resonance Length L (cm)',
       tensionCol: 'Tension Load M (kg)',
+      sqrtTensionCol: '√M (kg^0.5)',
       flProductCol: 'f · L Product (Hz · m)',
+      ratioCol: 'L / √M (cm / kg^0.5)',
       calcSummaryTitle: 'Analytical Verification & String Density',
       meanProduct: 'Mean (f · L) Product:',
-      theoFrequency: 'Theoretical Predicted Frequency (for Trial 1):',
+      meanRatio: 'Mean (L / √M) Ratio:',
+      theoFrequency: 'Theoretical Predicted Frequency (Trial 1):',
       percentageDiff: 'Discrepancy:',
-      verdictPass: 'Sonometer Law Verified (f · L Constant Within 4%)',
+      verdictPass: 'Sonometer Law Verified (Constant Within 4%)',
       verdictFail: 'Check Bridge Alignment or Paper Rider Placement',
       precautionsTitle: 'Experimental Precautions',
-      precautions: '1. The paper rider must be positioned strictly at the midpoint between the two knife-edge bridges where the fundamental antinode forms. 2. The bridges must be sharp and perpendicular to the wire so the vibrating segment length L is sharply defined. 3. Avoid excessive friction at the pulley axle by oiling if necessary.',
-      loadSample: 'Load Sample Data (Steel Wire)',
+      precautions: '1. Paper rider must be strictly positioned at the midpoint of the bridges (fundamental antinode). 2. Knife-edge bridges must be sharp and perpendicular to the wire. 3. Minimize pulley friction with light lubrication.',
+      loadSample: 'Load Sample Data',
       clearInputs: 'Clear Inputs',
-      printSheet: 'Print Laboratory Record',
+      submitLab: 'Submit Practical Record',
+      submittedMsg: 'Practical record completed and saved to your laboratory log.',
     },
     si: {
-      title: 'ප්‍රායෝගික පරීක්ෂණය 3.1: ආතත තන්තුවක තීර්යක් කම්පන නියම සත්‍යාපනය (තන්තුමානය)',
-      aim: 'අරමුණ: තන්තුමානයක් භාවිතයෙන් ආතත තන්තුවක තීර්යක් කම්පන නියම (f ∝ 1/L සහ f ∝ √T) සත්‍යාපනය කිරීම සහ තන්තුවේ ඒකක දිගක ස්කන්ධය නිර්ණය කිරීම.',
-      apparatus: 'උපකරණ: තන්තුමාන ධ්වනි පෙට්ටිය, චලනය කළ හැකි පාලම් දෙකක්, කප්පිය, සුසර දෙබල කට්ටලය (256–512 Hz), රබර් මිටිය, පඩි තැටිය සහ බර පඩි, කඩදාසි අසරුවා, මීටර් රූල.',
-      theoryTitle: 'භෞතික මූලධර්මය සහ තන්තුමාන අනුනාදය',
-      theoryText: 'පාලම් දෙකක් අතර L දිගැති ආතත තන්තුවක් එහි මූලික ප්‍රකාරයෙන් කම්පනය වන විට පාලම් මත නිශ්පන්ද ද මධ්‍යයේ ප්‍රස්පන්දයක් ද සහිත ස්ථාවර තරංගයක් ඇතිවේ (λ = 2L):\n\nv = √(T / μ)   සහ   v = f · λ = 2 · f · L\n\nඑබැවින් මූලික සංඛ්‍යාතය:\nf = (1 / 2L) · √(T / μ)\n\n• දිග පිළිබඳ නියමය: නියත ආතතියකදී, f · L = නියතයකි (f ∝ 1/L).\n• ආතතිය පිළිබඳ නියමය: නියත දිගකදී, f / √T = නියතයකි (f ∝ √T).\n\nකම්පනය වන සුසර දෙබල ධ්වනි පෙට්ටිය මත තැබූ විට, තන්තුවේ ස්වභාවික සංඛ්‍යාතය දෙබලේ සංඛ්‍යාතයට සමාන වන විට අනුනාදය හටගනී. අනුනාදයේදී මධ්‍යයේ ඇති කුඩා කඩදාසි අසරුවා විසිවී යයි.',
-      procedure: 'ක්‍රමවේදය: 1. පඩි තැටියට ස්කන්ධයක් (උදා. 3.0 kg) යොදා ආතතිය T = M·g සකසන්න. 2. පාලම් දෙක අතර මධ්‍යයේ V-හැඩැති කුඩා කඩදාසි අසරුවෙකු තබන්න. 3. සංඛ්‍යාතය f වූ සුසර දෙබලක් රබර් මිටියෙන් ගසා එහි මිට තන්තුමාන ලෑල්ල මත තද කරන්න. 4. අසරුවා වේගයෙන් ගැහී විසිවන තෙක් පාලමක් සෙමෙන් චලනය කරන්න. 5. පාලම් දෙක අතර දිග L මනින්න. 6. විවිධ සුසර දෙබල සඳහා පරීක්ෂණය නැවත කර f · L = නියත බව පෙන්වන්න.',
-      obsTitle: 'නිරීක්ෂණ සටහන (සංඛ්‍යාතය සහ අනුනාද දිග)',
+      title: 'ප්‍රායෝගික පරීක්ෂණය 12 සහ 13: තන්තුමානයෙන් ආතත තන්තුවක තීර්යක් කම්පන නියම',
+      aim: 'අරමුණ: නියත ආතතියකදී දිග පිළිබඳ නියමය (f ∝ 1/L, පරීක්ෂණ 12) සහ නියත සංඛ්‍යාතයකදී ආතති නියමය (L ∝ √T, පරීක්ෂණ 13) සත්‍යාපනය කිරීම.',
+      apparatus: 'උපකරණ: තන්තුමාන ධ්වනි පෙට්ටිය, චල පාලම්, කප්පිය, සුසර දෙබල (256–512 Hz), රබර් මිටිය, බර පඩි සහ තැටිය, කඩදාසි අසරුවා, මීටර් රූල.',
+      modeLength: 'පරීක්ෂණ 12: දිග පිළිබඳ නියමය (f ∝ 1/L)',
+      modeTension: 'පරීක්ෂණ 13: ආතති නියමය (L ∝ √T)',
+      theoryTitleLength: 'දිග පිළිබඳ නියමය (පරීක්ෂණ 12: නියත ආතතිය T)',
+      theoryTextLength: 'නියත ආතතියක් යටතේ මූලික සංඛ්‍යාතය f = (1 / 2L) · √(T / μ) වේ. එනම් f · L = නියතයකි. L එදිරිව 1/f ප්‍රස්තාරය මූල ලක්ෂ්‍යය හරහා යන සරල රේඛාවකි.',
+      theoryTitleTension: 'ආතති නියමය (පරීක්ෂණ 13: නියත සංඛ්‍යාතය f)',
+      theoryTextTension: 'නියත සංඛ්‍යාතයකදී අනුනාද දිග L = (1 / 2f) · √(T / μ) වේ. එබැවින් L ∝ √M හෝ L / √M = නියතයකි. L එදිරිව √M ප්‍රස්තාරය මූල ලක්ෂ්‍යය හරහා යන සරල රේඛාවකි.',
+      procedureLength: 'ක්‍රමවේදය: 1. නියත බරක් (3.0 kg) එල්ලන්න. 2. පාලම් මැද කඩදාසි අසරුවා තබන්න. 3. සුසර දෙබල කම්පනය කර ලෑල්ල මත තබන්න. 4. අසරුවා විසිවන තෙක් පාලම් සකසා දිග L මනින්න.',
+      procedureTension: 'ක්‍රමවේදය: 1. දෙබලේ සංඛ්‍යාතය නියතව (256 Hz) තබන්න. 2. බර M වෙනස් කරන්න (1–4 kg). 3. එක් එක් බර සඳහා අනුනාද දිග L මැන L / √M නියත බව පෙන්වන්න.',
+      obsTitleLength: 'නිරීක්ෂණ: සංඛ්‍යාතය එදිරිව අනුනාද දිග (නියත ආතතිය = 3.0 kg)',
+      obsTitleTension: 'නිරීක්ෂණ: ආතති ස්කන්ධය එදිරිව අනුනාද දිග (නියත සංඛ්‍යාතය = 256 Hz)',
       trialCol: 'වාරය',
       forkCol: 'දෙබලේ සංඛ්‍යාතය f (Hz)',
       lengthCol: 'අනුනාද දිග L (cm)',
       tensionCol: 'ආතති ස්කන්ධය M (kg)',
+      sqrtTensionCol: '√M (kg^0.5)',
       flProductCol: 'f · L ගුණිතය (Hz · m)',
+      ratioCol: 'L / √M (cm / kg^0.5)',
       calcSummaryTitle: 'විශ්ලේෂණය සහ නීති සත්‍යාපනය',
       meanProduct: 'මධ්‍යන්‍ය (f · L) ගුණිතය:',
+      meanRatio: 'මධ්‍යන්‍ය (L / √M) අනුපාතය:',
       theoFrequency: 'සෛද්ධාන්තික සංඛ්‍යාතය (වාරය 1 සඳහා):',
       percentageDiff: 'ප්‍රතිශත වෙනස:',
-      verdictPass: 'තන්තුමාන නීතිය සත්‍යාපනය විය (f · L නියතය 4% තුළ)',
+      verdictPass: 'තන්තුමාන නීතිය සත්‍යාපනය විය (4% තුළ)',
       verdictFail: 'පාලම් පිහිටුම හෝ අසරුවාගේ පිහිටීම පරීක්ෂා කරන්න',
       precautionsTitle: 'ප්‍රායෝගික පූර්වෝපායයන්',
-      precautions: '1. කඩදාසි අසරුවා හරියටම පාලම් දෙක අතර මැද (ප්‍රස්පන්දය ඇතිවන තැන) තැබිය යුතුය. 2. පාලම්වල තියුණු දාර තන්තුවට ලම්බක විය යුතුය. 3. කප්පියේ ඝර්ෂණය අවම කිරීමට අවශ්‍ය නම් තෙල් යොදන්න.',
-      loadSample: 'ආදර්ශ දත්ත පූරණය (වානේ තන්තුව)',
+      precautions: '1. කඩදාසි අසරුවා පාලම් දෙක අතර මැද තැබිය යුතුය. 2. පාලම්වල දාර තන්තුවට ලම්බක විය යුතුය. 3. කප්පියේ ඝර්ෂණය අවම විය යුතුය.',
+      loadSample: 'ආදර්ශ දත්ත පූරණය',
       clearInputs: 'දත්ත හිස් කරන්න',
-      printSheet: 'වාර්තාව මුද්‍රණය කරන්න',
+      submitLab: 'ප්‍රායෝගික සටහන භාරදෙන්න',
+      submittedMsg: 'ප්‍රායෝගික වාර්තාව සම්පූර්ණ කර රසායනාගාර සටහනට සුරකින ලදී.',
     },
   }[locale];
 
-  const updateTrial = (id: number, field: keyof SonometerTrial, val: string) => {
-    setTrials(trials.map((t) => (t.id === id ? { ...t, [field]: val } : t)));
-  };
-
+  // Calculations for Exp 12 (Law of Length)
   const calculatedTrials = trials.map((tr) => {
     const f = parseFloat(tr.forkFreqHz);
     const lM = parseFloat(tr.resLengthCm) / 100;
     const prod = !isNaN(f) && !isNaN(lM) && lM > 0 ? f * lM : null;
     return { ...tr, prod };
   });
-
   const validProds = calculatedTrials.map((t) => t.prod).filter((p): p is number => p !== null);
   const meanProduct = validProds.length > 0 ? validProds.reduce((a, b) => a + b, 0) / validProds.length : null;
 
-  // Theoretical verification for trial 1
-  const mLoad = parseFloat(trials[0].tensionKg) || 3.0;
-  const lVal = (parseFloat(trials[0].resLengthCm) || 38.0) / 100;
+  const mLoad = parseFloat(trials[0]?.tensionKg || '3.0') || 3.0;
+  const lVal = (parseFloat(trials[0]?.resLengthCm || '38.0') || 38.0) / 100;
   const muVal = parseFloat(wireLinearDensity) || 0.0012;
   const theoFreq =
     lVal > 0 && muVal > 0 ? calculateStringFundamentalFrequency(lVal, mLoad * 9.8, muVal) : 0;
-  const actFreq = parseFloat(trials[0].forkFreqHz) || 256;
+  const actFreq = parseFloat(trials[0]?.forkFreqHz || '256') || 256;
   const percDiff =
     theoFreq > 0 ? Math.abs((theoFreq - actFreq) / actFreq) * 100 : null;
+  const isPassLength = percDiff !== null && percDiff <= 4.0;
 
-  const isPass = percDiff !== null && percDiff <= 4.0;
+  // Calculations for Exp 13 (Law of Tension)
+  const calculatedTensionTrials = tensionTrials.map((tr) => {
+    const m = parseFloat(tr.tensionKg);
+    const l = parseFloat(tr.resLengthCm);
+    const sqrtM = !isNaN(m) && m > 0 ? Math.sqrt(m) : null;
+    const ratio = !isNaN(l) && sqrtM !== null && sqrtM > 0 ? l / sqrtM : null;
+    return { ...tr, sqrtM, ratio };
+  });
+  const validRatios = calculatedTensionTrials.map((t) => t.ratio).filter((r): r is number => r !== null);
+  const meanRatio = validRatios.length > 0 ? validRatios.reduce((a, b) => a + b, 0) / validRatios.length : null;
+  const isPassTension = validRatios.length > 0 && validRatios.every((r) => Math.abs(r - (meanRatio || 0)) / (meanRatio || 1) <= 0.04);
+
+  const updateTrial = (id: number, field: keyof SonometerTrial, val: string) => {
+    const updated = trials.map((t) => (t.id === id ? { ...t, [field]: val } : t));
+    updateObservations({ trials: updated });
+  };
+
+  const updateTensionTrial = (id: number, field: keyof TensionTrial, val: string) => {
+    const updated = tensionTrials.map((t) => (t.id === id ? { ...t, [field]: val } : t));
+    updateObservations({ tensionTrials: updated });
+  };
 
   const handleLoadSample = () => {
-    setWireLinearDensity('0.0012');
-    setTrials([
-      { id: 1, forkFreqHz: '256', resLengthCm: '38.0', tensionKg: '3.0' },
-      { id: 2, forkFreqHz: '320', resLengthCm: '30.4', tensionKg: '3.0' },
-      { id: 3, forkFreqHz: '384', resLengthCm: '25.3', tensionKg: '3.0' },
-      { id: 4, forkFreqHz: '512', resLengthCm: '19.0', tensionKg: '3.0' },
-    ]);
+    if (subMode === 'law_of_length') {
+      loadSampleObservations({
+        wireLinearDensity: '0.0012',
+        trials: [
+          { id: 1, forkFreqHz: '256', resLengthCm: '38.0', tensionKg: '3.0' },
+          { id: 2, forkFreqHz: '320', resLengthCm: '30.4', tensionKg: '3.0' },
+          { id: 3, forkFreqHz: '384', resLengthCm: '25.3', tensionKg: '3.0' },
+          { id: 4, forkFreqHz: '512', resLengthCm: '19.0', tensionKg: '3.0' },
+        ],
+      });
+    } else {
+      loadSampleObservations({
+        fixedForkHz: '256',
+        tensionTrials: [
+          { id: 1, tensionKg: '1.0', resLengthCm: '22.0' },
+          { id: 2, tensionKg: '2.0', resLengthCm: '31.1' },
+          { id: 3, tensionKg: '3.0', resLengthCm: '38.1' },
+          { id: 4, tensionKg: '4.0', resLengthCm: '44.0' },
+        ],
+      });
+    }
   };
 
   const handleClear = () => {
-    setTrials(trials.map((t) => ({ ...t, forkFreqHz: '', resLengthCm: '' })));
+    reset();
   };
 
   return (
     <div className="space-y-6">
-      {/* Top Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 bg-white rounded-xl border border-[#DFE8EF] shadow-sm">
-        <div>
-          <h2 className="text-xl font-bold text-[#14243A] font-serif">{t.title}</h2>
-          <p className="text-sm text-[#475569] mt-1">{t.aim}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={handleLoadSample} className="text-[#0F766E] border-[#DFE8EF]">
-            <Database className="w-4 h-4 mr-1.5" />
-            {t.loadSample}
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleClear} className="text-[#475569] border-[#DFE8EF]">
-            <RotateCcw className="w-4 h-4 mr-1.5" />
-            {t.clearInputs}
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => window.print()} className="text-[#475569] border-[#DFE8EF]">
-            <Printer className="w-4 h-4 mr-1.5" />
-            {t.printSheet}
-          </Button>
-        </div>
-      </div>
-
-      {/* Grid: Sonometer Apparatus Schematic & Theory */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Schematic Card */}
-        <Card className="border-[#DFE8EF] bg-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base text-[#14243A] font-medium flex items-center gap-2">
-              <Music className="w-4 h-4 text-[#0F766E]" />
-              {locale === 'si' ? 'තන්තුමාන උපකරණයේ සැකැස්ම' : 'Sonometer Apparatus Schematic'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex justify-center p-4 bg-[#F6FAFD] rounded-lg border border-[#DFE8EF]">
-              <svg width="300" height="200" viewBox="0 0 300 200" className="overflow-visible">
-                {/* Wooden Sounding Box */}
-                <rect x="20" y="80" width="220" height="40" fill="#D97706" fillOpacity="0.2" stroke="#B45309" strokeWidth="2" rx="2" />
-                <circle cx="60" cy="100" r="6" fill="#B45309" fillOpacity="0.4" />
-                <circle cx="180" cy="100" r="6" fill="#B45309" fillOpacity="0.4" />
-                <text x="120" y="115" textAnchor="middle" fontSize="9" fill="#92400E">Sounding Box</text>
-
-                {/* Fixed Peg at left */}
-                <circle cx="30" cy="70" r="3" fill="#1E293B" />
-                <line x1="30" y1="70" x2="30" y2="80" stroke="#1E293B" strokeWidth="3" />
-
-                {/* Pulley at right */}
-                <circle cx="240" cy="70" r="8" fill="#94A3B8" stroke="#475569" strokeWidth="1.5" />
-                <circle cx="240" cy="70" r="2" fill="#1E293B" />
-
-                {/* Movable Knife Edge Bridges */}
-                {/* Bridge 1 */}
-                <polygon points="70,80 65,70 75,70" fill="#0F766E" />
-                {/* Bridge 2 */}
-                <polygon points="190,80 185,70 195,70" fill="#0F766E" />
-
-                {/* Wire */}
-                <line x1="30" y1="70" x2="240" y2="70" stroke="#334155" strokeWidth="2" />
-                {/* Vertical drop over pulley */}
-                <line x1="248" y1="70" x2="248" y2="150" stroke="#334155" strokeWidth="2" />
-
-                {/* Slotted Weight Hanger */}
-                <rect x="240" y="150" width="16" height="30" fill="#64748B" rx="1" />
-                <text x="262" y="168" fontSize="9" fill="#1E293B" fontWeight="bold">T = Mg</text>
-
-                {/* Paper Rider at midpoint */}
-                <polygon points="130,68 127,62 133,62" fill="#EF4444" stroke="#DC2626" strokeWidth="1" />
-                <text x="130" y="56" textAnchor="middle" fontSize="8" fill="#DC2626" fontWeight="bold">Paper Rider</text>
-
-                {/* Standing Wave Envelope (Fundamental) */}
-                <path d="M 70 70 Q 130 55 190 70" fill="none" stroke="#0F766E" strokeWidth="1.5" strokeDasharray="3 2" />
-                <path d="M 70 70 Q 130 85 190 70" fill="none" stroke="#0F766E" strokeWidth="1.5" strokeDasharray="3 2" />
-
-                {/* Resonance Length Dimension L */}
-                <line x1="70" y1="95" x2="190" y2="95" stroke="#0F766E" strokeWidth="1" />
-                <polygon points="70,95 75,93 75,97" fill="#0F766E" />
-                <polygon points="190,95 185,93 185,97" fill="#0F766E" />
-                <text x="130" y="104" textAnchor="middle" fontSize="10" fill="#0F766E" fontWeight="bold">L</text>
-              </svg>
-            </div>
-            <p className="text-xs text-[#475569] text-center mt-2 italic">
-              {locale === 'si' ? 'අනුනාදයේදී මධ්‍යයේ ප්‍රස්පන්දයක් හටගෙන කඩදාසි අසරුවා විසිවේ: f = (1/2L)√(T/μ)' : 'Resonance fundamental antinode tosses paper rider: f = (1/2L)√(T/μ)'}
-            </p>
-          </CardContent>
-        </Card>
-
-        {/* Theory & Procedure */}
-        <Card className="border-[#DFE8EF] bg-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base text-[#14243A] font-medium">
-              {t.theoryTitle}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm text-[#475569]">
-            <p className="whitespace-pre-line leading-relaxed">{t.theoryText}</p>
-            <div className="p-3 bg-[#F6FAFD] rounded-md border border-[#DFE8EF]">
-              <span className="font-semibold text-[#14243A]">{t.apparatus.split(':')[0]}:</span>
-              <span>{t.apparatus.split(':')[1]}</span>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Observations Table */}
-      <Card className="border-[#DFE8EF] bg-white">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base text-[#14243A] font-medium">
-            {t.obsTitle}
+      {/* Top Header Card */}
+      <Card className="bg-[#FFFFFF] dark:bg-[#111D2D] border border-[#DFE8EF] dark:border-[#1E334D] rounded-2xl shadow-2xs">
+        <CardHeader className="p-6 pb-3">
+          <CardTitle className="text-lg font-bold text-[#14243A] dark:text-[#F8FAFC]">
+            {t.title}
           </CardTitle>
+          <p className="text-xs sm:text-sm text-[#0F766E] dark:text-[#14B8A6] font-medium">
+            {t.aim}
+          </p>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left border-collapse">
-              <thead>
-                <tr className="bg-[#F6FAFD] border-b border-[#DFE8EF] text-[#14243A]">
-                  <th className="py-2.5 px-4 font-semibold">{t.trialCol}</th>
-                  <th className="py-2.5 px-4 font-semibold">{t.forkCol}</th>
-                  <th className="py-2.5 px-4 font-semibold">{t.lengthCol}</th>
-                  <th className="py-2.5 px-4 font-semibold">{t.tensionCol}</th>
-                  <th className="py-2.5 px-4 font-semibold">{t.flProductCol}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {calculatedTrials.map((tr) => (
-                  <tr key={tr.id} className="border-b border-[#DFE8EF] hover:bg-slate-50">
-                    <td className="py-2.5 px-4 font-medium text-[#14243A]">{tr.id}</td>
-                    <td className="py-2 px-4">
-                      <input
-                        type="number"
-                        value={tr.forkFreqHz}
-                        onChange={(e) => updateTrial(tr.id, 'forkFreqHz', e.target.value)}
-                        placeholder="e.g. 256"
-                        className="w-24 px-2 py-1 text-sm border border-[#DFE8EF] rounded outline-none focus:ring-1 focus:ring-[#0F766E]"
-                      />
-                    </td>
-                    <td className="py-2 px-4">
-                      <input
-                        type="number"
-                        step="0.1"
-                        value={tr.resLengthCm}
-                        onChange={(e) => updateTrial(tr.id, 'resLengthCm', e.target.value)}
-                        placeholder="e.g. 38.0"
-                        className="w-24 px-2 py-1 text-sm border border-[#DFE8EF] rounded outline-none focus:ring-1 focus:ring-[#0F766E]"
-                      />
-                    </td>
-                    <td className="py-2 px-4">
-                      <input
-                        type="number"
-                        step="0.5"
-                        value={tr.tensionKg}
-                        onChange={(e) => updateTrial(tr.id, 'tensionKg', e.target.value)}
-                        placeholder="e.g. 3.0"
-                        className="w-24 px-2 py-1 text-sm border border-[#DFE8EF] rounded outline-none focus:ring-1 focus:ring-[#0F766E]"
-                      />
-                    </td>
-                    <td className="py-2.5 px-4 font-mono font-semibold text-[#0F766E]">
-                      {tr.prod !== null ? tr.prod.toFixed(2) : '—'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        <CardContent className="p-6 pt-0 space-y-3 text-xs sm:text-sm text-[#475569] dark:text-[#94A3B8] leading-relaxed">
+          <p><strong>{t.apparatus}</strong></p>
+          <div className="p-3.5 rounded-xl bg-[#F6FAFD] dark:bg-[#0B131E] border border-[#DFE8EF] dark:border-[#1E334D] space-y-1">
+            <span className="font-bold text-[#14243A] dark:text-[#F8FAFC] block">
+              {subMode === 'law_of_length' ? t.theoryTitleLength : t.theoryTitleTension}
+            </span>
+            <p>{subMode === 'law_of_length' ? t.theoryTextLength : t.theoryTextTension}</p>
           </div>
-
-          {/* Analytical Summary Box */}
-          <div className="p-4 bg-[#F6FAFD] rounded-xl border border-[#DFE8EF] grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-[#475569]">{t.meanProduct}</span>
-                <span className="font-bold text-[#14243A] font-mono text-base">
-                  {meanProduct !== null ? `${meanProduct.toFixed(2)} Hz · m` : '—'}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-[#475569]">{t.theoFrequency}</span>
-                <span className="font-bold text-[#0F766E] font-mono text-base">
-                  {theoFreq > 0 ? `${theoFreq.toFixed(1)} Hz` : '—'}
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-[#475569]">{t.percentageDiff}</span>
-                <span className="font-mono font-semibold text-[#14243A]">
-                  {percDiff !== null ? `${percDiff.toFixed(2)}%` : '—'}
-                </span>
-              </div>
-            </div>
-
-            <div className="flex flex-col justify-center items-center p-3 rounded-lg border bg-white">
-              {isPass ? (
-                <div className="flex items-center gap-2 text-emerald-700">
-                  <CheckCircle2 className="w-6 h-6 flex-shrink-0" />
-                  <span className="font-medium text-sm">{t.verdictPass}</span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-2 text-amber-600">
-                  <AlertCircle className="w-6 h-6 flex-shrink-0" />
-                  <span className="font-medium text-sm">{t.verdictFail}</span>
-                </div>
-              )}
-            </div>
-          </div>
+          <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">
+            {subMode === 'law_of_length' ? t.procedureLength : t.procedureTension}
+          </p>
         </CardContent>
       </Card>
 
-      {/* Precautions */}
-      <Card className="border-[#DFE8EF] bg-white">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base text-[#14243A] font-medium">
-            {t.precautionsTitle}
-          </CardTitle>
+      {/* Mode Switcher & Workspace */}
+      <Card className="bg-[#FFFFFF] dark:bg-[#111D2D] border border-[#DFE8EF] dark:border-[#1E334D] rounded-2xl shadow-2xs">
+        <CardHeader className="p-6 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              size="sm"
+              variant={subMode === 'law_of_length' ? 'default' : 'outline'}
+              className="text-xs h-8 rounded-lg"
+              onClick={() => setSubMode('law_of_length')}
+            >
+              <Music className="w-3.5 h-3.5 mr-1" />
+              {t.modeLength}
+            </Button>
+            <Button
+              size="sm"
+              variant={subMode === 'law_of_tension' ? 'default' : 'outline'}
+              className="text-xs h-8 rounded-lg"
+              onClick={() => setSubMode('law_of_tension')}
+            >
+              <Music className="w-3.5 h-3.5 mr-1" />
+              {t.modeTension}
+            </Button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-xs h-8 rounded-lg"
+              onClick={handleLoadSample}
+            >
+              <Database className="w-3.5 h-3.5 mr-1" />
+              {t.loadSample}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-xs h-8 rounded-lg"
+              onClick={handleClear}
+            >
+              <RotateCcw className="w-3.5 h-3.5 mr-1" />
+              {t.clearInputs}
+            </Button>
+          </div>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm text-[#475569] leading-relaxed">{t.precautions}</p>
+
+        <CardContent className="p-6 pt-0 space-y-6">
+          {/* Sonometer Schematic Diagram */}
+          <div className="p-4 rounded-xl bg-[#F6FAFD] dark:bg-[#0B131E] border border-[#DFE8EF] dark:border-[#1E334D] flex justify-center">
+            <svg viewBox="0 0 340 180" className="w-full max-w-md h-auto">
+              {/* Wooden Sounding Box */}
+              <rect x="20" y="70" width="240" height="40" fill="#D97706" fillOpacity="0.2" stroke="#B45309" strokeWidth="2" rx="2" />
+              <circle cx="60" cy="90" r="6" fill="#B45309" fillOpacity="0.4" />
+              <circle cx="200" cy="90" r="6" fill="#B45309" fillOpacity="0.4" />
+              <text x="140" y="105" textAnchor="middle" fontSize="9" fill="#92400E" fontWeight="bold">Sonometer Sounding Box</text>
+
+              {/* Fixed Peg at left */}
+              <circle cx="30" cy="60" r="3" fill="#1E293B" />
+              <line x1="30" y1="60" x2="30" y2="70" stroke="#1E293B" strokeWidth="3" />
+
+              {/* Pulley at right */}
+              <circle cx="260" cy="60" r="8" fill="#94A3B8" stroke="#475569" strokeWidth="1.5" />
+              <circle cx="260" cy="60" r="2" fill="#1E293B" />
+
+              {/* Movable Knife Edge Bridges */}
+              {/* Bridge 1 */}
+              <polygon points="70,70 65,60 75,60" fill="#0F766E" />
+              {/* Bridge 2 */}
+              <polygon points="210,70 205,60 215,60" fill="#0F766E" />
+
+              {/* Stretched Wire */}
+              <line x1="30" y1="60" x2="260" y2="60" stroke="#1E293B" strokeWidth="1.5" />
+              <line x1="260" y1="60" x2="260" y2="120" stroke="#1E293B" strokeWidth="1.5" />
+
+              {/* Suspended slotted mass hanger */}
+              <g transform="translate(260, 120)">
+                <line x1="0" y1="0" x2="0" y2="15" stroke="#1E293B" strokeWidth="2" />
+                <rect x="-10" y="15" width="20" height="15" fill="#475569" rx="2" />
+                <text x="0" y="26" textAnchor="middle" fontSize="8" fill="#FFFFFF" fontWeight="bold">T = Mg</text>
+              </g>
+
+              {/* Paper rider at midpoint */}
+              <polygon points="140,60 137,52 143,52" fill="#EF4444" stroke="#DC2626" strokeWidth="0.8" />
+              <text x="140" y="46" textAnchor="middle" fontSize="8" fill="#EF4444" fontWeight="bold">Paper Rider</text>
+
+              {/* Resonant length L indicator */}
+              <line x1="70" y1="130" x2="210" y2="130" stroke="#0F766E" strokeWidth="1.5" />
+              <text x="140" y="145" textAnchor="middle" fontSize="9" fill="#0F766E" fontWeight="bold">Resonant Length L</text>
+            </svg>
+          </div>
+
+          {/* SubMode 1: Exp 12 Law of Length */}
+          {subMode === 'law_of_length' ? (
+            <div className="space-y-4">
+              <div className="overflow-x-auto rounded-xl border border-[#DFE8EF] dark:border-[#1E334D]">
+                <table className="w-full text-left text-xs font-mono">
+                  <thead className="bg-[#F6FAFD] dark:bg-[#0B131E] border-b border-[#DFE8EF] dark:border-[#1E334D] text-[#14243A] dark:text-[#F8FAFC]">
+                    <tr>
+                      <th className="p-3 w-16">{t.trialCol}</th>
+                      <th className="p-3">{t.forkCol}</th>
+                      <th className="p-3">{t.lengthCol}</th>
+                      <th className="p-3">{t.tensionCol}</th>
+                      <th className="p-3">{t.flProductCol}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#DFE8EF] dark:divide-[#1E334D]">
+                    {calculatedTrials.map((tr) => (
+                      <tr key={tr.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50">
+                        <td className="p-3 font-bold text-center">{tr.id}</td>
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            value={tr.forkFreqHz}
+                            onChange={(e) => updateTrial(tr.id, 'forkFreqHz', e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-md border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                          />
+                        </td>
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            value={tr.resLengthCm}
+                            onChange={(e) => updateTrial(tr.id, 'resLengthCm', e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-md border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                          />
+                        </td>
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            value={tr.tensionKg}
+                            onChange={(e) => updateTrial(tr.id, 'tensionKg', e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-md border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                          />
+                        </td>
+                        <td className="p-3 font-bold text-[#0F766E] dark:text-[#14B8A6]">
+                          {tr.prod !== null ? `${tr.prod.toFixed(2)} Hz·m` : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Analytical Summary */}
+              <div className="p-4 rounded-xl bg-[#F0FDFA] dark:bg-[#042F2E] border border-[#99F6E4] dark:border-[#115E59] space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
+                  <div className="p-3 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                    <span className="text-[10px] text-[#64748B] block font-sans">{t.meanProduct}</span>
+                    <span className="text-base font-bold text-[#0F766E] dark:text-[#14B8A6]">
+                      {meanProduct !== null ? `${meanProduct.toFixed(2)} Hz·m` : '—'}
+                    </span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                    <span className="text-[10px] text-[#64748B] block font-sans">{t.theoFrequency}</span>
+                    <span className="text-base font-bold text-[#14243A] dark:text-[#F8FAFC]">
+                      {theoFreq > 0 ? `${theoFreq.toFixed(1)} Hz` : '—'}
+                    </span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                    <span className="text-[10px] text-[#64748B] block font-sans">{t.percentageDiff}</span>
+                    <span className="text-base font-bold text-[#0F766E] dark:text-[#14B8A6]">
+                      {percDiff !== null ? `${percDiff.toFixed(2)}%` : '—'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className={`p-3 rounded-lg flex items-center gap-2 text-xs font-semibold ${
+                  isPassLength
+                    ? 'bg-emerald-100/70 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
+                    : 'bg-amber-100/70 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300'
+                }`}>
+                  {isPassLength ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                  )}
+                  <span>{isPassLength ? t.verdictPass : t.verdictFail}</span>
+                </div>
+              </div>
+            </div>
+          ) : (
+            /* SubMode 2: Exp 13 Law of Tension */
+            <div className="space-y-4">
+              <div className="overflow-x-auto rounded-xl border border-[#DFE8EF] dark:border-[#1E334D]">
+                <table className="w-full text-left text-xs font-mono">
+                  <thead className="bg-[#F6FAFD] dark:bg-[#0B131E] border-b border-[#DFE8EF] dark:border-[#1E334D] text-[#14243A] dark:text-[#F8FAFC]">
+                    <tr>
+                      <th className="p-3 w-16">{t.trialCol}</th>
+                      <th className="p-3">{t.tensionCol}</th>
+                      <th className="p-3">{t.sqrtTensionCol}</th>
+                      <th className="p-3">{t.lengthCol}</th>
+                      <th className="p-3">{t.ratioCol}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#DFE8EF] dark:divide-[#1E334D]">
+                    {calculatedTensionTrials.map((tr) => (
+                      <tr key={tr.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50">
+                        <td className="p-3 font-bold text-center">{tr.id}</td>
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            value={tr.tensionKg}
+                            onChange={(e) => updateTensionTrial(tr.id, 'tensionKg', e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-md border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                          />
+                        </td>
+                        <td className="p-3 text-[#64748B]">
+                          {tr.sqrtM !== null ? tr.sqrtM.toFixed(3) : '—'}
+                        </td>
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            value={tr.resLengthCm}
+                            onChange={(e) => updateTensionTrial(tr.id, 'resLengthCm', e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-md border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                          />
+                        </td>
+                        <td className="p-3 font-bold text-[#0F766E] dark:text-[#14B8A6]">
+                          {tr.ratio !== null ? `${tr.ratio.toFixed(2)} cm/√kg` : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Tension Summary */}
+              <div className="p-4 rounded-xl bg-[#F0FDFA] dark:bg-[#042F2E] border border-[#99F6E4] dark:border-[#115E59] space-y-3">
+                <div className="p-3 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60 flex items-center justify-between">
+                  <span className="text-xs text-[#64748B] block font-sans">{t.meanRatio}</span>
+                  <span className="text-base font-bold text-[#0F766E] dark:text-[#14B8A6]">
+                    {meanRatio !== null ? `${meanRatio.toFixed(2)} cm / √kg` : '—'}
+                  </span>
+                </div>
+
+                <div className={`p-3 rounded-lg flex items-center gap-2 text-xs font-semibold ${
+                  isPassTension
+                    ? 'bg-emerald-100/70 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
+                    : 'bg-amber-100/70 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300'
+                }`}>
+                  {isPassTension ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                  )}
+                  <span>{isPassTension ? 'Law of Tension Verified (L ∝ √T Constant Within 4%)' : 'Check Bridge Positions'}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Precautions Footer */}
+          <div className="p-3.5 rounded-xl bg-[#F6FAFD] dark:bg-[#0B131E] border border-[#DFE8EF] dark:border-[#1E334D] text-xs text-[#64748B] dark:text-[#94A3B8] space-y-1">
+            <span className="font-bold text-[#14243A] dark:text-[#F8FAFC] block">{t.precautionsTitle}</span>
+            <p>{t.precautions}</p>
+          </div>
+
+          {/* Submit Action */}
+          <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#DFE8EF] dark:border-[#1E334D]">
+            <Button
+              className="w-full sm:w-auto bg-[#0F766E] hover:bg-[#0D655E] text-white"
+              onClick={() => setCompleted(true)}
+            >
+              <CheckCircle2 className="w-4 h-4 mr-2" /> {t.submitLab}
+            </Button>
+            {isCompleted && (
+              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                {t.submittedMsg}
+              </span>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>

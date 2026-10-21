@@ -25,17 +25,23 @@ export const ForceParallelogramPractical: React.FC<ForceParallelogramPracticalPr
   } = usePracticalWork({
     experimentId: 'exp-5-force-board',
     defaultObservations: {
+      subMode: 'verification',
       pG: '300',
       qG: '400',
       rG: '500',
       angleDeg: '90',
+      actualMassG: '480.0',
     },
   });
+
+  const subMode = (observations.subMode || 'verification') as 'verification' | 'unknown_mass';
+  const setSubMode = (mode: 'verification' | 'unknown_mass') => updateObservations({ subMode: mode });
 
   const pG = observations.pG || '';
   const qG = observations.qG || '';
   const rG = observations.rG || '';
   const angleDeg = observations.angleDeg || '';
+  const actualMassG = observations.actualMassG || '480.0';
 
   const t = {
     en: {
@@ -60,6 +66,13 @@ export const ForceParallelogramPractical: React.FC<ForceParallelogramPracticalPr
       vectorLoopText: 'If vectors P, Q, and R are drawn tip-to-tail to scale, they form a closed triangle, proving that the net external force ΣF = 0.',
       precautionsTitle: 'Experimental Precautions',
       precautions: '1. Tap the force board gently before reading to minimize pulley axle friction. 2. Use a plane mirror strip under strings to avoid parallax error when marking lines. 3. Ensure the central knot O does not rub against the drawing paper or board surface.',
+      modeVerification: '1. Law Verification (P, Q, R)',
+      modeUnknownMass: '2. Unknown Body Mass Determination',
+      unknownMassTitle: 'Determination of Unknown Body Mass Mx',
+      unknownMassAim: 'Aim: To determine the mass of an unknown suspended body using Gravesande’s force board and vector construction.',
+      unknownMassTheory: 'An unknown object of mass Mx (weight Wx) is suspended from knot O. Pulleys carry known slotted weights P and Q, adjusted until equilibrium is reached at angle θ. From the Parallelogram Law: Mx = √(P² + Q² + 2PQ cos θ).',
+      calcUnknownMass: 'Calculated Unknown Mass Mx:',
+      actualBalanceMass: 'Electronic Balance Reading M_actual:',
       loadSample: 'Load Sample Data',
       clearInputs: 'Clear Inputs',
       printSheet: 'Print Laboratory Record',
@@ -88,6 +101,13 @@ export const ForceParallelogramPractical: React.FC<ForceParallelogramPracticalPr
       vectorLoopText: 'P, Q සහ R දෛශික පරිමාණයකට මුලට-අග ඇඳි විට සංවෘත ත්‍රිකෝණයක් සෑදේ නම්, ශුද්ධ බාහිර බලය ΣF = 0 බව තහවුරු වේ.',
       precautionsTitle: 'පරීක්ෂණාත්මක පූර්වෝපායයන්',
       precautions: '1. කප්පි අක්ෂයේ ඝර්ෂණය අවම කිරීමට පාඨාංක ගැනීමට පෙර ලෑල්ලට මෘදුව තට්ටු කරන්න. 2. නූල් දිශා ලකුණු කිරීමේදී දෘෂ්ටි විලාස දෝෂය වැළැක්වීමට තල දර්පණ පටියක් භාවිත කරන්න. 3. මැද ගැටය කඩදාසියේ නොගෑවෙන බවට වග බලා ගන්න.',
+      modeVerification: '1. නීති සත්‍යාපනය (P, Q, R)',
+      modeUnknownMass: '2. නාඳුනන වස්තුවක ස්කන්ධය සෙවීම',
+      unknownMassTitle: 'නාඳුනන වස්තුවක ස්කන්ධය Mx නිර්ණය කිරීම',
+      unknownMassAim: 'අරමුණ: ග්‍රේව්සැන්ඩ් බල ලෑල්ල සහ දෛශික නිර්මාණය භාවිතයෙන් නාඳුනන වස්තුවක ස්කන්ධය සෙවීම.',
+      unknownMassTheory: 'මැද ගැටයෙන් නාඳුනන වස්තුව Mx (බර Wx) එල්ලා P සහ Q බර මඟින් කෝණය θ දී තුලනය කරනු ලැබේ. බල සමාන්තරාස්‍ර නියමයෙන්: Mx = √(P² + Q² + 2PQ cos θ) වේ.',
+      calcUnknownMass: 'ගණනය කළ නාඳුනන ස්කන්ධය Mx:',
+      actualBalanceMass: 'විද්‍යුත් තුලාවේ පාඨාංකය M_actual:',
       loadSample: 'ආදර්ශ දත්ත පුරවන්න',
       clearInputs: 'හිස් කරන්න',
       printSheet: 'වාර්තාව මුද්‍රණය කරන්න',
@@ -109,27 +129,44 @@ export const ForceParallelogramPractical: React.FC<ForceParallelogramPracticalPr
     ? calculateForceBoardResultant(numP, numQ, numAngle, numR)
     : null;
 
-  const handleLoadSample = (preset: '345' | 'equal' | 'general') => {
+  const handleLoadSample = (preset: '345' | 'equal' | 'general' | 'unknown') => {
+    if (subMode === 'unknown_mass' || preset === 'unknown') {
+      loadSampleObservations({
+        subMode: 'unknown_mass',
+        pG: '250',
+        qG: '350',
+        rG: '480',
+        angleDeg: '75',
+        actualMassG: '480.0',
+      });
+      return;
+    }
     if (preset === '345') {
       loadSampleObservations({
+        subMode: 'verification',
         pG: '300',
         qG: '400',
         rG: '500',
         angleDeg: '90',
+        actualMassG: '500.0',
       });
     } else if (preset === 'equal') {
       loadSampleObservations({
+        subMode: 'verification',
         pG: '250',
         qG: '250',
         rG: '250',
         angleDeg: '120',
+        actualMassG: '250.0',
       });
     } else {
       loadSampleObservations({
+        subMode: 'verification',
         pG: '200',
         qG: '300',
         rG: '435',
         angleDeg: '60',
+        actualMassG: '435.0',
       });
     }
   };
@@ -144,21 +181,41 @@ export const ForceParallelogramPractical: React.FC<ForceParallelogramPracticalPr
       <Card className="bg-[#FFFFFF] dark:bg-[#111D2D] border border-[#DFE8EF] dark:border-[#1E334D] rounded-2xl shadow-2xs">
         <CardHeader className="p-6 pb-3">
           <CardTitle className="text-lg font-bold text-[#14243A] dark:text-[#F8FAFC]">
-            {t.title}
+            {subMode === 'unknown_mass' ? t.unknownMassTitle : t.title}
           </CardTitle>
           <p className="text-xs sm:text-sm text-[#0F766E] dark:text-[#14B8A6] font-medium">
-            {t.aim}
+            {subMode === 'unknown_mass' ? t.unknownMassAim : t.aim}
           </p>
         </CardHeader>
         <CardContent className="p-6 pt-0 space-y-3 text-xs sm:text-sm text-[#475569] dark:text-[#94A3B8] leading-relaxed">
           <p><strong>{t.apparatus}</strong></p>
           <div className="p-3.5 rounded-xl bg-[#F6FAFD] dark:bg-[#0B131E] border border-[#DFE8EF] dark:border-[#1E334D] space-y-1">
             <span className="font-bold text-[#14243A] dark:text-[#F8FAFC] block">{t.theoryTitle}</span>
-            <p>{t.theoryText}</p>
+            <p>{subMode === 'unknown_mass' ? t.unknownMassTheory : t.theoryText}</p>
           </div>
           <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">
             {t.procedure}
           </p>
+
+          {/* SubMode Switcher Tabs */}
+          <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-[#DFE8EF] dark:border-[#1E334D]">
+            <Button
+              size="sm"
+              variant={subMode === 'verification' ? 'default' : 'outline'}
+              className="text-xs h-7 rounded-lg"
+              onClick={() => setSubMode('verification')}
+            >
+              {t.modeVerification}
+            </Button>
+            <Button
+              size="sm"
+              variant={subMode === 'unknown_mass' ? 'default' : 'outline'}
+              className="text-xs h-7 rounded-lg"
+              onClick={() => setSubMode('unknown_mass')}
+            >
+              {t.modeUnknownMass}
+            </Button>
+          </div>
         </CardContent>
       </Card>
 
@@ -296,16 +353,20 @@ export const ForceParallelogramPractical: React.FC<ForceParallelogramPracticalPr
 
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
                 <div className="p-3 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
-                  <span className="text-[10px] text-[#64748B] block font-sans">{t.calcDiag}</span>
+                  <span className="text-[10px] text-[#64748B] block font-sans">
+                    {subMode === 'unknown_mass' ? t.calcUnknownMass : t.calcDiag}
+                  </span>
                   <span className="text-sm font-bold text-[#0F766E] dark:text-[#14B8A6]">
-                    {analysis.diagonalResultantG} g wt
+                    {analysis.diagonalResultantG} {subMode === 'unknown_mass' ? 'g' : 'g wt'}
                   </span>
                 </div>
 
                 <div className="p-3 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
-                  <span className="text-[10px] text-[#64748B] block font-sans">{t.measuredR}</span>
+                  <span className="text-[10px] text-[#64748B] block font-sans">
+                    {subMode === 'unknown_mass' ? t.actualBalanceMass : t.measuredR}
+                  </span>
                   <span className="text-sm font-bold text-[#14243A] dark:text-[#F8FAFC]">
-                    {numR} g wt
+                    {subMode === 'unknown_mass' ? `${actualMassG} g` : `${numR} g wt`}
                   </span>
                 </div>
 

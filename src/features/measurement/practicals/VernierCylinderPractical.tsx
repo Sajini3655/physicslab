@@ -74,6 +74,7 @@ export const VernierCylinderPractical: React.FC<VernierCylinderPracticalProps> =
       rInt: '',
       meanH: '',
       corrH: '',
+      cavityVol: '',
       solidVol: '',
       meanBlockL: '',
       corrBlockL: '',
@@ -160,7 +161,7 @@ export const VernierCylinderPractical: React.FC<VernierCylinderPracticalProps> =
       intRadius: 'Internal Radius r = d / 2:',
       baseThickness: 'Base Thickness t_base = H - h:',
       wallThickness: 'Wall Thickness t_wall = R - r:',
-      cavityVol: 'Internal Cavity Volume (V_cavity):',
+      cavityVol: 'Hollow-Cylinder Capacity V = π(d/2)²h:',
       solidVol: 'Solid Material Volume (V_solid):',
       blockVol: 'Block Volume V = l · w · h:',
       sphereVol: 'Sphere Volume V = (4/3)πR³:',
@@ -236,7 +237,7 @@ export const VernierCylinderPractical: React.FC<VernierCylinderPracticalProps> =
       intRadius: 'අභ්‍යන්තර අරය r = d / 2:',
       baseThickness: 'පතුලේ ඝනකම t_base = H - h:',
       wallThickness: 'බිත්ති ඝනකම t_wall = R - r:',
-      cavityVol: 'අභ්‍යන්තර කුහර පරිමාව (V_cavity):',
+      cavityVol: 'කුහර සිලින්ඩර ධාරිතාව V = π(d/2)²h:',
       solidVol: 'ද්‍රව්‍යයේ ඝන පරිමාව (V_solid):',
       blockVol: 'කුට්ටියේ පරිමාව V = l · w · h:',
       sphereVol: 'ගෝලයේ පරිමාව V = (4/3)πR³:',
@@ -502,6 +503,19 @@ export const VernierCylinderPractical: React.FC<VernierCylinderPracticalProps> =
         }
       }
 
+      const stuCavityVol = parseFloat(calculations.cavityVol || '');
+      if (expectedVolCalc && expectedVolCalc.cavityVolume !== null) {
+        const expCav = expectedVolCalc.cavityVolume;
+        const isCavCorrect = !isNaN(stuCavityVol) && Math.abs(stuCavityVol - expCav) / expCav <= 0.03;
+        results.cavityVol = isCavCorrect;
+        if (!isCavCorrect) {
+          feedback.cavityVol = {
+            en: `Hollow-cylinder capacity V = π·r²·h = π·(d/2)²·h ≈ ${expCav} mm³. Verify internal radius and cavity depth.`,
+            si: `කුහර සිලින්ඩර ධාරිතාව V = π·r²·h = π·(d/2)²·h ≈ ${expCav} mm³ වේ. අභ්‍යන්තර අරය සහ කුහර ගැඹුර පරීක්ෂා කරන්න.`,
+          };
+        }
+      }
+
       const stuSolidVol = parseFloat(calculations.solidVol || '');
       if (expectedVolCalc && expectedVolCalc.solidVolume !== null) {
         const expVol = expectedVolCalc.solidVolume;
@@ -509,7 +523,7 @@ export const VernierCylinderPractical: React.FC<VernierCylinderPracticalProps> =
         results.solidVol = isVolCorrect;
         if (!isVolCorrect) {
           feedback.solidVol = {
-            en: `Expected solid volume is approx ${expVol} mm³. Verify base thickness and formula.`,
+            en: `Expected solid material volume is approx ${expVol} mm³. Verify base thickness and formula.`,
             si: `බලාපොරොත්තු ද්‍රව්‍ය පරිමාව දළ වශයෙන් ${expVol} mm³ වේ. සූත්‍රය පරීක්ෂා කරන්න.`,
           };
         }
@@ -1281,9 +1295,19 @@ export const VernierCylinderPractical: React.FC<VernierCylinderPracticalProps> =
                 )}
                 <div className="p-2.5 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
                   <span className="text-[10px] text-[#64748B] block font-sans">{t.cavityVol}</span>
-                  <span className="font-bold text-[#14243A] dark:text-[#F8FAFC]">
-                    {expectedVolCalc ? `${expectedVolCalc.cavityVolume} mm³` : '—'}
-                  </span>
+                  {mode === 'guided' || showSolution ? (
+                    <span className="font-bold text-[#14243A] dark:text-[#F8FAFC]">
+                      {expectedVolCalc ? `${expectedVolCalc.cavityVolume} mm³` : '—'}
+                    </span>
+                  ) : (
+                    <input
+                      type="text"
+                      value={calculations.cavityVol || ''}
+                      onChange={(e) => updateCalculation('cavityVol', e.target.value)}
+                      placeholder="V_cap (mm³)"
+                      className="w-full px-1.5 py-0.5 rounded border border-[#DFE8EF] dark:border-[#1E334D] text-xs font-mono"
+                    />
+                  )}
                 </div>
                 <div className="p-2.5 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
                   <span className="text-[10px] text-[#64748B] block font-sans">{t.solidVol}</span>

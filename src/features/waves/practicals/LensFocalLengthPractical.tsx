@@ -1,96 +1,164 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Locale } from '@/shared/curriculum';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { Printer, RotateCcw, Database, Scan, CheckCircle2, AlertCircle } from 'lucide-react';
+import { RotateCcw, Database, Scan, CheckCircle2, AlertCircle } from 'lucide-react';
 import { calculateLensFocalLengthDisplacement } from '../physics/calculations';
+import { usePracticalWork } from '@/shared/practicals';
 
 interface LensFocalLengthPracticalProps {
   locale?: Locale;
 }
 
-interface LensTrial {
+interface ConvexLensTrial {
   id: number;
   screenDistDCm: string;
   lensPos1Cm: string;
   lensPos2Cm: string;
 }
 
+interface ConcaveLensTrial {
+  id: number;
+  virtualDistUCm: string;
+  realDistVCm: string;
+}
+
 export const LensFocalLengthPractical: React.FC<LensFocalLengthPracticalProps> = ({
   locale = 'en',
 }) => {
-  const [nominalFocalLengthCm, setNominalFocalLengthCm] = useState<string>('15.0');
+  const {
+    observations,
+    updateObservations,
+    loadSampleObservations,
+    reset,
+    isCompleted,
+    setCompleted,
+  } = usePracticalWork({
+    experimentId: 'exp-21-lens',
+    defaultObservations: {
+      subMode: 'convex',
+      nominalFocalLengthCm: '15.0',
+      nominalConcaveFocalLengthCm: '30.0',
+      convexTrials: [
+        { id: 1, screenDistDCm: '80.0', lensPos1Cm: '20.0', lensPos2Cm: '60.0' },
+        { id: 2, screenDistDCm: '85.0', lensPos1Cm: '19.2', lensPos2Cm: '65.8' },
+        { id: 3, screenDistDCm: '90.0', lensPos1Cm: '18.7', lensPos2Cm: '71.3' },
+        { id: 4, screenDistDCm: '95.0', lensPos1Cm: '18.3', lensPos2Cm: '76.7' },
+        { id: 5, screenDistDCm: '100.0', lensPos1Cm: '18.0', lensPos2Cm: '82.0' },
+      ],
+      concaveTrials: [
+        { id: 1, virtualDistUCm: '15.0', realDistVCm: '30.0' },
+        { id: 2, virtualDistUCm: '18.0', realDistVCm: '45.0' },
+        { id: 3, virtualDistUCm: '20.0', realDistVCm: '60.0' },
+        { id: 4, virtualDistUCm: '22.0', realDistVCm: '82.5' },
+      ],
+    },
+  });
 
-  const [trials, setTrials] = useState<LensTrial[]>([
-    { id: 1, screenDistDCm: '80.0', lensPos1Cm: '20.0', lensPos2Cm: '60.0' },
-    { id: 2, screenDistDCm: '85.0', lensPos1Cm: '19.2', lensPos2Cm: '65.8' },
-    { id: 3, screenDistDCm: '90.0', lensPos1Cm: '18.7', lensPos2Cm: '71.3' },
-    { id: 4, screenDistDCm: '95.0', lensPos1Cm: '18.3', lensPos2Cm: '76.7' },
-    { id: 5, screenDistDCm: '100.0', lensPos1Cm: '18.0', lensPos2Cm: '82.0' },
-  ]);
+  const subMode = (observations.subMode || 'convex') as 'convex' | 'concave';
+  const setSubMode = (mode: 'convex' | 'concave') => updateObservations({ subMode: mode });
+
+  const nominalFocalLengthCm = observations.nominalFocalLengthCm || '15.0';
+  const nominalConcaveFocalLengthCm = observations.nominalConcaveFocalLengthCm || '30.0';
+
+  const convexTrials: ConvexLensTrial[] =
+    observations.convexTrials || [
+      { id: 1, screenDistDCm: '80.0', lensPos1Cm: '20.0', lensPos2Cm: '60.0' },
+      { id: 2, screenDistDCm: '85.0', lensPos1Cm: '19.2', lensPos2Cm: '65.8' },
+      { id: 3, screenDistDCm: '90.0', lensPos1Cm: '18.7', lensPos2Cm: '71.3' },
+      { id: 4, screenDistDCm: '95.0', lensPos1Cm: '18.3', lensPos2Cm: '76.7' },
+      { id: 5, screenDistDCm: '100.0', lensPos1Cm: '18.0', lensPos2Cm: '82.0' },
+    ];
+
+  const concaveTrials: ConcaveLensTrial[] =
+    observations.concaveTrials || [
+      { id: 1, virtualDistUCm: '15.0', realDistVCm: '30.0' },
+      { id: 2, virtualDistUCm: '18.0', realDistVCm: '45.0' },
+      { id: 3, virtualDistUCm: '20.0', realDistVCm: '60.0' },
+      { id: 4, virtualDistUCm: '22.0', realDistVCm: '82.5' },
+    ];
 
   const t = {
     en: {
-      title: 'Practical 3.5: Focal Length of a Convex Lens by Displacement Method',
-      aim: 'Aim: To determine the focal length of a convex lens using the displacement (conjugate foci) method on an optical bench.',
-      apparatus: 'Apparatus: Optical bench with uprights, biconvex lens, illuminated object wire-gauze cross-wire, white receiving screen, metre scale.',
-      theoryTitle: 'Physical Principle & Conjugate Foci',
-      theoryText: 'When the distance D between an object and a screen is greater than four times the focal length (D > 4f), there are two distinct positions of the lens that produce a sharply focused real image on the screen.\n\nLet the separation between these two lens positions be the displacement d:\n  • Position 1 (closer to object): Produces a magnified real image.\n  • Position 2 (closer to screen): Produces a diminished real image.\n\nFrom the thin lens equation 1/v - 1/u = 1/f:\n  f = (D² - d²) / (4 · D)\n\nAdvantages of the displacement method:\n1. It eliminates the index error of the lens upright because only the difference d = |x₂ - x₁| between two positions on the bench is measured.\n2. The relationship O = √(I₁ · I₂) allows the true object size to be determined independently.',
-      procedure: 'Procedure: 1. Find the approximate focal length of the convex lens by projecting a distant window onto the wall. 2. Set the object-to-screen distance D to a value comfortably greater than 4f (e.g. 80 cm for f ≈ 15 cm). 3. Move the lens from the object toward the screen to find the first sharp magnified image; record lens position x₁. 4. Continue moving the lens toward the screen to find the second sharp diminished image; record lens position x₂. 5. Compute displacement d = |x₂ - x₁| and calculate f. 6. Repeat for 5 different screen distances D.',
-      obsTitle: 'Experimental Observations (Displacement Method)',
+      title: 'Practical 21.1 & 21.2: Determination of Focal Lengths of Convex and Concave Lenses',
+      aim: 'Aim: To determine the focal length of a convex lens by the displacement (conjugate foci) method (Exp 21.1) and a concave lens using an auxiliary convex lens combination (Exp 21.2).',
+      apparatus: 'Apparatus: Optical bench with uprights, biconvex lens, biconcave lens, illuminated wire gauze object, white receiving screen, metre scale.',
+      modeConvex: '21.1 Convex Lens (Displacement Method)',
+      modeConcave: '21.2 Concave Lens (Auxiliary Lens Method)',
+      theoryTitleConvex: 'Convex Lens Displacement Method (Exp 21.1)',
+      theoryTextConvex: 'When screen distance D > 4f, two lens positions produce sharp real images on the screen. Let displacement between positions be d = |x₂ - x₁|. The focal length is given by: f = (D² - d²) / (4D). Eliminates index error and bench centering deviations.',
+      theoryTitleConcave: 'Concave Lens Auxiliary Combination Method (Exp 21.2)',
+      theoryTextConcave: 'A concave lens alone produces virtual images and cannot project onto a screen. An auxiliary convex lens L₁ forms a real image I₁. Inserting the concave lens L₂ between L₁ and I₁ makes I₁ a virtual object at distance u. The screen is moved back to receive the new real image I₂ at distance v from L₂. The focal length is: 1/f₂ = 1/v - 1/u  ⟹  |f₂| = (u × v) / (v - u).',
+      procedureConvex: 'Procedure: 1. Estimate f by distant window imaging. 2. Set D > 4f (e.g. 80 cm). 3. Move lens to find magnified sharp image at x₁, then diminished sharp image at x₂. 4. Record displacement d = |x₂ - x₁| and compute f.',
+      procedureConcave: 'Procedure: 1. Focus illuminated object with auxiliary convex lens to form sharp image I₁ on screen; note position. 2. Place concave lens between convex lens and screen; measure distance u from concave lens to I₁. 3. Move screen away to locate new sharp image I₂; measure distance v from concave lens to I₂. 4. Calculate f₂ = (u·v)/(u - v).',
+      obsConvexTitle: 'Convex Lens Observations (D² - d²)/(4D)',
+      obsConcaveTitle: 'Concave Lens Observations (Virtual Object u & Real Image v)',
       trialCol: 'Trial',
       screenDistCol: 'Screen Distance D (cm)',
       pos1Col: 'Lens Position 1 x₁ (cm)',
       pos2Col: 'Lens Position 2 x₂ (cm)',
       dispCol: 'Displacement d (cm)',
       focalCol: 'Focal Length f (cm)',
-      calcSummaryTitle: 'Analytical Summary & Focal Length Verification',
-      meanFocal: 'Mean Calculated Focal Length (f):',
+      virtualDistCol: 'Virtual Object Distance u (cm)',
+      realDistCol: 'Real Image Distance v (cm)',
+      concaveFocalCol: 'Focal Length |f₂| (cm)',
+      calcSummaryTitle: 'Analytical Summary & Verification',
+      meanFocalConvex: 'Mean Calculated Convex Focal Length (f):',
+      meanFocalConcave: 'Mean Calculated Concave Focal Length (|f₂|):',
       nominalFocal: 'Nominal Benchmark Focal Length:',
       percentageDiff: 'Discrepancy:',
       verdictPass: 'Focal Length Verified Within Standard Tolerances (< 3.0%)',
-      verdictFail: 'Check Conjugate Positions or D > 4f Condition',
+      verdictFail: 'Check Conjugate Positions or Alignment',
       precautionsTitle: 'Experimental Precautions',
-      precautions: '1. Ensure the distance D between object and screen strictly satisfies D > 4f, otherwise no real image can be formed on the screen. 2. The optical centers of the object, lens, and screen must lie on the same horizontal optical axis. 3. Adjust the lens slowly while rocking back and forth around the focus to identify the true sharpest image without parallax.',
-      loadSample: 'Load Sample Data (f ≈ 15 cm)',
+      precautions: '1. For convex lens, verify D > 4f strictly. 2. Optical centers of object, lenses, and screen must align on the same axis. 3. Rock upright back and forth to find the exact sharp focus without parallax.',
+      loadSample: 'Load Sample Data',
       clearInputs: 'Clear Inputs',
-      printSheet: 'Print Laboratory Record',
+      submitLab: 'Submit Practical Record',
+      submittedMsg: 'Practical record completed and saved to your laboratory log.',
     },
     si: {
-      title: 'ප්‍රායෝගික පරීක්ෂණය 3.5: විස්ථාපන ක්‍රමයෙන් උත්තල කාචයක නාභීය දුර සෙවීම',
-      aim: 'අරමුණ: ප්‍රකාශ බංකුව මත විස්ථාපන ක්‍රමය (අනුබද්ධ නාභි ක්‍රමය) මගින් උත්තල කාචයක නාභීය දුර (f) නිර්ණය කිරීම.',
-      apparatus: 'උපකරණ: ප්‍රකාශ බංකුව සහ රඳවන, උත්තල කාචය, ආලෝකමත් වස්තුව (කම්බි දැල සහිත), සුදු තිරය, මීටර් රූල.',
-      theoryTitle: 'භෞතික මූලධර්මය සහ අනුබද්ධ නාභි සංකල්පය',
-      theoryText: 'වස්තුව සහ තිරය අතර දුර D, කාචයේ නාභීය දුර මෙන් සතර ගුණයකට වඩා වැඩි වූ විට (D > 4f), තිරය මත තියුණු තාත්වික ප්‍රතිබිම්බයක් ලබාගත හැකි කාච පිහිටුම් දෙකක් පවතී.\n\nමෙම පිහිටුම් දෙක අතර පරතරය විස්ථාපනය d වේ:\n  • පිහිටුම 1 (වස්තුවට ආසන්න): විශාලිත තාත්වික ප්‍රතිබිම්බයක් ලැබේ.\n  • පිහිටුම 2 (තිරයට ආසන්න): කුඩා වූ තාත්වික ප්‍රතිබිම්බයක් ලැබේ.\n\nතුනී කාච සූත්‍රය මගින්:\n  f = (D² - d²) / (4 · D)\n\nවිස්ථාපන ක්‍රමයේ විශේෂ වාසි:\n1. මෙහිදී මනින්නේ පිහිටුම් දෙක අතර වෙනස d = |x₂ - x₁| පමණක් බැවින් කාච රඳවනයේ ශුන්‍ය දෝෂය සම්පූර්ණයෙන්ම මැකී යයි.\n2. ප්‍රතිබිම්බ ප්‍රමාණ දෙකේ ගුණිතයේ වර්ගමූලය මගින් වස්තුවේ සත්‍ය ප්‍රමාණය සෙවිය හැක: O = √(I₁ · I₂).',
-      procedure: 'ක්‍රමවේදය: 1. ඈත වස්තුවක ප්‍රතිබිම්බයක් තිරය මතට ලබාගෙන කාචයේ දළ නාභීය දුර සොයාගන්න. 2. වස්තුව සහ තිරය අතර දුර D > 4f වන සේ (උදා. f ≈ 15 cm නම් D = 80 cm) තබන්න. 3. වස්තුවේ සිට තිරය දෙසට කාචය ගෙන ගොස් පළමු විශාලිත තියුණු ප්‍රතිබිම්බය ලැබෙන x₁ සටහන් කරන්න. 4. තවදුරටත් ඉදිරියට ගෙන ගොස් දෙවන කුඩා වූ තියුණු ප්‍රතිබිම්බය ලැබෙන x₂ සටහන් කරන්න. 5. විස්ථාපනය d = |x₂ - x₁| ගණනය කර f = (D² - d²)/(4D) සූත්‍රයෙන් f සොයන්න. 6. විවිධ D අගයන් සඳහා පරීක්ෂණය නැවත කරන්න.',
-      obsTitle: 'නිරීක්ෂණ සටහන (විස්ථාපන ක්‍රමය)',
+      title: 'ප්‍රායෝගික පරීක්ෂණය 21.1 සහ 21.2: උත්තල සහ අවතල කාචවල නාභීය දුර නිර්ණය කිරීම',
+      aim: 'අරමුණ: විස්ථාපන ක්‍රමයෙන් උත්තල කාචයක නාභීය දුර සෙවීම (21.1) සහ ආධාරක උත්තල කාචයක් භාවිතයෙන් අවතල කාචයක නාභීය දුර සෙවීම (21.2).',
+      apparatus: 'උපකරණ: ප්‍රකාශ බංකුව, උත්තල කාචය, අවතල කාචය, ආලෝකමත් වස්තුව (කම්බි දැල), සුදු තිරය, මීටර් රූල.',
+      modeConvex: '21.1 උත්තල කාචය (විස්ථාපන ක්‍රමය)',
+      modeConcave: '21.2 අවතල කාචය (ආධාරක කාච ක්‍රමය)',
+      theoryTitleConvex: 'උත්තල කාච විස්ථාපන ක්‍රමය (පරීක්ෂණ 21.1)',
+      theoryTextConvex: 'D > 4f වන විට තිරය මත තියුණු ප්‍රතිබිම්බ ලැබෙන කාච පිහිටුම් දෙකක් පවතී. පිහිටුම් අතර විස්ථාපනය d = |x₂ - x₁| නම් නාභීය දුර f = (D² - d²) / (4D) වේ.',
+      theoryTitleConcave: 'අවතල කාච ආධාරක කාච සංයෝජන ක්‍රමය (පරීක්ෂණ 21.2)',
+      theoryTextConcave: 'අවතල කාචයකින් තනිව තිරයක් මත තාත්වික ප්‍රතිබිම්බ සෑදිය නොහැක. ආධාරක උත්තල කාචයකින් සාදන තාත්වික ප්‍රතිබිම්බය I₁ අවතල කාචයට අතාත්වික වස්තුවක් (දුර u) වේ. තිරය පසුපසට ගෙන නව තාත්වික ප්‍රතිබිම්බය I₂ (දුර v) ලබාගනී. 1/f₂ = 1/v - 1/u  ⟹  |f₂| = (u × v) / (v - u).',
+      procedureConvex: 'ක්‍රමවේදය: 1. දළ නාභීය දුර සොයාගන්න. 2. D > 4f වන සේ තබන්න. 3. විශාලිත ප්‍රතිබිම්බයේ කාච පිහිටුම x₁ ද කුඩා වූ ප්‍රතිබිම්බයේ කාච පිහිටුම x₂ ද සටහන් කර d සහ f ගණනය කරන්න.',
+      procedureConcave: 'ක්‍රමවේදය: 1. ආධාරක උත්තල කාචයෙන් තිරය මත I₁ සාදා පිහිටුම සටහන් කරන්න. 2. අවතල කාචය අතරට තබා කාචයේ සිට I₁ ට දුර u මනින්න. 3. තිරය පසුපසට ගෙන නව ප්‍රතිබිම්බය I₂ ලබාගෙන දුර v මනින්න. 4. f₂ ගණනය කරන්න.',
+      obsConvexTitle: 'උත්තල කාච නිරීක්ෂණ (D² - d²)/(4D)',
+      obsConcaveTitle: 'අවතල කාච නිරීක්ෂණ (අතාත්වික වස්තු දුර u සහ තාත්වික ප්‍රතිබිම්බ දුර v)',
       trialCol: 'වාරය',
       screenDistCol: 'තිර දුර D (cm)',
       pos1Col: 'කාච පිහිටුම 1 x₁ (cm)',
       pos2Col: 'කාච පිහිටුම 2 x₂ (cm)',
       dispCol: 'විස්ථාපනය d (cm)',
       focalCol: 'නාභීය දුර f (cm)',
-      calcSummaryTitle: 'විශ්ලේෂණ සාරාංශය සහ නාභීය දුර සත්‍යාපනය',
-      meanFocal: 'මධ්‍යන්‍ය ගණනය කළ නාභීය දුර (f):',
-      nominalFocal: 'නාමික සම්මත නාභීය දුර:',
+      virtualDistCol: 'අතාත්වික වස්තු දුර u (cm)',
+      realDistCol: 'තාත්වික ප්‍රතිබිම්බ දුර v (cm)',
+      concaveFocalCol: 'නාභීය දුර |f₂| (cm)',
+      calcSummaryTitle: 'විශ්ලේෂණ සාරාංශය සහ සත්‍යාපනය',
+      meanFocalConvex: 'මධ්‍යන්‍ය උත්තල නාභීය දුර (f):',
+      meanFocalConcave: 'මධ්‍යන්‍ය අවතල නාභීය දුර (|f₂|):',
+      nominalFocal: 'නාමික නාභීය දුර:',
       percentageDiff: 'ප්‍රතිශත වෙනස:',
-      verdictPass: 'සම්මත ඉවසීම් සීමා තුළ නාභීය දුර සත්‍යාපනය විය (< 3.0%)',
-      verdictFail: 'අනුබද්ධ පිහිටුම් හෝ D > 4f කොන්දේසිය පරීක්ෂා කරන්න',
+      verdictPass: 'නාභීය දුර සම්මත සීමාවන් තුළ සත්‍යාපනය විය (< 3.0%)',
+      verdictFail: 'කාච පිහිටුම් හෝ අනුබද්ධ ලක්ෂ්‍ය පරීක්ෂා කරන්න',
       precautionsTitle: 'ප්‍රායෝගික පූර්වෝපායයන්',
-      precautions: '1. තාත්වික ප්‍රතිබිම්බයක් සෑදීමට වස්තුව සහ තිරය අතර පරතරය D > 4f කොන්දේසිය තෘප්ත කළ යුතුමය. 2. වස්තුවේ, කාචයේ සහ තිරයේ ප්‍රකාශ කේන්ද්‍ර එකම තිරස් ප්‍රකාශ අක්ෂයක පිහිටිය යුතුය. 3. තියුණුම ප්‍රතිබිම්බය නිවැරදිව හඳුනාගැනීමට කාචය ඉදිරියට-පසුපසට සෙමෙන් චලනය කරමින් නිරීක්ෂණය කරන්න.',
-      loadSample: 'ආදර්ශ දත්ත පූරණය (f ≈ 15 cm)',
+      precautions: '1. උත්තල කාචයේදී D > 4f කොන්දේසිය තෘප්ත විය යුතුය. 2. සියලු උපකරණවල ප්‍රකාශ කේන්ද්‍ර එකම අක්ෂයේ පිහිටිය යුතුය. 3. විස්ථාපනය මැනීමේදී දෘෂ්ටි විලාසය වළක්වා ගන්න.',
+      loadSample: 'ආදර්ශ දත්ත පූරණය',
       clearInputs: 'දත්ත හිස් කරන්න',
-      printSheet: 'වාර්තාව මුද්‍රණය කරන්න',
+      submitLab: 'ප්‍රායෝගික සටහන භාරදෙන්න',
+      submittedMsg: 'ප්‍රායෝගික වාර්තාව සම්පූර්ණ කර රසායනාගාර සටහනට සුරකින ලදී.',
     },
   }[locale];
 
-  const updateTrial = (id: number, field: keyof LensTrial, val: string) => {
-    setTrials(trials.map((t) => (t.id === id ? { ...t, [field]: val } : t)));
-  };
-
-  const calculatedTrials = trials.map((tr) => {
+  // Convex calculations
+  const calculatedConvexTrials = convexTrials.map((tr) => {
     const dVal = parseFloat(tr.screenDistDCm);
     const x1 = parseFloat(tr.lensPos1Cm);
     const x2 = parseFloat(tr.lensPos2Cm);
@@ -99,260 +167,418 @@ export const LensFocalLengthPractical: React.FC<LensFocalLengthPracticalProps> =
       const disp = Math.abs(x2 - x1);
       const fM = calculateLensFocalLengthDisplacement(dVal / 100, disp / 100);
       const fCm = fM * 100;
-      return {
-        ...tr,
-        disp,
-        fCm,
-      };
+      return { ...tr, disp, fCm };
     }
     return { ...tr, disp: null, fCm: null };
   });
 
-  const validFs = calculatedTrials.map((t) => t.fCm).filter((f): f is number => f !== null && f > 0);
-  const meanFocal = validFs.length > 0 ? validFs.reduce((a, b) => a + b, 0) / validFs.length : null;
+  const validConvexFs = calculatedConvexTrials.map((t) => t.fCm).filter((f): f is number => f !== null && f > 0);
+  const meanConvexFocal = validConvexFs.length > 0 ? validConvexFs.reduce((a, b) => a + b, 0) / validConvexFs.length : null;
+  const nomConvexF = parseFloat(nominalFocalLengthCm) || 15.0;
+  const convexDiff = meanConvexFocal !== null && nomConvexF > 0 ? Math.abs((meanConvexFocal - nomConvexF) / nomConvexF) * 100 : null;
+  const isConvexPass = convexDiff !== null && convexDiff <= 3.0;
 
-  const nominalF = parseFloat(nominalFocalLengthCm) || 15.0;
-  const percDiff =
-    meanFocal !== null && nominalF > 0 ? Math.abs((meanFocal - nominalF) / nominalF) * 100 : null;
+  // Concave calculations: 1/f = 1/v - 1/u => |f| = (u*v)/(v - u)
+  const calculatedConcaveTrials = concaveTrials.map((tr) => {
+    const u = parseFloat(tr.virtualDistUCm);
+    const v = parseFloat(tr.realDistVCm);
+    if (!isNaN(u) && !isNaN(v) && v > u && u > 0) {
+      const fVal = (u * v) / (v - u);
+      return { ...tr, fVal };
+    }
+    return { ...tr, fVal: null };
+  });
 
-  const isPass = percDiff !== null && percDiff <= 3.0;
+  const validConcaveFs = calculatedConcaveTrials.map((t) => t.fVal).filter((f): f is number => f !== null && f > 0);
+  const meanConcaveFocal = validConcaveFs.length > 0 ? validConcaveFs.reduce((a, b) => a + b, 0) / validConcaveFs.length : null;
+  const nomConcaveF = parseFloat(nominalConcaveFocalLengthCm) || 30.0;
+  const concaveDiff = meanConcaveFocal !== null && nomConcaveF > 0 ? Math.abs((meanConcaveFocal - nomConcaveF) / nomConcaveF) * 100 : null;
+  const isConcavePass = concaveDiff !== null && concaveDiff <= 3.0;
+
+  const updateConvexTrial = (id: number, field: keyof ConvexLensTrial, val: string) => {
+    const updated = convexTrials.map((t) => (t.id === id ? { ...t, [field]: val } : t));
+    updateObservations({ convexTrials: updated });
+  };
+
+  const updateConcaveTrial = (id: number, field: keyof ConcaveLensTrial, val: string) => {
+    const updated = concaveTrials.map((t) => (t.id === id ? { ...t, [field]: val } : t));
+    updateObservations({ concaveTrials: updated });
+  };
 
   const handleLoadSample = () => {
-    setNominalFocalLengthCm('15.0');
-    setTrials([
-      { id: 1, screenDistDCm: '80.0', lensPos1Cm: '20.0', lensPos2Cm: '60.0' },
-      { id: 2, screenDistDCm: '85.0', lensPos1Cm: '19.2', lensPos2Cm: '65.8' },
-      { id: 3, screenDistDCm: '90.0', lensPos1Cm: '18.7', lensPos2Cm: '71.3' },
-      { id: 4, screenDistDCm: '95.0', lensPos1Cm: '18.3', lensPos2Cm: '76.7' },
-      { id: 5, screenDistDCm: '100.0', lensPos1Cm: '18.0', lensPos2Cm: '82.0' },
-    ]);
+    if (subMode === 'convex') {
+      loadSampleObservations({
+        nominalFocalLengthCm: '15.0',
+        convexTrials: [
+          { id: 1, screenDistDCm: '80.0', lensPos1Cm: '20.0', lensPos2Cm: '60.0' },
+          { id: 2, screenDistDCm: '85.0', lensPos1Cm: '19.2', lensPos2Cm: '65.8' },
+          { id: 3, screenDistDCm: '90.0', lensPos1Cm: '18.7', lensPos2Cm: '71.3' },
+          { id: 4, screenDistDCm: '95.0', lensPos1Cm: '18.3', lensPos2Cm: '76.7' },
+          { id: 5, screenDistDCm: '100.0', lensPos1Cm: '18.0', lensPos2Cm: '82.0' },
+        ],
+      });
+    } else {
+      loadSampleObservations({
+        nominalConcaveFocalLengthCm: '30.0',
+        concaveTrials: [
+          { id: 1, virtualDistUCm: '15.0', realDistVCm: '30.0' },
+          { id: 2, virtualDistUCm: '18.0', realDistVCm: '45.0' },
+          { id: 3, virtualDistUCm: '20.0', realDistVCm: '60.0' },
+          { id: 4, virtualDistUCm: '22.0', realDistVCm: '82.5' },
+        ],
+      });
+    }
   };
 
   const handleClear = () => {
-    setTrials(trials.map((t) => ({ ...t, screenDistDCm: '', lensPos1Cm: '', lensPos2Cm: '' })));
+    reset();
   };
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-5 bg-white rounded-xl border border-[#DFE8EF] shadow-sm">
-        <div>
-          <h2 className="text-xl font-bold text-[#14243A] font-serif">{t.title}</h2>
-          <p className="text-sm text-[#475569] mt-1">{t.aim}</p>
-        </div>
-        <div className="flex flex-wrap gap-2">
-          <Button variant="outline" size="sm" onClick={handleLoadSample} className="text-[#0F766E] border-[#DFE8EF]">
-            <Database className="w-4 h-4 mr-1.5" />
-            {t.loadSample}
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleClear} className="text-[#475569] border-[#DFE8EF]">
-            <RotateCcw className="w-4 h-4 mr-1.5" />
-            {t.clearInputs}
-          </Button>
-          <Button variant="outline" size="sm" onClick={() => window.print()} className="text-[#475569] border-[#DFE8EF]">
-            <Printer className="w-4 h-4 mr-1.5" />
-            {t.printSheet}
-          </Button>
-        </div>
-      </div>
+      {/* Top Header Card */}
+      <Card className="bg-[#FFFFFF] dark:bg-[#111D2D] border border-[#DFE8EF] dark:border-[#1E334D] rounded-2xl shadow-2xs">
+        <CardHeader className="p-6 pb-3">
+          <CardTitle className="text-lg font-bold text-[#14243A] dark:text-[#F8FAFC]">
+            {t.title}
+          </CardTitle>
+          <p className="text-xs sm:text-sm text-[#0F766E] dark:text-[#14B8A6] font-medium">
+            {t.aim}
+          </p>
+        </CardHeader>
+        <CardContent className="p-6 pt-0 space-y-3 text-xs sm:text-sm text-[#475569] dark:text-[#94A3B8] leading-relaxed">
+          <p><strong>{t.apparatus}</strong></p>
+          <div className="p-3.5 rounded-xl bg-[#F6FAFD] dark:bg-[#0B131E] border border-[#DFE8EF] dark:border-[#1E334D] space-y-1">
+            <span className="font-bold text-[#14243A] dark:text-[#F8FAFC] block">
+              {subMode === 'convex' ? t.theoryTitleConvex : t.theoryTitleConcave}
+            </span>
+            <p>{subMode === 'convex' ? t.theoryTextConvex : t.theoryTextConcave}</p>
+          </div>
+          <p className="text-xs text-[#64748B] dark:text-[#94A3B8]">
+            {subMode === 'convex' ? t.procedureConvex : t.procedureConcave}
+          </p>
+        </CardContent>
+      </Card>
 
-      {/* Grid: Schematic & Theory */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Schematic Card */}
-        <Card className="border-[#DFE8EF] bg-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base text-[#14243A] font-medium flex items-center gap-2">
-              <Scan className="w-4 h-4 text-[#0F766E]" />
-              {locale === 'si' ? 'විස්ථාපන ක්‍රමයේ ප්‍රකාශ සැකැස්ම' : 'Displacement Method Optical Bench Schematic'}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex justify-center p-4 bg-[#F6FAFD] rounded-lg border border-[#DFE8EF]">
-              <svg width="320" height="200" viewBox="0 0 320 200" className="overflow-visible">
+      {/* Mode Switcher & Workspace */}
+      <Card className="bg-[#FFFFFF] dark:bg-[#111D2D] border border-[#DFE8EF] dark:border-[#1E334D] rounded-2xl shadow-2xs">
+        <CardHeader className="p-6 pb-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div className="flex flex-wrap items-center gap-2">
+            <Button
+              size="sm"
+              variant={subMode === 'convex' ? 'default' : 'outline'}
+              className="text-xs h-8 rounded-lg"
+              onClick={() => setSubMode('convex')}
+            >
+              <Scan className="w-3.5 h-3.5 mr-1" />
+              {t.modeConvex}
+            </Button>
+            <Button
+              size="sm"
+              variant={subMode === 'concave' ? 'default' : 'outline'}
+              className="text-xs h-8 rounded-lg"
+              onClick={() => setSubMode('concave')}
+            >
+              <Scan className="w-3.5 h-3.5 mr-1" />
+              {t.modeConcave}
+            </Button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              variant="outline"
+              className="text-xs h-8 rounded-lg"
+              onClick={handleLoadSample}
+            >
+              <Database className="w-3.5 h-3.5 mr-1" />
+              {t.loadSample}
+            </Button>
+            <Button
+              size="sm"
+              variant="ghost"
+              className="text-xs h-8 rounded-lg"
+              onClick={handleClear}
+            >
+              <RotateCcw className="w-3.5 h-3.5 mr-1" />
+              {t.clearInputs}
+            </Button>
+          </div>
+        </CardHeader>
+
+        <CardContent className="p-6 pt-0 space-y-6">
+          {/* Optical Schematic SVG */}
+          <div className="p-4 rounded-xl bg-[#F6FAFD] dark:bg-[#0B131E] border border-[#DFE8EF] dark:border-[#1E334D] flex justify-center">
+            {subMode === 'convex' ? (
+              <svg viewBox="0 0 340 180" className="w-full max-w-md h-auto">
                 {/* Optical bench rail */}
-                <line x1="20" y1="140" x2="300" y2="140" stroke="#94A3B8" strokeWidth="4" />
+                <line x1="20" y1="130" x2="320" y2="130" stroke="#94A3B8" strokeWidth="4" />
 
                 {/* Object upright at x = 30 */}
-                <rect x="28" y="70" width="4" height="70" fill="#1E293B" />
-                <polygon points="30,60 25,70 35,70" fill="#EF4444" />
-                <text x="30" y="52" textAnchor="middle" fontSize="9" fill="#1E293B" fontWeight="bold">Object</text>
+                <rect x="28" y="60" width="4" height="70" fill="#1E293B" />
+                <polygon points="30,50 25,60 35,60" fill="#EF4444" />
+                <text x="30" y="42" textAnchor="middle" fontSize="9" fill="#1E293B" fontWeight="bold">Object</text>
 
-                {/* Screen upright at x = 280 */}
-                <rect x="278" y="70" width="4" height="70" fill="#1E293B" />
-                <rect x="274" y="60" width="12" height="40" fill="#CBD5E1" stroke="#475569" strokeWidth="1" />
-                <text x="280" y="52" textAnchor="middle" fontSize="9" fill="#1E293B" fontWeight="bold">Screen</text>
+                {/* Screen upright at x = 300 */}
+                <rect x="298" y="60" width="4" height="70" fill="#1E293B" />
+                <rect x="294" y="50" width="12" height="40" fill="#CBD5E1" stroke="#475569" strokeWidth="1" />
+                <text x="300" y="42" textAnchor="middle" fontSize="9" fill="#1E293B" fontWeight="bold">Screen</text>
 
-                {/* Lens Position 1 (x = 90) */}
-                <g transform="translate(90, 70)">
+                {/* Lens Position 1 (x = 100) */}
+                <g transform="translate(100, 60)">
                   <path d="M 0 0 C 6 25 6 45 0 70 C -6 45 -6 25 0 0" fill="#79B9E7" fillOpacity="0.5" stroke="#0284C7" strokeWidth="1.5" />
                   <line x1="0" y1="70" x2="0" y2="75" stroke="#1E293B" strokeWidth="3" />
                   <text x="0" y="-8" textAnchor="middle" fontSize="8" fill="#0284C7" fontWeight="bold">Pos 1</text>
                 </g>
 
-                {/* Lens Position 2 (x = 220) */}
-                <g transform="translate(220, 70)">
+                {/* Lens Position 2 (x = 230) */}
+                <g transform="translate(230, 60)">
                   <path d="M 0 0 C 6 25 6 45 0 70 C -6 45 -6 25 0 0" fill="#79B9E7" fillOpacity="0.5" stroke="#0284C7" strokeWidth="1.5" strokeDasharray="2 2" />
                   <line x1="0" y1="70" x2="0" y2="75" stroke="#1E293B" strokeWidth="3" />
                   <text x="0" y="-8" textAnchor="middle" fontSize="8" fill="#0284C7" fontWeight="bold">Pos 2</text>
                 </g>
 
                 {/* Displacement d arrow */}
-                <line x1="90" y1="110" x2="220" y2="110" stroke="#0F766E" strokeWidth="1.5" />
-                <polygon points="90,110 95,108 95,112" fill="#0F766E" />
-                <polygon points="220,110 215,108 215,112" fill="#0F766E" />
-                <text x="155" y="104" textAnchor="middle" fontSize="9" fill="#0F766E" fontWeight="bold">Displacement d</text>
+                <line x1="100" y1="105" x2="230" y2="105" stroke="#0F766E" strokeWidth="1.5" />
+                <text x="165" y="100" textAnchor="middle" fontSize="8" fill="#0F766E" fontWeight="bold">Displacement d = |x₂ - x₁|</text>
 
-                {/* Total screen distance D arrow */}
-                <line x1="30" y1="165" x2="280" y2="165" stroke="#1E293B" strokeWidth="1.5" />
-                <polygon points="30,165 35,163 35,167" fill="#1E293B" />
-                <polygon points="280,165 275,163 275,167" fill="#1E293B" />
-                <text x="155" y="180" textAnchor="middle" fontSize="10" fill="#1E293B" fontWeight="bold">Total Distance D &gt; 4f</text>
+                {/* Distance D arrow */}
+                <line x1="30" y1="155" x2="300" y2="155" stroke="#1E293B" strokeWidth="1.2" />
+                <text x="165" y="170" textAnchor="middle" fontSize="9" fill="#1E293B" fontWeight="bold">Total Separation D (&gt; 4f)</text>
               </svg>
-            </div>
-            <p className="text-xs text-[#475569] text-center mt-2 italic">
-              {locale === 'si' ? 'නාභීය දුර සූත්‍රය: f = (D² - d²) / (4D) (කාච ශුන්‍ය දෝෂවලින් තොරයි)' : 'Focal length: f = (D² - d²) / (4D) (independent of lens index error)'}
-            </p>
-          </CardContent>
-        </Card>
+            ) : (
+              <svg viewBox="0 0 340 180" className="w-full max-w-md h-auto">
+                {/* Optical bench rail */}
+                <line x1="20" y1="130" x2="320" y2="130" stroke="#94A3B8" strokeWidth="4" />
 
-        {/* Theory & Controls */}
-        <Card className="border-[#DFE8EF] bg-white">
-          <CardHeader className="pb-2">
-            <CardTitle className="text-base text-[#14243A] font-medium">
-              {t.theoryTitle}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4 text-sm text-[#475569]">
-            <p className="whitespace-pre-line leading-relaxed">{t.theoryText}</p>
-            <div className="p-3 bg-[#F6FAFD] rounded-md border border-[#DFE8EF] flex items-center justify-between">
-              <span className="font-semibold text-[#14243A]">{t.nominalFocal}</span>
-              <input
-                type="number"
-                step="0.5"
-                value={nominalFocalLengthCm}
-                onChange={(e) => setNominalFocalLengthCm(e.target.value)}
-                className="w-20 px-2 py-1 text-sm bg-white border border-[#DFE8EF] rounded outline-none focus:ring-1 focus:ring-[#0F766E]"
-              />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+                {/* Auxiliary Convex Lens L1 at x = 70 */}
+                <g transform="translate(70, 60)">
+                  <path d="M 0 0 C 6 25 6 45 0 70 C -6 45 -6 25 0 0" fill="#79B9E7" fillOpacity="0.5" stroke="#0284C7" strokeWidth="1.5" />
+                  <line x1="0" y1="70" x2="0" y2="75" stroke="#1E293B" strokeWidth="3" />
+                  <text x="0" y="-8" textAnchor="middle" fontSize="8" fill="#0284C7" fontWeight="bold">L₁ (Convex)</text>
+                </g>
 
-      {/* Observations Table */}
-      <Card className="border-[#DFE8EF] bg-white">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base text-[#14243A] font-medium">
-            {t.obsTitle}
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="overflow-x-auto">
-            <table className="w-full text-sm text-left border-collapse">
-              <thead>
-                <tr className="bg-[#F6FAFD] border-b border-[#DFE8EF] text-[#14243A]">
-                  <th className="py-2.5 px-4 font-semibold">{t.trialCol}</th>
-                  <th className="py-2.5 px-4 font-semibold">{t.screenDistCol}</th>
-                  <th className="py-2.5 px-4 font-semibold">{t.pos1Col}</th>
-                  <th className="py-2.5 px-4 font-semibold">{t.pos2Col}</th>
-                  <th className="py-2.5 px-4 font-semibold">{t.dispCol}</th>
-                  <th className="py-2.5 px-4 font-semibold">{t.focalCol}</th>
-                </tr>
-              </thead>
-              <tbody>
-                {calculatedTrials.map((tr) => (
-                  <tr key={tr.id} className="border-b border-[#DFE8EF] hover:bg-slate-50">
-                    <td className="py-2.5 px-4 font-medium text-[#14243A]">{tr.id}</td>
-                    <td className="py-2 px-4">
-                      <input
-                        type="number"
-                        step="0.5"
-                        value={tr.screenDistDCm}
-                        onChange={(e) => updateTrial(tr.id, 'screenDistDCm', e.target.value)}
-                        placeholder="e.g. 80.0"
-                        className="w-24 px-2 py-1 text-sm border border-[#DFE8EF] rounded outline-none focus:ring-1 focus:ring-[#0F766E]"
-                      />
-                    </td>
-                    <td className="py-2 px-4">
-                      <input
-                        type="number"
-                        step="0.1"
-                        value={tr.lensPos1Cm}
-                        onChange={(e) => updateTrial(tr.id, 'lensPos1Cm', e.target.value)}
-                        placeholder="e.g. 20.0"
-                        className="w-24 px-2 py-1 text-sm border border-[#DFE8EF] rounded outline-none focus:ring-1 focus:ring-[#0F766E]"
-                      />
-                    </td>
-                    <td className="py-2 px-4">
-                      <input
-                        type="number"
-                        step="0.1"
-                        value={tr.lensPos2Cm}
-                        onChange={(e) => updateTrial(tr.id, 'lensPos2Cm', e.target.value)}
-                        placeholder="e.g. 60.0"
-                        className="w-24 px-2 py-1 text-sm border border-[#DFE8EF] rounded outline-none focus:ring-1 focus:ring-[#0F766E]"
-                      />
-                    </td>
-                    <td className="py-2.5 px-4 font-mono font-medium text-[#475569]">
-                      {tr.disp !== null ? `${tr.disp.toFixed(1)} cm` : '—'}
-                    </td>
-                    <td className="py-2.5 px-4 font-mono font-bold text-[#0F766E]">
-                      {tr.fCm !== null ? `${tr.fCm.toFixed(2)} cm` : '—'}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+                {/* Concave Lens L2 at x = 160 */}
+                <g transform="translate(160, 60)">
+                  <path d="M 0 0 C -4 25 -4 45 0 70 L 6 70 C 2 45 2 25 6 0 Z" fill="#F472B6" fillOpacity="0.4" stroke="#DB2777" strokeWidth="1.5" />
+                  <line x1="3" y1="70" x2="3" y2="75" stroke="#1E293B" strokeWidth="3" />
+                  <text x="3" y="-8" textAnchor="middle" fontSize="8" fill="#DB2777" fontWeight="bold">L₂ (Concave)</text>
+                </g>
+
+                {/* Virtual image position I1 at x = 220 */}
+                <line x1="220" y1="70" x2="220" y2="120" stroke="#64748B" strokeWidth="1" strokeDasharray="2 2" />
+                <circle cx="220" cy="95" r="3" fill="#64748B" />
+                <text x="220" y="60" textAnchor="middle" fontSize="8" fill="#64748B" fontWeight="bold">I₁ (Virtual Object)</text>
+
+                {/* Final Real Image I2 Screen at x = 300 */}
+                <rect x="298" y="60" width="4" height="70" fill="#1E293B" />
+                <rect x="294" y="50" width="12" height="40" fill="#CBD5E1" stroke="#475569" strokeWidth="1" />
+                <text x="300" y="42" textAnchor="middle" fontSize="8" fill="#1E293B" fontWeight="bold">I₂ (New Image)</text>
+
+                {/* Distance u: 160 to 220 */}
+                <line x1="160" y1="110" x2="220" y2="110" stroke="#DB2777" strokeWidth="1.2" />
+                <text x="190" y="105" textAnchor="middle" fontSize="8" fill="#DB2777" fontWeight="bold">u</text>
+
+                {/* Distance v: 160 to 300 */}
+                <line x1="160" y1="150" x2="300" y2="150" stroke="#0F766E" strokeWidth="1.2" />
+                <text x="230" y="165" textAnchor="middle" fontSize="8" fill="#0F766E" fontWeight="bold">v</text>
+              </svg>
+            )}
           </div>
 
-          {/* Analytical Summary Box */}
-          <div className="p-4 bg-[#F6FAFD] rounded-xl border border-[#DFE8EF] grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <div className="flex justify-between text-sm">
-                <span className="text-[#475569]">{t.meanFocal}</span>
-                <span className="font-bold text-[#0F766E] font-mono text-base">
-                  {meanFocal !== null ? `${meanFocal.toFixed(2)} cm` : '—'}
-                </span>
+          {/* SubMode 1: Convex Lens Table & Results */}
+          {subMode === 'convex' ? (
+            <div className="space-y-4">
+              <div className="overflow-x-auto rounded-xl border border-[#DFE8EF] dark:border-[#1E334D]">
+                <table className="w-full text-left text-xs font-mono">
+                  <thead className="bg-[#F6FAFD] dark:bg-[#0B131E] border-b border-[#DFE8EF] dark:border-[#1E334D] text-[#14243A] dark:text-[#F8FAFC]">
+                    <tr>
+                      <th className="p-3 w-16">{t.trialCol}</th>
+                      <th className="p-3">{t.screenDistCol}</th>
+                      <th className="p-3">{t.pos1Col}</th>
+                      <th className="p-3">{t.pos2Col}</th>
+                      <th className="p-3">{t.dispCol}</th>
+                      <th className="p-3">{t.focalCol}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#DFE8EF] dark:divide-[#1E334D]">
+                    {calculatedConvexTrials.map((tr) => (
+                      <tr key={tr.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50">
+                        <td className="p-3 font-bold text-center">{tr.id}</td>
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            value={tr.screenDistDCm}
+                            onChange={(e) => updateConvexTrial(tr.id, 'screenDistDCm', e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-md border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                          />
+                        </td>
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            value={tr.lensPos1Cm}
+                            onChange={(e) => updateConvexTrial(tr.id, 'lensPos1Cm', e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-md border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                          />
+                        </td>
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            value={tr.lensPos2Cm}
+                            onChange={(e) => updateConvexTrial(tr.id, 'lensPos2Cm', e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-md border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                          />
+                        </td>
+                        <td className="p-3 text-[#64748B]">
+                          {tr.disp !== null ? `${tr.disp.toFixed(1)} cm` : '—'}
+                        </td>
+                        <td className="p-3 font-bold text-[#0F766E] dark:text-[#14B8A6]">
+                          {tr.fCm !== null ? `${tr.fCm.toFixed(2)} cm` : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-[#475569]">{t.nominalFocal}</span>
-                <span className="font-mono font-medium text-[#14243A]">
-                  {nominalF.toFixed(1)} cm
-                </span>
-              </div>
-              <div className="flex justify-between text-sm">
-                <span className="text-[#475569]">{t.percentageDiff}</span>
-                <span className="font-mono font-semibold text-[#14243A]">
-                  {percDiff !== null ? `${percDiff.toFixed(2)}%` : '—'}
-                </span>
-              </div>
-            </div>
 
-            <div className="flex flex-col justify-center items-center p-3 rounded-lg border bg-white">
-              {isPass ? (
-                <div className="flex items-center gap-2 text-emerald-700">
-                  <CheckCircle2 className="w-6 h-6 flex-shrink-0" />
-                  <span className="font-medium text-sm">{t.verdictPass}</span>
+              {/* Analytical Summary Card */}
+              <div className="p-4 rounded-xl bg-[#F0FDFA] dark:bg-[#042F2E] border border-[#99F6E4] dark:border-[#115E59] space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
+                  <div className="p-3 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                    <span className="text-[10px] text-[#64748B] block font-sans">{t.meanFocalConvex}</span>
+                    <span className="text-base font-bold text-[#0F766E] dark:text-[#14B8A6]">
+                      {meanConvexFocal !== null ? `${meanConvexFocal.toFixed(2)} cm` : '—'}
+                    </span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                    <span className="text-[10px] text-[#64748B] block font-sans">{t.nominalFocal}</span>
+                    <span className="text-base font-bold text-[#14243A] dark:text-[#F8FAFC]">
+                      {nomConvexF.toFixed(1)} cm
+                    </span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                    <span className="text-[10px] text-[#64748B] block font-sans">{t.percentageDiff}</span>
+                    <span className="text-base font-bold text-[#0F766E] dark:text-[#14B8A6]">
+                      {convexDiff !== null ? `${convexDiff.toFixed(2)}%` : '—'}
+                    </span>
+                  </div>
                 </div>
-              ) : (
-                <div className="flex items-center gap-2 text-amber-600">
-                  <AlertCircle className="w-6 h-6 flex-shrink-0" />
-                  <span className="font-medium text-sm">{t.verdictFail}</span>
+
+                <div className={`p-3 rounded-lg flex items-center gap-2 text-xs font-semibold ${
+                  isConvexPass
+                    ? 'bg-emerald-100/70 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
+                    : 'bg-amber-100/70 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300'
+                }`}>
+                  {isConvexPass ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                  )}
+                  <span>{isConvexPass ? t.verdictPass : t.verdictFail}</span>
                 </div>
-              )}
+              </div>
             </div>
+          ) : (
+            /* SubMode 2: Concave Lens Table & Results */
+            <div className="space-y-4">
+              <div className="overflow-x-auto rounded-xl border border-[#DFE8EF] dark:border-[#1E334D]">
+                <table className="w-full text-left text-xs font-mono">
+                  <thead className="bg-[#F6FAFD] dark:bg-[#0B131E] border-b border-[#DFE8EF] dark:border-[#1E334D] text-[#14243A] dark:text-[#F8FAFC]">
+                    <tr>
+                      <th className="p-3 w-16">{t.trialCol}</th>
+                      <th className="p-3">{t.virtualDistCol}</th>
+                      <th className="p-3">{t.realDistCol}</th>
+                      <th className="p-3">{t.concaveFocalCol}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#DFE8EF] dark:divide-[#1E334D]">
+                    {calculatedConcaveTrials.map((tr) => (
+                      <tr key={tr.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50">
+                        <td className="p-3 font-bold text-center">{tr.id}</td>
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            value={tr.virtualDistUCm}
+                            onChange={(e) => updateConcaveTrial(tr.id, 'virtualDistUCm', e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-md border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                          />
+                        </td>
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            value={tr.realDistVCm}
+                            onChange={(e) => updateConcaveTrial(tr.id, 'realDistVCm', e.target.value)}
+                            className="w-full px-2.5 py-1.5 rounded-md border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                          />
+                        </td>
+                        <td className="p-3 font-bold text-[#DB2777]">
+                          {tr.fVal !== null ? `${tr.fVal.toFixed(2)} cm` : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Analytical Summary Card */}
+              <div className="p-4 rounded-xl bg-[#F0FDFA] dark:bg-[#042F2E] border border-[#99F6E4] dark:border-[#115E59] space-y-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
+                  <div className="p-3 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                    <span className="text-[10px] text-[#64748B] block font-sans">{t.meanFocalConcave}</span>
+                    <span className="text-base font-bold text-[#DB2777]">
+                      {meanConcaveFocal !== null ? `${meanConcaveFocal.toFixed(2)} cm` : '—'}
+                    </span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                    <span className="text-[10px] text-[#64748B] block font-sans">{t.nominalFocal}</span>
+                    <span className="text-base font-bold text-[#14243A] dark:text-[#F8FAFC]">
+                      {nomConcaveF.toFixed(1)} cm
+                    </span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                    <span className="text-[10px] text-[#64748B] block font-sans">{t.percentageDiff}</span>
+                    <span className="text-base font-bold text-[#0F766E] dark:text-[#14B8A6]">
+                      {concaveDiff !== null ? `${concaveDiff.toFixed(2)}%` : '—'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className={`p-3 rounded-lg flex items-center gap-2 text-xs font-semibold ${
+                  isConcavePass
+                    ? 'bg-emerald-100/70 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
+                    : 'bg-amber-100/70 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300'
+                }`}>
+                  {isConcavePass ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                  )}
+                  <span>{isConcavePass ? t.verdictPass : t.verdictFail}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Precautions Footer */}
+          <div className="p-3.5 rounded-xl bg-[#F6FAFD] dark:bg-[#0B131E] border border-[#DFE8EF] dark:border-[#1E334D] text-xs text-[#64748B] dark:text-[#94A3B8] space-y-1">
+            <span className="font-bold text-[#14243A] dark:text-[#F8FAFC] block">{t.precautionsTitle}</span>
+            <p>{t.precautions}</p>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Precautions */}
-      <Card className="border-[#DFE8EF] bg-white">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-base text-[#14243A] font-medium">
-            {t.precautionsTitle}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-[#475569] leading-relaxed">{t.precautions}</p>
+          {/* Submit Action */}
+          <div className="pt-4 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-[#DFE8EF] dark:border-[#1E334D]">
+            <Button
+              className="w-full sm:w-auto bg-[#0F766E] hover:bg-[#0D655E] text-white"
+              onClick={() => setCompleted(true)}
+            >
+              <CheckCircle2 className="w-4 h-4 mr-2" /> {t.submitLab}
+            </Button>
+            {isCompleted && (
+              <span className="text-xs text-emerald-600 dark:text-emerald-400 font-medium">
+                {t.submittedMsg}
+              </span>
+            )}
+          </div>
         </CardContent>
       </Card>
     </div>
