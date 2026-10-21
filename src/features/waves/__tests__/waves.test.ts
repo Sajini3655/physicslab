@@ -2,16 +2,20 @@ import { describe, it, expect } from 'vitest';
 import {
   calculateSHMState,
   calculateSimplePendulumPeriod,
+  calculatePendulumGravityRegression,
   calculateSpringMassPeriod,
+  calculateHelicalSpringRegression,
   calculateSpeedOfSoundInGas,
   calculateSoundIntensityLevel,
   calculateDopplerFrequency,
   calculateStringFundamentalFrequency,
   verifySonometerLaws,
   calculateResonanceTubeSpeed,
+  calculateResonanceLinearRegression,
   calculateRefractionAngle,
   calculatePrismRefractiveIndex,
   calculateLensFocalLengthDisplacement,
+  calculateThinLensNoParallax,
   calculateYoungsFringeWidth,
   calculateDiffractionGratingWavelength,
 } from '../physics/calculations';
@@ -166,6 +170,54 @@ describe('Unit 3: Oscillations and Waves - Pure Physics Engine', () => {
       // lambda = (2e-6 * sin(17.46°)) / 1 ≈ 2e-6 * 0.300 = 6.00e-7 m (600 nm)
       const lambda = calculateDiffractionGratingWavelength(500000, 1, 17.4576);
       expect(lambda).toBeCloseTo(6.0e-7, 8);
+    });
+
+    it('calculates thin lens focal length via no-parallax method (Exp 21.1)', () => {
+      // u = 0.30 m, v = 0.30 m -> f = (0.3 * 0.3) / (0.3 + 0.3) = 0.15 m
+      const f = calculateThinLensNoParallax(0.30, 0.30);
+      expect(f).toBe(0.15);
+    });
+
+    it('calculates acceleration due to gravity via simple pendulum T^2 vs L regression (Exp 10)', () => {
+      // T^2 = (4 * pi^2 / g) * L where g = 9.81 m/s^2 -> slope ≈ 4.024
+      const points = [
+        { lengthM: 0.50, periodSquaredS2: 2.012 },
+        { lengthM: 0.60, periodSquaredS2: 2.414 },
+        { lengthM: 0.70, periodSquaredS2: 2.817 },
+        { lengthM: 0.80, periodSquaredS2: 3.219 },
+      ];
+      const res = calculatePendulumGravityRegression(points);
+      expect(res.gravityMs2).toBeCloseTo(9.81, 1);
+      expect(res.rSquared).toBeGreaterThan(0.99);
+    });
+
+    it('calculates spring constant and effective mass via helical spring regression (Exp 11)', () => {
+      // k = 20 N/m, me = 0.015 kg
+      // T^2 = (4 * pi^2 / 20) * m + (4 * pi^2 * 0.015 / 20) = 1.9739 * m + 0.0296
+      const points = [
+        { massKg: 0.05, periodSquaredS2: 1.9739 * 0.05 + 0.0296 },
+        { massKg: 0.10, periodSquaredS2: 1.9739 * 0.10 + 0.0296 },
+        { massKg: 0.15, periodSquaredS2: 1.9739 * 0.15 + 0.0296 },
+        { massKg: 0.20, periodSquaredS2: 1.9739 * 0.20 + 0.0296 },
+      ];
+      const res = calculateHelicalSpringRegression(points);
+      expect(res.springConstantNm).toBeCloseTo(20.0, 1);
+      expect(res.effectiveMassKg).toBeCloseTo(0.015, 2);
+    });
+
+    it('calculates sound velocity and end correction via resonance tube linear regression (Exp 15)', () => {
+      // v = 340 m/s, e = 0.009 m
+      // l = (v/4)(1/f) - e = 85 * (1/f) - 0.009
+      const points = [
+        { frequencyHz: 512, lengthM: 85 * (1 / 512) - 0.009 },
+        { frequencyHz: 480, lengthM: 85 * (1 / 480) - 0.009 },
+        { frequencyHz: 384, lengthM: 85 * (1 / 384) - 0.009 },
+        { frequencyHz: 320, lengthM: 85 * (1 / 320) - 0.009 },
+        { frequencyHz: 256, lengthM: 85 * (1 / 256) - 0.009 },
+      ];
+      const res = calculateResonanceLinearRegression(points);
+      expect(res.speedOfSoundMs).toBeCloseTo(340.0, 1);
+      expect(res.endCorrectionM).toBeCloseTo(0.009, 3);
     });
   });
 });

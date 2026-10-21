@@ -65,11 +65,89 @@ export function calculateSimplePendulumPeriod(lengthM: number, g: number = 9.8):
 }
 
 /**
+ * Experiment 10: Simple pendulum gravity from T^2 vs L regression
+ * T^2 = (4 * pi^2 / g) * L
+ * Slope m = 4 * pi^2 / g => g = 4 * pi^2 / m
+ */
+export function calculatePendulumGravityRegression(
+  points: Array<{ lengthM: number; periodSquaredS2: number }>
+): { slope: number; gravityMs2: number; rSquared: number } {
+  const valid = points.filter((p) => p.lengthM > 0 && p.periodSquaredS2 > 0);
+  if (valid.length < 2) return { slope: 0, gravityMs2: 0, rSquared: 0 };
+  const n = valid.length;
+  let sumX = 0;
+  let sumY = 0;
+  let sumXY = 0;
+  let sumX2 = 0;
+  let sumY2 = 0;
+  for (const p of valid) {
+    sumX += p.lengthM;
+    sumY += p.periodSquaredS2;
+    sumXY += p.lengthM * p.periodSquaredS2;
+    sumX2 += p.lengthM * p.lengthM;
+    sumY2 += p.periodSquaredS2 * p.periodSquaredS2;
+  }
+  const denom = n * sumX2 - sumX * sumX;
+  if (Math.abs(denom) < 1e-12) return { slope: 0, gravityMs2: 0, rSquared: 0 };
+  const slope = (n * sumXY - sumX * sumY) / denom;
+  const g = slope > 0 ? (4 * Math.PI * Math.PI) / slope : 0;
+  const numR = n * sumXY - sumX * sumY;
+  const denR = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+  const r2 = denR > 0 ? (numR / denR) ** 2 : 1;
+  return {
+    slope: Number(slope.toFixed(4)),
+    gravityMs2: Number(g.toFixed(2)),
+    rSquared: Number(r2.toFixed(4)),
+  };
+}
+
+/**
  * Period of a spring-mass system: T = 2*pi * sqrt(m / k)
  */
 export function calculateSpringMassPeriod(massKg: number, springConstantNm: number): number {
   if (massKg <= 0 || springConstantNm <= 0) return 0;
   return Number((2 * Math.PI * Math.sqrt(massKg / springConstantNm)).toFixed(3));
+}
+
+/**
+ * Experiment 11: Helical spring constant and effective mass from T^2 vs m regression
+ * T^2 = (4 * pi^2 / k) * m + (4 * pi^2 * me / k)
+ * Slope S = 4 * pi^2 / k => k = 4 * pi^2 / S
+ * Intercept c = 4 * pi^2 * me / k => me = c / S
+ */
+export function calculateHelicalSpringRegression(
+  points: Array<{ massKg: number; periodSquaredS2: number }>
+): { slope: number; springConstantNm: number; effectiveMassKg: number; rSquared: number } {
+  const valid = points.filter((p) => p.massKg > 0 && p.periodSquaredS2 > 0);
+  if (valid.length < 2) return { slope: 0, springConstantNm: 0, effectiveMassKg: 0, rSquared: 0 };
+  const n = valid.length;
+  let sumX = 0;
+  let sumY = 0;
+  let sumXY = 0;
+  let sumX2 = 0;
+  let sumY2 = 0;
+  for (const p of valid) {
+    sumX += p.massKg;
+    sumY += p.periodSquaredS2;
+    sumXY += p.massKg * p.periodSquaredS2;
+    sumX2 += p.massKg * p.massKg;
+    sumY2 += p.periodSquaredS2 * p.periodSquaredS2;
+  }
+  const denom = n * sumX2 - sumX * sumX;
+  if (Math.abs(denom) < 1e-12) return { slope: 0, springConstantNm: 0, effectiveMassKg: 0, rSquared: 0 };
+  const slope = (n * sumXY - sumX * sumY) / denom;
+  const intercept = (sumY - slope * sumX) / n;
+  const k = slope > 0 ? (4 * Math.PI * Math.PI) / slope : 0;
+  const me = slope > 0 ? intercept / slope : 0;
+  const numR = n * sumXY - sumX * sumY;
+  const denR = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+  const r2 = denR > 0 ? (numR / denR) ** 2 : 1;
+  return {
+    slope: Number(slope.toFixed(4)),
+    springConstantNm: Number(k.toFixed(2)),
+    effectiveMassKg: Number(me.toFixed(4)),
+    rSquared: Number(r2.toFixed(4)),
+  };
 }
 
 // ============================================================================
@@ -178,6 +256,63 @@ export function calculateResonanceTubeSpeed(
   };
 }
 
+/**
+ * Experiment 15: Linear regression for set of tuning forks
+ * l = (v / 4) * (1 / f) - e
+ * Points: x = 1 / f (s), y = l (m)
+ * Slope m = v / 4 => v = 4 * m
+ * Intercept c = -e => e = -c
+ */
+export function calculateResonanceLinearRegression(
+  points: Array<{ frequencyHz: number; lengthM: number }>
+): {
+  slope: number;
+  interceptM: number;
+  speedOfSoundMs: number;
+  endCorrectionM: number;
+  rSquared: number;
+} {
+  const valid = points.filter((p) => p.frequencyHz > 0 && p.lengthM > 0);
+  if (valid.length < 2) {
+    return { slope: 0, interceptM: 0, speedOfSoundMs: 0, endCorrectionM: 0, rSquared: 0 };
+  }
+  const n = valid.length;
+  let sumX = 0;
+  let sumY = 0;
+  let sumXY = 0;
+  let sumX2 = 0;
+  let sumY2 = 0;
+  for (const p of valid) {
+    const x = 1 / p.frequencyHz;
+    const y = p.lengthM;
+    sumX += x;
+    sumY += y;
+    sumXY += x * y;
+    sumX2 += x * x;
+    sumY2 += y * y;
+  }
+  const denom = n * sumX2 - sumX * sumX;
+  if (Math.abs(denom) < 1e-12) {
+    return { slope: 0, interceptM: 0, speedOfSoundMs: 0, endCorrectionM: 0, rSquared: 0 };
+  }
+  const slope = (n * sumXY - sumX * sumY) / denom;
+  const intercept = (sumY - slope * sumX) / n;
+  const v = 4 * slope;
+  const e = -intercept;
+
+  const numR = n * sumXY - sumX * sumY;
+  const denR = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+  const r2 = denR > 0 ? (numR / denR) ** 2 : 1;
+
+  return {
+    slope: Number(slope.toFixed(4)),
+    interceptM: Number(intercept.toFixed(4)),
+    speedOfSoundMs: Number(v.toFixed(2)),
+    endCorrectionM: Number(e.toFixed(4)),
+    rSquared: Number(r2.toFixed(4)),
+  };
+}
+
 // ============================================================================
 // 4. GEOMETRICAL OPTICS & REFRACTION
 // ============================================================================
@@ -240,6 +375,20 @@ export function calculateLensFocalLengthDisplacement(
 ): number {
   if (screenDistanceDM <= 0 || screenDistanceDM <= lensDisplacementDM) return 0;
   const f = (screenDistanceDM * screenDistanceDM - lensDisplacementDM * lensDisplacementDM) / (4 * screenDistanceDM);
+  return Number(f.toFixed(4));
+}
+
+/**
+ * Experiment 21.1: Thin Lens No-Parallax Method
+ * Object distance u (real object > 0), image distance v (real inverted image > 0)
+ * 1/v - (-1/u) = 1/f => 1/f = 1/v + 1/u => f = (u * v) / (u + v)
+ */
+export function calculateThinLensNoParallax(
+  objectDistanceM: number,
+  imageDistanceM: number
+): number {
+  if (objectDistanceM <= 0 || imageDistanceM <= 0) return 0;
+  const f = (objectDistanceM * imageDistanceM) / (objectDistanceM + imageDistanceM);
   return Number(f.toFixed(4));
 }
 

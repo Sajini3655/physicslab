@@ -4,53 +4,73 @@ import React from 'react';
 import { Locale } from '@/shared/curriculum';
 import { Button } from '@/components/ui/button';
 import {
+  SimplePendulumPractical,
+  HelicalSpringPractical,
   SonometerPractical,
   ResonanceTubePractical,
   PrismRefractionPractical,
   DiffractionGratingPractical,
   LensFocalLengthPractical,
 } from './index';
-import { Music, Waves, Eye, Sparkles, Scan, FlaskConical } from 'lucide-react';
-
+import {
+  Activity,
+  ArrowUpDown,
+  Music,
+  Waves,
+  Eye,
+  Sparkles,
+  Scan,
+  FlaskConical,
+} from 'lucide-react';
 import { usePracticalWork } from '@/shared/practicals';
 
 interface WavesPracticalsHubProps {
   locale?: Locale;
 }
 
+export type WavesTab =
+  | 'pendulum'
+  | 'spring'
+  | 'sonometer'
+  | 'resonance'
+  | 'prism'
+  | 'grating'
+  | 'lens';
+
 export const WavesPracticalsHub: React.FC<WavesPracticalsHubProps> = ({
   locale = 'en',
 }) => {
   const { observations, updateObservations } = usePracticalWork({
     experimentId: 'exp-waves-hub',
-    defaultObservations: { activeTab: 'sonometer' },
+    defaultObservations: { activeTab: 'pendulum' },
   });
-  const activeTab = (observations.activeTab || 'sonometer') as
-    | 'sonometer'
-    | 'resonance'
-    | 'prism'
-    | 'grating'
-    | 'lens';
-  const setActiveTab = (tab: 'sonometer' | 'resonance' | 'prism' | 'grating' | 'lens') =>
-    updateObservations({ activeTab: tab });
+
+  const activeTab = (observations.activeTab || 'pendulum') as WavesTab;
+  const setActiveTab = (tab: WavesTab) => updateObservations({ activeTab: tab });
 
   const t = {
     en: {
       hubTitle: 'A/L Physics Laboratory: Unit 3 Oscillations & Waves Practicals Hub',
-      hubSubtitle: 'Interactive virtual laboratory investigations covering all 5 official NIE A/L Physics syllabus practicals for Unit 3 Oscillations & Waves.',
+      hubSubtitle:
+        'Interactive virtual laboratory investigations covering official NIE A/L Physics syllabus practicals for Unit 3 Oscillations & Waves (Practicals 10–21.2).',
+      pendulumTab: '10. Simple Pendulum (Exp 10)',
+      springTab: '11. Helical Spring (Exp 11)',
       sonometerTab: '12 & 13. Sonometer (Exp 12–13)',
       resonanceTab: '14 & 15. Resonance Tube (Exp 14–15)',
-      prismTab: '16, 18–20. Prism Refraction & Spectrometer',
-      gratingTab: 'Diffraction Grating Spectrometer',
+      prismTab: '17–19. Prism Refraction & Spectrometer',
+      gratingTab: '20. Diffraction Grating Spectrometer',
       lensTab: '21.1 & 21.2. Convex & Concave Lenses',
     },
     si: {
       hubTitle: 'උසස් පෙළ භෞතික විද්‍යා රසායනාගාරය: ඒකක 3 දෝලන සහ තරංග ප්‍රායෝගික පරීක්ෂණ',
-      hubSubtitle: 'ජාතික අධ්‍යාපන ආයතන (NIE) උසස් පෙළ භෞතික විද්‍යා විෂය නිර්දේශයේ ඒකක 3 දෝලන සහ තරංග ප්‍රායෝගික පරීක්ෂණ (පරීක්ෂණ 12–21.2) සඳහා අන්තර්ක්‍රියාකාරී පරිසරය.',
+      hubSubtitle:
+        'ජාතික අධ්‍යාපන ආයතන (NIE) උසස් පෙළ භෞතික විද්‍යා විෂය නිර්දේශයේ ඒකක 3 දෝලන සහ තරංග ප්‍රායෝගික පරීක්ෂණ (පරීක්ෂණ 10–21.2) සඳහා සම්පූර්ණ අන්තර්ක්‍රියාකාරී පරිසරය.',
+      pendulumTab: '10. සරල පැද්දුම (පරීක්ෂණ 10)',
+      springTab: '11. හෙලික්සීය දුන්න (පරීක්ෂණ 11)',
       sonometerTab: '12 සහ 13. තන්තුමානය (පරීක්ෂණ 12–13)',
       resonanceTab: '14 සහ 15. අනුනාද නළය (පරීක්ෂණ 14–15)',
-      prismTab: '16, 18–20. ප්‍රිස්ම වර්තනය සහ වර්ණාවලීමානය',
-      gratingTab: 'විවර්තන දැලිස වර්ණාවලීමානය',
+      prismTab: '17–19. ප්‍රිස්ම වර්තනය සහ වර්ණාවලීමානය',
+      gratingTab: '20. විවර්තන දැලිස වර්ණාවලීමානය',
       lensTab: '21.1 සහ 21.2. උත්තල සහ අවතල කාච',
     },
   }[locale];
@@ -75,6 +95,34 @@ export const WavesPracticalsHub: React.FC<WavesPracticalsHubProps> = ({
 
         {/* Tab Navigation Pill Bar */}
         <div className="flex flex-wrap gap-2 pt-2 border-t border-[#DFE8EF]">
+          <Button
+            size="sm"
+            variant={activeTab === 'pendulum' ? 'default' : 'outline'}
+            onClick={() => setActiveTab('pendulum')}
+            className={
+              activeTab === 'pendulum'
+                ? 'bg-[#0F766E] hover:bg-[#0D655E] text-white shadow-sm'
+                : 'text-[#475569] border-[#DFE8EF] hover:bg-slate-50'
+            }
+          >
+            <Activity className="w-4 h-4 mr-1.5" />
+            {t.pendulumTab}
+          </Button>
+
+          <Button
+            size="sm"
+            variant={activeTab === 'spring' ? 'default' : 'outline'}
+            onClick={() => setActiveTab('spring')}
+            className={
+              activeTab === 'spring'
+                ? 'bg-[#0F766E] hover:bg-[#0D655E] text-white shadow-sm'
+                : 'text-[#475569] border-[#DFE8EF] hover:bg-slate-50'
+            }
+          >
+            <ArrowUpDown className="w-4 h-4 mr-1.5" />
+            {t.springTab}
+          </Button>
+
           <Button
             size="sm"
             variant={activeTab === 'sonometer' ? 'default' : 'outline'}
@@ -149,6 +197,8 @@ export const WavesPracticalsHub: React.FC<WavesPracticalsHubProps> = ({
 
       {/* Render Active Practical */}
       <div>
+        {activeTab === 'pendulum' && <SimplePendulumPractical locale={locale} />}
+        {activeTab === 'spring' && <HelicalSpringPractical locale={locale} />}
         {activeTab === 'sonometer' && <SonometerPractical locale={locale} />}
         {activeTab === 'resonance' && <ResonanceTubePractical locale={locale} />}
         {activeTab === 'prism' && <PrismRefractionPractical locale={locale} />}

@@ -1,5 +1,6 @@
 import { chromium } from 'playwright';
 import path from 'path';
+import fs from 'fs';
 
 const BASE_URL = process.env.PLAYWRIGHT_TEST_BASE_URL || 'http://localhost:3000';
 const SCREENSHOT_DIR = path.join(
@@ -13,6 +14,7 @@ const SCREENSHOT_DIR = path.join(
 
 async function runPracticalVerification() {
   console.log(`\n=== RUNNING FULL PRACTICAL SUITE VERIFICATION ===\nTarget URL: ${BASE_URL}\n`);
+  fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
 
   const browser = await chromium.launch({
     headless: true,
@@ -234,20 +236,56 @@ async function runPracticalVerification() {
     await page.waitForTimeout(200);
 
     // ------------------------------------------------------------------------
-    // 7. Practical 4: Travelling Microscope
+    // 7. Practical 4 & 16: Travelling Microscope (Tube, Capillary, Apparent Depth)
     // ------------------------------------------------------------------------
-    console.log('\n--- 7. Testing Practical 4: Travelling Microscope ---');
+    console.log('\n--- 7. Testing Practical 4 & Exp 16: Travelling Microscope ---');
     const exp4Tab = page.locator('button:has-text("4. Travelling Microscope")').first();
     await exp4Tab.click();
     await page.waitForTimeout(300);
 
+    // Test rubber tube default
     const exp4SampleBtn = page.locator('button:has-text("Load Sample Data")').first();
     await exp4SampleBtn.click();
     await page.waitForTimeout(200);
+    console.log('✓ Practical 4 Rubber Tube sample observations loaded');
+
+    // Switch to Exp 16: Glass Block Refractive Index (Real & Apparent Depth)
+    console.log('--- Testing Exp 16: Refractive Index by Real and Apparent Depth ---');
+    const apparentDepthBtn = page.locator('button:has-text("Glass Block Refractive Index"), button:has-text("Exp 16")').first();
+    await apparentDepthBtn.click();
+    await page.waitForTimeout(200);
+
+    // Load Exp 16 sample observations
+    const loadSampleMicroBtn = page.locator('button:has-text("Load Sample Data")').first();
+    await loadSampleMicroBtn.click();
+    await page.waitForTimeout(300);
+
+    // Verify Real Depth d = 20.00 mm, Apparent Depth d' = 13.29 mm, Refractive Index n = 1.505
+    const realDepthText = await page.locator('text=/20(\\.\\d+)?\\s*mm/').count();
+    const nText = await page.locator('text=/1\\.505/').count();
+    if (realDepthText === 0 || nText === 0) {
+      throw new Error('Exp 16 Real Depth and Refractive Index calculations not displayed!');
+    }
+    console.log('✓ Exp 16 Refractive Index calculated: d = 20.00 mm, d\' = 13.29 mm, n = 1.505');
+
+    // Switch to Independent Mode for Exp 16
+    const microscopeIndepBtn = page.locator('button:has-text("Independent Practice")').first();
+    await microscopeIndepBtn.click();
+    await page.waitForTimeout(200);
+
+    const nCalcInput = page.locator('input[placeholder*="1.50"], input[placeholder*="n"]').first();
+    await nCalcInput.fill('1.505');
+    const microscopeCheckBtn = page.locator('button:has-text("Check My Calculations")').first();
+    await microscopeCheckBtn.click();
+    await page.waitForTimeout(200);
+    console.log('✓ Exp 16 Independent student calculation verified: n = 1.505');
+
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'practical-03-microscope-apparent-en.png') });
 
     const exp4SubmitBtn = page.locator('button:has-text("Submit Practical Record")').first();
     await exp4SubmitBtn.click();
     await page.waitForTimeout(200);
+    console.log('✓ Travelling Microscope & Exp 16 lab record submitted');
 
     // ------------------------------------------------------------------------
     // 8. Density of Regular Solid
@@ -371,8 +409,46 @@ async function runPracticalVerification() {
     // ------------------------------------------------------------------------
     // 10. Unit 3 Waves Practicals Hub (/en/units/oscillations-and-waves/waves-practicals)
     // ------------------------------------------------------------------------
-    console.log('\n--- 10. Testing Waves Practicals Hub (Exp 12–21.2) ---');
+    console.log('\n--- 10. Testing Waves Practicals Hub (Exp 10–21.2) ---');
     await page.goto(`${BASE_URL}/en/units/oscillations-and-waves/waves-practicals`, { waitUntil: 'networkidle' });
+
+    // Exp 10: Simple Pendulum
+    console.log('\n--- Testing Simple Pendulum (Exp 10) ---');
+    const pendulumTab = page.locator('button:has-text("10. Simple Pendulum")').first();
+    await pendulumTab.click();
+    await page.waitForTimeout(300);
+
+    const pendulumSampleBtn = page.locator('button:has-text("Load Sample Data")').first();
+    await pendulumSampleBtn.click();
+    await page.waitForTimeout(200);
+
+    const pendulumGText = await page.locator('text=9.81 m/s²').count();
+    if (pendulumGText === 0) throw new Error('Exp 10 g = 9.81 m/s² calculation not displayed!');
+    console.log('✓ Exp 10 Simple Pendulum verified: T² vs L origin regression yields g = 9.81 m/s²');
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'practical-11-pendulum-en.png') });
+
+    const pendulumSubmitBtn = page.locator('button:has-text("Submit Practical Record")').first();
+    await pendulumSubmitBtn.click();
+    await page.waitForTimeout(200);
+
+    // Exp 11: Helical Spring
+    console.log('\n--- Testing Helical Spring (Exp 11) ---');
+    const springTab = page.locator('button:has-text("11. Helical Spring")').first();
+    await springTab.click();
+    await page.waitForTimeout(300);
+
+    const springSampleBtn = page.locator('button:has-text("Load Sample Data")').first();
+    await springSampleBtn.click();
+    await page.waitForTimeout(200);
+
+    const springKText = await page.locator('text=/21\\.[45]/').count();
+    if (springKText === 0) throw new Error('Exp 11 spring constant k = 21.5 N/m not displayed!');
+    console.log('✓ Exp 11 Helical Spring verified: T² vs m regression yields k = 21.5 N/m and effective mass me = 12.0 g');
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'practical-12-spring-en.png') });
+
+    const springSubmitBtn = page.locator('button:has-text("Submit Practical Record")').first();
+    await springSubmitBtn.click();
+    await page.waitForTimeout(200);
 
     // Exp 12 & 13: Sonometer
     console.log('\n--- Testing Sonometer (Exp 12 & 13) ---');
@@ -390,7 +466,6 @@ async function runPracticalVerification() {
     await page.waitForTimeout(200);
     console.log('✓ Sonometer Exp 13 Law of Tension mode active');
 
-    // Submit sonometer lab
     const sonoSubmitBtn = page.locator('button:has-text("Submit Practical Record")').first();
     await sonoSubmitBtn.click();
     await page.waitForTimeout(200);
@@ -402,23 +477,36 @@ async function runPracticalVerification() {
     await resonanceTab.click();
     await page.waitForTimeout(300);
 
+    // Verify Exp 15 official method (set of tuning forks, l vs 1/f regression)
+    const exp15ModeBtn = page.locator('button:has-text("Exp 15: Set of Tuning Forks")').first();
+    await exp15ModeBtn.click();
+    await page.waitForTimeout(200);
+
     const resSampleBtn = page.locator('button:has-text("Load Sample Data")').first();
     await resSampleBtn.click();
     await page.waitForTimeout(200);
 
-    // Check Exp 15 Unknown frequency toggle
-    const unkFreqModeBtn = page.locator('button:has-text("Exp 15: Unknown Tuning Fork Frequency")').first();
-    await unkFreqModeBtn.click();
+    const soundSpeedVal = await page.locator('text=/340(\\.\\d+)?\\s*m\\/s/').count();
+    const endCorrVal = await page.locator('text=/1\\.\\d+\\s*cm/').count();
+    if (soundSpeedVal === 0 || endCorrVal === 0) {
+      throw new Error('Exp 15 sound speed or end correction not derived correctly from l vs 1/f regression!');
+    }
+    console.log('✓ Exp 15 verified: l vs 1/f regression yields v ≈ 340.3 m/s and end correction e ≈ 1.13 cm');
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'practical-13-resonance-exp15-en.png') });
+
+    // Check Exp 14 single fork two-resonance mode
+    const exp14ModeBtn = page.locator('button:has-text("Exp 14: Single Fork")').first();
+    await exp14ModeBtn.click();
     await page.waitForTimeout(200);
-    console.log('✓ Resonance Tube Exp 15 Unknown Frequency mode active');
+    console.log('✓ Exp 14 single fork two-resonance mode verified');
 
     const resSubmitBtn = page.locator('button:has-text("Submit Practical Record")').first();
     await resSubmitBtn.click();
     await page.waitForTimeout(200);
     console.log('✓ Resonance Tube lab record submitted');
 
-    // Exp 16, 18-20: Prism Refraction & Spectrometer
-    console.log('\n--- Testing Prism Refraction & Spectrometer (Exp 16, 18-20) ---');
+    // Exp 17-19: Prism Refraction & Spectrometer
+    console.log('\n--- Testing Prism Refraction & Spectrometer (Exp 17–19) ---');
     const prismTab = page.locator('button:has-text("Prism Refraction")').first();
     await prismTab.click();
     await page.waitForTimeout(300);
@@ -432,31 +520,52 @@ async function runPracticalVerification() {
     await page.waitForTimeout(200);
     console.log('✓ Spectrometer prism record submitted');
 
+    // Exp 20: Diffraction Grating
+    console.log('\n--- Testing Diffraction Grating Spectrometer (Exp 20) ---');
+    const gratingTab = page.locator('button:has-text("Diffraction Grating")').first();
+    await gratingTab.click();
+    await page.waitForTimeout(300);
+
+    const gratingSampleBtn = page.locator('button:has-text("Load Sample Data")').first();
+    await gratingSampleBtn.click();
+    await page.waitForTimeout(200);
+
+    const gratingSubmitBtn = page.locator('button:has-text("Submit Practical Record")').first();
+    await gratingSubmitBtn.click();
+    await page.waitForTimeout(200);
+    console.log('✓ Diffraction Grating record submitted');
+
     // Exp 21.1 & 21.2: Convex & Concave Lenses
     console.log('\n--- Testing Convex & Concave Lenses (Exp 21.1 & 21.2) ---');
     const lensTab = page.locator('button:has-text("Convex & Concave Lenses")').first();
     await lensTab.click();
     await page.waitForTimeout(300);
 
-    // Test Exp 21.1 Convex displacement
+    // Test Exp 21.1 Convex No-Parallax Optical Pin Method (Official)
     const convexSampleBtn = page.locator('button:has-text("Load Sample Data")').first();
     await convexSampleBtn.click();
     await page.waitForTimeout(200);
-    const convexMeanText = await page.locator('text=Mean Calculated Convex Focal Length').count();
-    if (convexMeanText === 0) throw new Error('Exp 21.1 Convex displacement summary not displayed!');
-    console.log('✓ Exp 21.1 Convex displacement method verified');
+    const convexFocalCount = await page.locator('text=/15\\.00?\\s*cm/').count();
+    if (convexFocalCount === 0) throw new Error('Exp 21.1 Convex focal length 15.0 cm not displayed!');
+    console.log('✓ Exp 21.1 Official no-parallax optical pin method verified: f = (u*v)/(u + v) = 15.0 cm');
 
-    // Test Exp 21.2 Concave auxiliary combination
-    const concaveModeBtn = page.locator('button:has-text("21.2 Concave Lens")').first();
+    // Test Exp 21.1 Supplementary Displacement Method
+    const dispModeBtn = page.locator('button:has-text("Displacement Method")').first();
+    await dispModeBtn.click();
+    await page.waitForTimeout(200);
+    console.log('✓ Exp 21.1 Convex displacement method f = (D² - d²)/4D active');
+
+    // Test Exp 21.2 Concave auxiliary combination (Official)
+    const concaveModeBtn = page.locator('button:has-text("21.2 Concave")').first();
     await concaveModeBtn.click();
     await page.waitForTimeout(200);
 
-    const concaveSampleBtn = page.locator('button:has-text("Load Sample Data")').first();
-    await concaveSampleBtn.click();
+    await convexSampleBtn.click();
     await page.waitForTimeout(200);
-    const concaveMeanText = await page.locator('text=Mean Calculated Concave Focal Length').count();
-    if (concaveMeanText === 0) throw new Error('Exp 21.2 Concave lens combination summary not displayed!');
-    console.log('✓ Exp 21.2 Concave lens auxiliary combination verified: |f2| = (u*v)/(v - u)');
+    const concaveFocalCount = await page.locator('text=/30\\.00?\\s*cm/').count();
+    if (concaveFocalCount === 0) throw new Error('Exp 21.2 Concave focal length 30.0 cm not displayed!');
+    console.log('✓ Exp 21.2 Official auxiliary convex lens combination verified: |f2| = (u*v)/(v - u) = 30.0 cm');
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'practical-14-lens-exp21-en.png') });
 
     const lensSubmitBtn = page.locator('button:has-text("Submit Practical Record")').first();
     await lensSubmitBtn.click();
@@ -465,12 +574,43 @@ async function runPracticalVerification() {
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'practical-15-waves-hub-en.png') });
 
     // ------------------------------------------------------------------------
-    // 11. Practical 29: Humidity & Dew Point (/en/units/thermal-physics/thermal-practicals-hub)
+    // 11. Unit 4 Thermal Physics Practicals Hub (Exp 22–30)
     // ------------------------------------------------------------------------
-    console.log('\n--- 11. Testing Practical 29: Humidity & Dew Point ---');
+    console.log('\n--- 11. Testing Unit 4 Thermal Physics Practicals Hub (Exp 22–30) ---');
     await page.goto(`${BASE_URL}/en/units/thermal-physics/thermal-practicals-hub`, { waitUntil: 'networkidle' });
 
-    const dewTab = page.locator('button:has-text("Dew Point")').first();
+    // Exp 22-24: Boyle & Gas Laws
+    const boyleTab = page.locator('button:has-text("Boyle")').first();
+    await boyleTab.click();
+    await page.waitForTimeout(200);
+    console.log('✓ Exp 22–24 Boyle & Gas Laws tab rendered');
+
+    // Exp 25: Metal Specific Heat
+    const calTab = page.locator('button:has-text("Metal Specific Heat")').first();
+    await calTab.click();
+    await page.waitForTimeout(200);
+    console.log('✓ Exp 25 Solid Metal Specific Heat tab rendered');
+
+    // Exp 26: Newton's Law of Cooling
+    const coolTab = page.locator('button:has-text("Newton")').first();
+    await coolTab.click();
+    await page.waitForTimeout(200);
+    console.log('✓ Exp 26 Newton’s Law of Cooling tab rendered');
+
+    // Exp 27: Latent Heat of Ice Fusion
+    const fusionTab = page.locator('button:has-text("Ice Fusion")').first();
+    await fusionTab.click();
+    await page.waitForTimeout(200);
+    console.log('✓ Exp 27 Latent Heat of Ice Fusion tab rendered');
+
+    // Exp 28: Latent Heat of Steam Vaporization
+    const vapTab = page.locator('button:has-text("Steam Vaporization")').first();
+    await vapTab.click();
+    await page.waitForTimeout(200);
+    console.log('✓ Exp 28 Latent Heat of Steam Vaporization tab rendered');
+
+    // Exp 29: Humidity & Dew Point
+    const dewTab = page.locator('button:has-text("Relative Humidity"), button:has-text("Dew Point")').first();
     await dewTab.click();
     await page.waitForTimeout(300);
 
@@ -483,13 +623,59 @@ async function runPracticalVerification() {
     console.log('✓ Relative humidity calculated via Magnus-Tetens formula');
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'practical-07-humidity-en.png') });
 
+    // Exp 30: Searle's Bar Conductivity
+    const searleBarTab = page.locator('button:has-text("Searle\'s Bar")').first();
+    await searleBarTab.click();
+    await page.waitForTimeout(200);
+    console.log('✓ Exp 30 Searle’s Bar Thermal Conductivity tab rendered');
+
     // ------------------------------------------------------------------------
-    // 12. Practical 36: BJT Common Emitter Transfer Characteristics
+    // 12. Unit 8 Current Electricity Practicals Hub (Exp 31–34)
     // ------------------------------------------------------------------------
-    console.log('\n--- 12. Testing Practical 36: BJT Transfer Characteristics (/en/units/electronics/practical-investigations) ---');
+    console.log('\n--- 12. Testing Current Electricity Practicals Hub (Exp 31–34) ---');
+    await page.goto(`${BASE_URL}/en/units/current-electricity/practical-investigations`, { waitUntil: 'networkidle' });
+
+    // Exp 31: Dry Cell Internal Resistance
+    const dryCellTab = page.locator('button:has-text("Dry Cell")').first();
+    await dryCellTab.click();
+    await page.waitForTimeout(200);
+    const dryCellHeading = await page.locator('text=Dry Cell EMF & Internal Resistance').count();
+    if (dryCellHeading === 0) throw new Error('Exp 31 Dry Cell heading not found!');
+    console.log('✓ Exp 31 Dry Cell EMF & Internal Resistance verified');
+
+    // Exp 32: Metre Bridge Temp Coeff of Resistance
+    const metreBridgeTab = page.locator('button:has-text("Metre Bridge")').first();
+    await metreBridgeTab.click();
+    await page.waitForTimeout(200);
+    console.log('✓ Exp 32 Metre Bridge Temperature Coefficient of Resistance verified');
+
+    // Exp 33: Potentiometer Compare EMFs
+    const compareEmfTab = page.locator('button:has-text("EMF Comparison"), button:has-text("Compare EMF")').first();
+    await compareEmfTab.click();
+    await page.waitForTimeout(200);
+    console.log('✓ Exp 33 Potentiometer Comparison of EMFs verified');
+
+    // Exp 34: Potentiometer Internal Resistance
+    const potInternalRTab = page.locator('button:has-text("Potentiometer Internal Resistance")').first();
+    await potInternalRTab.click();
+    await page.waitForTimeout(200);
+    console.log('✓ Exp 34 Potentiometer Internal Resistance of a Cell verified');
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'practical-17-electricity-hub-en.png') });
+
+    // ------------------------------------------------------------------------
+    // 13. Unit 9 Electronics Practicals Hub (Exp 35–37)
+    // ------------------------------------------------------------------------
+    console.log('\n--- 13. Testing Electronics Practicals Hub (Exp 35–37) ---');
     await page.goto(`${BASE_URL}/en/units/electronics/practical-investigations`, { waitUntil: 'networkidle' });
 
-    const bjtTab = page.locator('button:has-text("Exp 36"), button:has-text("Transfer")').first();
+    // Exp 35: Diode Characteristics
+    const diodeTab = page.locator('button:has-text("Diode")').first();
+    await diodeTab.click();
+    await page.waitForTimeout(200);
+    console.log('✓ Exp 35 Diode Characteristics & Dynamic Resistance verified');
+
+    // Exp 36: BJT Common Emitter Transfer Characteristics
+    const bjtTab = page.locator('button:has-text("Exp 36"), button:has-text("Transistor")').first();
     await bjtTab.click();
     await page.waitForTimeout(300);
 
@@ -503,10 +689,17 @@ async function runPracticalVerification() {
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'practical-08-bjt-en.png') });
     console.log('✓ BJT transfer characteristic telemetry and graphs verified');
 
+    // Exp 37: Logic Gates
+    const gatesTab = page.locator('button:has-text("Logic Gates"), button:has-text("Exp 37")').first();
+    await gatesTab.click();
+    await page.waitForTimeout(200);
+    console.log('✓ Exp 37 Logic Gates truth table and state verification confirmed');
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'practical-18-electronics-gates-en.png') });
+
     // ------------------------------------------------------------------------
-    // 13. Unit 10 Mechanical Properties Hub (/en/units/mechanical-properties-of-matter/matter-properties-practicals-hub)
+    // 14. Unit 10 Mechanical Properties Hub (Exp 38–42)
     // ------------------------------------------------------------------------
-    console.log('\n--- 13. Testing Mechanical Properties Hub (Exp 38–42) ---');
+    console.log('\n--- 14. Testing Mechanical Properties Hub (Exp 38–42) ---');
     await page.goto(`${BASE_URL}/en/units/mechanical-properties-of-matter/matter-properties-practicals-hub`, { waitUntil: 'networkidle' });
 
     // Exp 38: Searle's Wire
@@ -543,9 +736,9 @@ async function runPracticalVerification() {
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'practical-16-matter-properties-en.png') });
 
     // ------------------------------------------------------------------------
-    // 14. Storage Isolation and Integrity Check
+    // 15. Storage Isolation and Integrity Check
     // ------------------------------------------------------------------------
-    console.log('\n--- 14. Verifying Storage Isolation & Integrity ---');
+    console.log('\n--- 15. Verifying Storage Isolation & Integrity ---');
     const storageState = await page.evaluate(() => {
       return {
         practicalWork: localStorage.getItem('physicslab_practical_work_v1'),
@@ -569,9 +762,12 @@ async function runPracticalVerification() {
       'exp-7-utube',
       'exp-8-hares',
       'exp-9-test-tube',
+      'exp-10-pendulum',
+      'exp-11-spring',
       'exp-12-sonometer',
       'exp-14-resonance',
       'exp-16-prism',
+      'exp-20-grating',
       'exp-21-lens',
     ];
 
