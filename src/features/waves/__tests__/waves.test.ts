@@ -16,6 +16,9 @@ import {
   calculatePrismRefractiveIndex,
   calculateLensFocalLengthDisplacement,
   calculateThinLensNoParallax,
+  calculatePrismCriticalAngleRefractiveIndex,
+  calculateConcaveLensMirrorNoParallax,
+  calculateConcaveLensMirrorRegression,
   calculateYoungsFringeWidth,
   calculateDiffractionGratingWavelength,
 } from '../physics/calculations';
@@ -218,6 +221,42 @@ describe('Unit 3: Oscillations and Waves - Pure Physics Engine', () => {
       const res = calculateResonanceLinearRegression(points);
       expect(res.speedOfSoundMs).toBeCloseTo(340.0, 1);
       expect(res.endCorrectionM).toBeCloseTo(0.009, 3);
+    });
+
+    it('calculates prism refractive index via critical angle method (Exp 18)', () => {
+      // Construction measures angle between incident and reflected rays: 2c = 82.54°
+      // Halving step: c = 82.54° / 2 = 41.27°
+      // n = 1 / sin(41.27°) = 1 / 0.6596 ≈ 1.516
+      const res = calculatePrismCriticalAngleRefractiveIndex(82.54);
+      expect(res.criticalAngleDeg).toBe(41.27);
+      expect(res.refractiveIndex).toBeCloseTo(1.516, 3);
+    });
+
+    it('calculates concave lens focal length via plane mirror strip no-parallax (Exp 21.2)', () => {
+      // Cartesian convention: u = -20.0 cm, v = -8.57 cm
+      // 1/f = 1/v - 1/u = -1/8.57 - (-1/20) = -0.116686 + 0.050 = -0.066686 cm^-1
+      // f = 1 / -0.066686 ≈ -15.00 cm
+      const res = calculateConcaveLensMirrorNoParallax(20.0, 8.57);
+      expect(res.signedUCm).toBe(-20.0);
+      expect(res.signedVCm).toBe(-8.57);
+      expect(res.focalLengthCm).toBeCloseTo(-15.0, 1);
+    });
+
+    it('determines concave lens negative focal length from 1/v vs 1/u regression (Exp 21.2)', () => {
+      // f = -15.0 cm => 1/f = -1/15 ≈ -0.06667
+      // 1/v = 1/u + 1/f => y = 1*x - 0.06667
+      const trials = [
+        { uCm: 20.0, vCm: 1 / (1 / 20.0 + 1 / 15.0) }, // v = 8.571 cm
+        { uCm: 25.0, vCm: 1 / (1 / 25.0 + 1 / 15.0) }, // v = 9.375 cm
+        { uCm: 30.0, vCm: 1 / (1 / 30.0 + 1 / 15.0) }, // v = 10.000 cm
+        { uCm: 40.0, vCm: 1 / (1 / 40.0 + 1 / 15.0) }, // v = 10.909 cm
+        { uCm: 50.0, vCm: 1 / (1 / 50.0 + 1 / 15.0) }, // v = 11.538 cm
+      ];
+      const reg = calculateConcaveLensMirrorRegression(trials);
+      expect(reg.slope).toBeCloseTo(1.000, 3);
+      expect(reg.intercept).toBeCloseTo(-0.06667, 4);
+      expect(reg.focalLengthCm).toBeCloseTo(-15.0, 1);
+      expect(reg.rSquared).toBeGreaterThan(0.999);
     });
   });
 });

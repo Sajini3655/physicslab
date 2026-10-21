@@ -379,6 +379,29 @@ export function calculateLensFocalLengthDisplacement(
 }
 
 /**
+ * Experiment 18: Prism Critical Angle Method (NIE Practical Handbook pp. 40-41)
+ * Measured angle between incident ray and reflected ray at TIR threshold: angle2cDeg = 2 * c
+ * Critical angle c = angle2cDeg / 2
+ * Refractive index n = 1 / sin(c)
+ */
+export function calculatePrismCriticalAngleRefractiveIndex(
+  angle2cDeg: number
+): { angle2cDeg: number; criticalAngleDeg: number; refractiveIndex: number } {
+  if (angle2cDeg <= 0 || angle2cDeg >= 180) {
+    return { angle2cDeg: 0, criticalAngleDeg: 0, refractiveIndex: 0 };
+  }
+  const c = angle2cDeg / 2;
+  const cRad = (c * Math.PI) / 180;
+  const sinC = Math.sin(cRad);
+  const n = sinC > 0 ? 1 / sinC : 0;
+  return {
+    angle2cDeg: Number(angle2cDeg.toFixed(2)),
+    criticalAngleDeg: Number(c.toFixed(2)),
+    refractiveIndex: Number(n.toFixed(4)),
+  };
+}
+
+/**
  * Experiment 21.1: Thin Lens No-Parallax Method
  * Object distance u (real object > 0), image distance v (real inverted image > 0)
  * 1/v - (-1/u) = 1/f => 1/f = 1/v + 1/u => f = (u * v) / (u + v)
@@ -390,6 +413,106 @@ export function calculateThinLensNoParallax(
   if (objectDistanceM <= 0 || imageDistanceM <= 0) return 0;
   const f = (objectDistanceM * imageDistanceM) / (objectDistanceM + imageDistanceM);
   return Number(f.toFixed(4));
+}
+
+/**
+ * Experiment 21.2: Concave Lens No-Parallax Method using Plane Mirror Strip (NIE Practical Handbook pp. 51-52)
+ * Under Cartesian sign convention:
+ * Real object in front of lens: u < 0 (signedUCm = -|u|)
+ * Virtual image in front of lens: v < 0 (signedVCm = -|v|)
+ * Lens formula: 1/v - 1/u = 1/f
+ * 1/f = 1/signedVCm - 1/signedUCm = -1/|v| - (-1/|u|) = -1/|v| + 1/|u| = -(|u| - |v|) / (|u| * |v|)
+ * Focal length f = -(|u| * |v|) / (|u| - |v|) < 0 (diverging concave lens)
+ */
+export function calculateConcaveLensMirrorNoParallax(
+  uCm: number,
+  vCm: number
+): {
+  signedUCm: number;
+  signedVCm: number;
+  recipUCm1: number;
+  recipVCm1: number;
+  focalLengthCm: number;
+} {
+  const absU = Math.abs(uCm);
+  const absV = Math.abs(vCm);
+  if (absU <= 0 || absV <= 0 || absU <= absV) {
+    return { signedUCm: 0, signedVCm: 0, recipUCm1: 0, recipVCm1: 0, focalLengthCm: 0 };
+  }
+  const signedU = -absU;
+  const signedV = -absV;
+  const recipU = 1 / signedU;
+  const recipV = 1 / signedV;
+  const recipF = recipV - recipU;
+  const f = recipF !== 0 ? 1 / recipF : 0;
+  return {
+    signedUCm: Number(signedU.toFixed(2)),
+    signedVCm: Number(signedV.toFixed(2)),
+    recipUCm1: Number(recipU.toFixed(5)),
+    recipVCm1: Number(recipV.toFixed(5)),
+    focalLengthCm: Number(f.toFixed(2)),
+  };
+}
+
+/**
+ * Experiment 21.2: Linear regression for 1/v vs 1/u (Cartesian sign convention)
+ * y = 1/v (negative), x = 1/u (negative)
+ * y = m * x + c, where slope m = 1.0 and intercept c = 1/f < 0 => f = 1/c < 0
+ */
+export function calculateConcaveLensMirrorRegression(
+  trials: Array<{ uCm: number; vCm: number }>
+): {
+  slope: number;
+  intercept: number;
+  focalLengthCm: number;
+  rSquared: number;
+} {
+  const valid = trials
+    .filter((t) => Math.abs(t.uCm) > 0 && Math.abs(t.vCm) > 0 && Math.abs(t.uCm) > Math.abs(t.vCm))
+    .map((t) => {
+      const u = -Math.abs(t.uCm);
+      const v = -Math.abs(t.vCm);
+      return { x: 1 / u, y: 1 / v };
+    });
+
+  if (valid.length < 2) {
+    return { slope: 0, intercept: 0, focalLengthCm: 0, rSquared: 0 };
+  }
+
+  const n = valid.length;
+  let sumX = 0;
+  let sumY = 0;
+  let sumXY = 0;
+  let sumX2 = 0;
+  let sumY2 = 0;
+
+  for (const p of valid) {
+    sumX += p.x;
+    sumY += p.y;
+    sumXY += p.x * p.y;
+    sumX2 += p.x * p.x;
+    sumY2 += p.y * p.y;
+  }
+
+  const denom = n * sumX2 - sumX * sumX;
+  if (Math.abs(denom) < 1e-12) {
+    return { slope: 0, intercept: 0, focalLengthCm: 0, rSquared: 0 };
+  }
+
+  const slope = (n * sumXY - sumX * sumY) / denom;
+  const intercept = (sumY - slope * sumX) / n;
+  const f = intercept !== 0 ? 1 / intercept : 0;
+
+  const numR = n * sumXY - sumX * sumY;
+  const denR = Math.sqrt((n * sumX2 - sumX * sumX) * (n * sumY2 - sumY * sumY));
+  const r2 = denR > 0 ? (numR / denR) ** 2 : 1;
+
+  return {
+    slope: Number(slope.toFixed(4)),
+    intercept: Number(intercept.toFixed(5)),
+    focalLengthCm: Number(f.toFixed(2)),
+    rSquared: Number(r2.toFixed(4)),
+  };
 }
 
 // ============================================================================

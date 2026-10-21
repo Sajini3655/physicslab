@@ -505,35 +505,121 @@ async function runPracticalVerification() {
     await page.waitForTimeout(200);
     console.log('✓ Resonance Tube lab record submitted');
 
-    // Exp 17-19: Prism Refraction & Spectrometer
-    console.log('\n--- Testing Prism Refraction & Spectrometer (Exp 17–19) ---');
-    const prismTab = page.locator('button:has-text("Prism Refraction")').first();
+    // Exp 18: Prism Critical Angle Method (Official Exp 18)
+    console.log('\n--- Testing Prism Critical Angle Method (Official Exp 18) ---');
+    const prismCritTab = page.locator('button:has-text("Prism Critical Angle")').first();
+    await prismCritTab.click();
+    await page.waitForTimeout(300);
+
+    const prismCritHeading = await page.locator('text=/Practical 18: Determination of Refractive Index/').count();
+    if (prismCritHeading === 0) throw new Error('Exp 18 Critical angle heading not found!');
+    console.log('✓ Found Practical 18: Critical Angle Method');
+
+    // Test eye position slider along face BC
+    const eyeSlider = page.locator('input[type="range"]').first();
+    await eyeSlider.fill('48');
+    await page.waitForTimeout(150);
+    console.log('✓ Tested eye position slider along prism face BC');
+
+    // Load sample observations
+    const prismCritSampleBtn = page.locator('button:has-text("Load Sample Data")').first();
+    await prismCritSampleBtn.click();
+    await page.waitForTimeout(200);
+
+    // Verify 2c = 82.54° and n = 1.516
+    const critAngleBadge = await page.locator('text=/41\\.27°/').count();
+    const critRefBadge = await page.locator('text=/1\\.516/').count();
+    if (critAngleBadge === 0 || critRefBadge === 0) {
+      throw new Error('Exp 18 Critical angle 41.27° or refractive index 1.516 not derived!');
+    }
+    console.log('✓ Exp 18 verified: 2c = 82.54° ⇒ c = 41.27° ⇒ n = 1 / sin(c) = 1.516');
+
+    // Test Independent Mode and unhalved 2c diagnostic check
+    const prismCritIndepBtn = page.locator('button:has-text("Independent Practice")').first();
+    await prismCritIndepBtn.click();
+    await page.waitForTimeout(200);
+
+    const calcCritInput = page.locator('input[placeholder*="41.25"]').first();
+    const calcNInput = page.locator('input[placeholder*="1.516"]').first();
+    await calcCritInput.fill('41.27');
+    await calcNInput.fill('1.009'); // student mistakenly used n = 1 / sin(2c) = 1.009!
+
+    const checkCritBtn = page.locator('button:has-text("Check My Calculations")').first();
+    await checkCritBtn.click();
+    await page.waitForTimeout(200);
+
+    const halvingWarning = await page.locator('text=Did you forget to divide 2c by 2?').count();
+    if (halvingWarning === 0) throw new Error('Exp 18 Diagnostic feedback for unhalved 2c not displayed!');
+    console.log('✓ Exp 18 Diagnostic check verified: caught unhalved 2c mistake with actionable guidance');
+
+    // Correct to true refractive index
+    await calcNInput.fill('1.516');
+    await checkCritBtn.click();
+    await page.waitForTimeout(200);
+    const critCorrectFeedback = await page.locator('text=/Correct!/').count();
+    if (critCorrectFeedback === 0) throw new Error('Exp 18 Correct calculation check not passed!');
+    console.log('✓ Exp 18 Independent calculation check passed');
+
+    const prismCritSubmitBtn = page.locator('button:has-text("Submit Practical Record")').first();
+    await prismCritSubmitBtn.click();
+    await page.waitForTimeout(200);
+    console.log('✓ Exp 18 Critical angle record submitted');
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'practical-19-prism-critical-exp18-en.png') });
+
+    // Exp 17, 19 & 20: Spectrometer & Prism Refraction
+    console.log('\n--- Testing Spectrometer & Prism Refraction (Exp 17, 19, 20) ---');
+    const prismTab = page.locator('button:has-text("Spectrometer & Prism")').first();
     await prismTab.click();
     await page.waitForTimeout(300);
+
+    // Verify Exp 20 Minimum Deviation is default
+    const exp20Heading = await page.locator('text=/Practical 20: Determination of Angle of Minimum Deviation/').count();
+    if (exp20Heading === 0) throw new Error('Exp 20 Spectrometer minimum deviation heading not found!');
+    console.log('✓ Found Practical 20: Spectrometer Minimum Deviation');
+
+    // Test turntable rotation slider
+    const turntableSlider = page.locator('input[type="range"]').first();
+    await turntableSlider.fill('49.3');
+    await page.waitForTimeout(150);
+    const turningPointText = await page.locator('text=Stationary Reversal Point Reached!').count();
+    if (turningPointText === 0) throw new Error('Exp 20 Turntable stationary reversal point text not displayed!');
+    console.log('✓ Exp 20 Spectrometer turntable rotation to minimum deviation reversal point verified');
 
     const prismSampleBtn = page.locator('button:has-text("Load Sample Data")').first();
     await prismSampleBtn.click();
     await page.waitForTimeout(200);
 
+    const minDevCount = await page.locator('text=/38\\.60°/').count();
+    const specNCount = await page.locator('text=/1\\.516|1\\.520/').count();
+    if (minDevCount === 0 || specNCount === 0) {
+      throw new Error('Exp 20 Minimum deviation 38.60° or refractive index 1.516 not calculated!');
+    }
+    console.log('✓ Exp 20 verified: Dm = 38.60°, A = 60.00° ⇒ n = sin((A + Dm)/2) / sin(A/2) = 1.516');
+
+    // Test sub-mode switch to Exp 19: Spectrometer Prism Angle A
+    const exp19ModeBtn = page.locator('button:has-text("Exp 19: Prism Angle A")').first();
+    await exp19ModeBtn.click();
+    await page.waitForTimeout(200);
+    const exp19AngleCount = await page.locator('text=/60\\.02°/').count();
+    if (exp19AngleCount === 0) throw new Error('Exp 19 Prism Angle A not verified!');
+    console.log('✓ Exp 19 Spectrometer prism angle A = |θ_face1 - θ_face2| / 2 = 60.02° verified');
+
+    // Test sub-mode switch to Exp 17: Pins i-D Curve
+    const exp17ModeBtn = page.locator('button:has-text("Exp 17: Pin Method")').first();
+    await exp17ModeBtn.click();
+    await page.waitForTimeout(200);
+    console.log('✓ Exp 17 Optical pin i-D curve mode active');
+
+    // Switch back to Exp 20 and submit
+    const exp20ModeBtn = page.locator('button:has-text("Exp 20: Minimum Deviation")').first();
+    await exp20ModeBtn.click();
+    await page.waitForTimeout(200);
+
     const prismSubmitBtn = page.locator('button:has-text("Submit Practical Record")').first();
     await prismSubmitBtn.click();
     await page.waitForTimeout(200);
-    console.log('✓ Spectrometer prism record submitted');
-
-    // Exp 20: Diffraction Grating
-    console.log('\n--- Testing Diffraction Grating Spectrometer (Exp 20) ---');
-    const gratingTab = page.locator('button:has-text("Diffraction Grating")').first();
-    await gratingTab.click();
-    await page.waitForTimeout(300);
-
-    const gratingSampleBtn = page.locator('button:has-text("Load Sample Data")').first();
-    await gratingSampleBtn.click();
-    await page.waitForTimeout(200);
-
-    const gratingSubmitBtn = page.locator('button:has-text("Submit Practical Record")').first();
-    await gratingSubmitBtn.click();
-    await page.waitForTimeout(200);
-    console.log('✓ Diffraction Grating record submitted');
+    console.log('✓ Spectrometer Exp 20 practical record submitted');
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'practical-20-spectrometer-exp20-en.png') });
 
     // Exp 21.1 & 21.2: Convex & Concave Lenses
     console.log('\n--- Testing Convex & Concave Lenses (Exp 21.1 & 21.2) ---');
@@ -555,22 +641,92 @@ async function runPracticalVerification() {
     await page.waitForTimeout(200);
     console.log('✓ Exp 21.1 Convex displacement method f = (D² - d²)/4D active');
 
-    // Test Exp 21.2 Concave auxiliary combination (Official)
-    const concaveModeBtn = page.locator('button:has-text("21.2 Concave")').first();
-    await concaveModeBtn.click();
+    // Test Exp 21.2 Official Concave Lens Plane Mirror Strip No-Parallax Method
+    const concaveMirrorBtn = page.locator('button:has-text("21.2 Concave (Plane Mirror Strip")').first();
+    await concaveMirrorBtn.click();
     await page.waitForTimeout(200);
 
-    await convexSampleBtn.click();
+    // Verify eye position parallax slider
+    const eyeShiftSlider = page.locator('input[type="range"]').first();
+    await eyeShiftSlider.fill('8');
+    await page.waitForTimeout(100);
+    await eyeShiftSlider.fill('0');
+    await page.waitForTimeout(100);
+    console.log('✓ Exp 21.2 Parallax eye shift slider verified');
+
+    // Load sample data for plane mirror method
+    const concaveMirrorSampleBtn = page.locator('button:has-text("Load Sample Data")').first();
+    await concaveMirrorSampleBtn.click();
     await page.waitForTimeout(200);
-    const concaveFocalCount = await page.locator('text=/30\\.00?\\s*cm/').count();
-    if (concaveFocalCount === 0) throw new Error('Exp 21.2 Concave focal length 30.0 cm not displayed!');
-    console.log('✓ Exp 21.2 Official auxiliary convex lens combination verified: |f2| = (u*v)/(v - u) = 30.0 cm');
-    await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'practical-14-lens-exp21-en.png') });
+
+    // Verify Cartesian analysis and regression plot
+    const concaveFocalBadge = await page.locator('text=/-15\\.00?\\s*cm/').count();
+    if (concaveFocalBadge === 0) throw new Error('Exp 21.2 Concave focal length -15.0 cm not displayed!');
+    console.log('✓ Exp 21.2 Official plane mirror strip method verified: Cartesian f = -15.00 cm');
+
+    const graphSlope = await page.locator('text=/Slope.*1\\.00/').count();
+    const graphIntercept = await page.locator('text=/Intercept.*-0\\.066/').count();
+    if (graphSlope === 0 || graphIntercept === 0) {
+      throw new Error('Exp 21.2 Cartesian 1/v vs 1/u regression slope or intercept not displayed!');
+    }
+    console.log('✓ Exp 21.2 Cartesian 1/v vs 1/u regression verified: slope m = 1.000, intercept c = 1/f = -0.0667 cm⁻¹ ⇒ f = -15.0 cm');
+
+    // Test Independent Mode for Exp 21.2 (catch Cartesian negative sign mistake)
+    const concaveIndepBtn = page.locator('button:has-text("Independent Practice")').first();
+    await concaveIndepBtn.click();
+    await page.waitForTimeout(200);
+
+    const indepFocalInput = page.locator('input[placeholder*="-15.0"]').first();
+    await indepFocalInput.fill('15.0'); // student entered positive focal length
+    const checkConcaveBtn = page.locator('button:has-text("Check My Calculations")').first();
+    await checkConcaveBtn.click();
+    await page.waitForTimeout(200);
+
+    const signFeedback = await page.locator('text=Cartesian convention check: A diverging concave lens has a negative focal length').count();
+    if (signFeedback === 0) throw new Error('Exp 21.2 Cartesian sign convention diagnostic feedback not displayed!');
+    console.log('✓ Exp 21.2 Diagnostic check verified: caught missing negative sign with Cartesian guidance');
+
+    await indepFocalInput.fill('-15.0');
+    await checkConcaveBtn.click();
+    await page.waitForTimeout(200);
+    console.log('✓ Exp 21.2 Independent calculation check passed');
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'practical-21-concave-mirror-exp21-2-en.png') });
+
+    // Test Exp 21.2 Supplementary Auxiliary Convex Lens Combination
+    const concaveAuxBtn = page.locator('button:has-text("Additional: Concave (Auxiliary")').first();
+    await concaveAuxBtn.click();
+    await page.waitForTimeout(200);
+    const auxSampleBtn = page.locator('button:has-text("Load Sample Data")').first();
+    await auxSampleBtn.click();
+    await page.waitForTimeout(200);
+    const auxFocalCount = await page.locator('text=/30\\.00?\\s*cm/').count();
+    if (auxFocalCount === 0) throw new Error('Exp 21.2 Auxiliary combination focal length 30.0 cm not displayed!');
+    console.log('✓ Exp 21.2 Supplementary auxiliary lens combination verified: |f2| = 30.0 cm');
 
     const lensSubmitBtn = page.locator('button:has-text("Submit Practical Record")').first();
     await lensSubmitBtn.click();
     await page.waitForTimeout(200);
     console.log('✓ Lens practical record submitted');
+    await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'practical-14-lens-exp21-en.png') });
+
+    // Additional Investigation: Diffraction Grating
+    console.log('\n--- Testing Additional Investigation: Diffraction Grating Spectrometer ---');
+    const gratingTab = page.locator('button:has-text("Diffraction Grating")').first();
+    await gratingTab.click();
+    await page.waitForTimeout(300);
+
+    const gratingHeading = await page.locator('text=Additional Investigation: Wavelength of Light by Transmission Diffraction Grating').count();
+    if (gratingHeading === 0) throw new Error('Additional investigation diffraction grating heading not found!');
+    console.log('✓ Found Additional Investigation: Diffraction Grating');
+
+    const gratingSampleBtn = page.locator('button:has-text("Load Sample Data")').first();
+    await gratingSampleBtn.click();
+    await page.waitForTimeout(200);
+
+    const gratingSubmitBtn = page.locator('button:has-text("Submit Practical Record")').first();
+    await gratingSubmitBtn.click();
+    await page.waitForTimeout(200);
+    console.log('✓ Additional Diffraction Grating record submitted');
     await page.screenshot({ path: path.join(SCREENSHOT_DIR, 'practical-15-waves-hub-en.png') });
 
     // ------------------------------------------------------------------------
@@ -766,7 +922,8 @@ async function runPracticalVerification() {
       'exp-11-spring',
       'exp-12-sonometer',
       'exp-14-resonance',
-      'exp-16-prism',
+      'exp-18-prism-critical',
+      'exp-20-prism-spectrometer',
       'exp-20-grating',
       'exp-21-lens',
     ];
