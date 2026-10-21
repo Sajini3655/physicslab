@@ -10,8 +10,67 @@ import {
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { PracticeSection } from '@/components/PracticeSection';
 import { LessonSimulationWorkspace } from '@/features/simulation';
+import {
+  MeasurementPracticalsHub,
+  UnitAssessment,
+  InteractiveUnitConverter,
+  DimensionalChecker,
+  ErrorCalculator,
+  VernierCalipers,
+  MicrometerScrewGauge,
+  Spherometer,
+  TravellingMicroscope,
+  InteractiveVectorCanvas,
+} from '@/features/measurement';
+import {
+  MechanicsPracticalsHub,
+  ProjectilesSimulation,
+  MechanicsAssessment,
+} from '@/features/mechanics';
+import {
+  WaveSuperpositionSimulation,
+  WavesPracticalsHub,
+  WavesAssessment,
+} from '@/features/waves';
+import {
+  IdealGasThermodynamicsSimulation,
+  ThermalPracticalsHub,
+  ThermalAssessment,
+} from '@/features/thermal';
+import {
+  OrbitalMechanicsSimulation,
+  GravitationAssessment,
+} from '@/features/gravitation';
+import {
+  ElectrostaticsSimulation,
+  ElectrostaticsAssessment,
+} from '@/features/electrostatics';
+import {
+  MagneticFieldSimulation,
+  MagneticFieldAssessment,
+} from '@/features/magnetism';
+import {
+  ElectricityCircuitSimulation,
+  CurrentElectricityAssessment,
+  ElectricityPracticalsHub,
+} from '@/features/electricity';
+import {
+  ElectronicsSimulation,
+  ElectronicsAssessment,
+  ElectronicsPracticalsHub,
+} from '@/features/electronics';
+import {
+  MatterPropertiesSimulation,
+  MatterPropertiesPracticalsHub,
+  MatterPropertiesAssessment,
+} from '@/features/matter-properties';
+import {
+  QuantumNuclearSimulation,
+  QuantumNuclearAssessment,
+} from '@/features/quantum-nuclear';
 import { Link } from '@/i18n/routing';
 import { routing } from '@/i18n/routing';
+import { LessonProgressActions } from '@/components/LessonProgressActions';
 import {
   Atom,
   ChevronRight,
@@ -174,7 +233,13 @@ export default async function LessonPage({ params }: LessonPageProps) {
           </Link>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 sm:gap-5">
+          <Link
+            href="/my-learning"
+            className="text-xs sm:text-sm font-semibold text-[#14243A] dark:text-[#E2E8F0] hover:text-[#0F766E] dark:hover:text-[#14B8A6] transition-colors whitespace-nowrap"
+          >
+            {tCurriculum('myLearning')}
+          </Link>
           <LanguageSwitcher currentLocale={locale} />
         </div>
       </header>
@@ -231,6 +296,12 @@ export default async function LessonPage({ params }: LessonPageProps) {
           <p className="text-sm sm:text-base text-[#475569] dark:text-[#94A3B8] leading-relaxed max-w-3xl">
             {lesson.summary[loc]}
           </p>
+
+          <LessonProgressActions
+            lessonId={lesson.id}
+            unitSlug={unit.slug}
+            lessonSlug={lesson.slug}
+          />
         </div>
 
         {/* LEARNING OBJECTIVES */}
@@ -288,6 +359,23 @@ export default async function LessonPage({ params }: LessonPageProps) {
                     </div>
                   ))}
                 </div>
+
+                {/* Embedded Interactive Helper Tools */}
+                {lesson.slug === 'physical-quantities-and-units' && (
+                  <div className="pt-2">
+                    <InteractiveUnitConverter locale={loc} />
+                  </div>
+                )}
+                {lesson.slug === 'dimensional-analysis' && (
+                  <div className="pt-2">
+                    <DimensionalChecker locale={loc} />
+                  </div>
+                )}
+                {lesson.slug === 'errors-and-uncertainties' && (
+                  <div className="pt-2">
+                    <ErrorCalculator locale={loc} />
+                  </div>
+                )}
               </div>
             </section>
 
@@ -311,7 +399,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
                         <AlertCircle className="w-4 h-4 text-[#B45309] shrink-0 mt-0.5" />
                         <div>
                           <span className="text-[11px] font-semibold uppercase tracking-wider text-[#B45309] block">
-                            Misconception
+                            {loc === 'si' ? 'පොදු වැරදි වැටහීම' : 'Misconception'}
                           </span>
                           <p className="text-xs sm:text-sm text-[#14243A] dark:text-[#F8FAFC] font-medium leading-relaxed">
                             {item.misconception[loc]}
@@ -320,7 +408,9 @@ export default async function LessonPage({ params }: LessonPageProps) {
                       </div>
 
                       <div className="p-3 rounded-xl bg-[#F0FDFA] dark:bg-[#042F2E] border border-[#99F6E4] dark:border-[#115E59] text-xs text-[#0F766E] dark:text-[#14B8A6] leading-relaxed">
-                        <span className="font-semibold block mb-0.5">Physical Clarification:</span>
+                        <span className="font-semibold block mb-0.5">
+                          {loc === 'si' ? 'භෞතික පැහැදිලි කිරීම:' : 'Physical Clarification:'}
+                        </span>
                         {item.clarification[loc]}
                       </div>
                     </div>
@@ -345,7 +435,7 @@ export default async function LessonPage({ params }: LessonPageProps) {
             </span>
           </div>
 
-          {!lesson.content && (
+          {!lesson.content && !lesson.hasSimulation && (
             <div className="p-3.5 rounded-xl bg-[#F6FAFD] dark:bg-[#0B131E] border border-[#DFE8EF] dark:border-[#1E334D] text-xs text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
               {tCurriculum('outlineNotice')}
             </div>
@@ -367,38 +457,212 @@ export default async function LessonPage({ params }: LessonPageProps) {
         </section>
 
         {/* INTERACTIVE SIMULATION SECTION (If lesson has simulation) */}
-        {lesson.hasSimulation && lesson.simulationType === 'uniform-motion' && (
+        {lesson.hasSimulation && (
           <section
             id="simulation-activity"
             aria-label="Interactive Activity"
             className="space-y-4 pt-4 border-t border-[#DFE8EF] dark:border-[#1E334D]"
           >
-            <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
-              <div className="space-y-1">
-                <div className="flex items-center gap-2">
-                  <Sparkles className="w-5 h-5 text-[#0F766E] dark:text-[#14B8A6]" />
-                  <h2 className="text-lg sm:text-xl font-bold text-[#14243A] dark:text-[#F8FAFC] font-heading">
-                    {tCurriculum('interactiveActivity')} — {tSim('title')}
-                  </h2>
+            {/* UNIFORM MOTION (Sajini's merged engine) */}
+            {lesson.simulationType === 'uniform-motion' && (
+              <>
+                <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-2">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <Sparkles className="w-5 h-5 text-[#0F766E] dark:text-[#14B8A6]" />
+                      <h2 className="text-lg sm:text-xl font-bold text-[#14243A] dark:text-[#F8FAFC] font-heading">
+                        {tCurriculum('interactiveActivity')} — {tSim('title')}
+                      </h2>
+                    </div>
+                    <p className="text-xs sm:text-sm text-[#64748B] dark:text-[#94A3B8]">
+                      {tSim('subtitle')}
+                    </p>
+                  </div>
+
+                  {isDevelopment && (
+                    <div className="self-start sm:self-auto flex items-center gap-2 px-2.5 py-1 rounded-lg bg-[#FFFFFF] dark:bg-[#111D2D] border border-[#DFE8EF] dark:border-[#1E334D] text-[11px] font-mono text-[#0F766E] dark:text-[#14B8A6]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#0F766E] animate-ping" />
+                      <span>DEV HARNESS ACTIVE</span>
+                    </div>
+                  )}
                 </div>
-                <p className="text-xs sm:text-sm text-[#64748B] dark:text-[#94A3B8]">
-                  {tSim('subtitle')}
-                </p>
+
+                <LessonSimulationWorkspace
+                  simulationLabels={simulationLabels}
+                  validationLabels={validationLabels}
+                  isDevelopment={isDevelopment}
+                />
+              </>
+            )}
+
+            {/* MEASUREMENT INSTRUMENTS (Vernier, Micrometer, Spherometer, Travelling Microscope) */}
+            {lesson.simulationType === 'measurement-instruments' && (
+              <div className="space-y-6">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-[#0F766E] dark:text-[#14B8A6]" />
+                    <h2 className="text-lg sm:text-xl font-bold text-[#14243A] dark:text-[#F8FAFC] font-heading">
+                      {tCurriculum('interactiveActivity')} — Laboratory Instruments Suite
+                    </h2>
+                  </div>
+                  <p className="text-xs sm:text-sm text-[#64748B] dark:text-[#94A3B8]">
+                    Explore Vernier calipers, micrometer screw gauges, spherometers, and travelling microscopes with live zero error correction and stepping.
+                  </p>
+                </div>
+
+                <div className="space-y-6">
+                  <VernierCalipers locale={loc} leastCount={0.1} />
+                  <MicrometerScrewGauge locale={loc} />
+                  <Spherometer locale={loc} />
+                  <TravellingMicroscope locale={loc} />
+                </div>
               </div>
+            )}
 
-              {isDevelopment && (
-                <div className="self-start sm:self-auto flex items-center gap-2 px-2.5 py-1 rounded-lg bg-[#FFFFFF] dark:bg-[#111D2D] border border-[#DFE8EF] dark:border-[#1E334D] text-[11px] font-mono text-[#0F766E] dark:text-[#14B8A6]">
-                  <span className="w-1.5 h-1.5 rounded-full bg-[#0F766E] animate-ping" />
-                  <span>DEV HARNESS ACTIVE</span>
-                </div>
-              )}
-            </div>
+            {/* MEASUREMENT PRACTICALS HUB (5 NIE investigations) */}
+            {lesson.simulationType === 'measurement-practicals' && (
+              <MeasurementPracticalsHub locale={loc} />
+            )}
 
-            <LessonSimulationWorkspace
-              simulationLabels={simulationLabels}
-              validationLabels={validationLabels}
-              isDevelopment={isDevelopment}
-            />
+            {/* 2D VECTOR CANVAS */}
+            {lesson.simulationType === 'vector-canvas' && (
+              <InteractiveVectorCanvas locale={loc} />
+            )}
+
+            {/* 2D PROJECTILES SIMULATION */}
+            {lesson.simulationType === 'projectiles-simulation' && (
+              <ProjectilesSimulation locale={loc} />
+            )}
+
+            {/* MECHANICS PRACTICALS HUB (5 NIE investigations) */}
+            {lesson.simulationType === 'mechanics-practicals' && (
+              <MechanicsPracticalsHub locale={loc} />
+            )}
+
+            {/* MECHANICS COMPREHENSIVE ASSESSMENT */}
+            {lesson.simulationType === 'mechanics-assessment' && (
+              <MechanicsAssessment locale={loc} />
+            )}
+
+            {/* UNIT 1 COMPREHENSIVE ASSESSMENT */}
+            {lesson.simulationType === 'unit-assessment' && (
+              <UnitAssessment locale={loc} />
+            )}
+
+            {/* WAVE SUPERPOSITION & STANDING WAVES */}
+            {lesson.simulationType === 'wave-superposition' && (
+              <WaveSuperpositionSimulation locale={loc} />
+            )}
+
+            {/* WAVES PRACTICALS HUB (5 NIE investigations) */}
+            {lesson.simulationType === 'waves-practicals' && (
+              <WavesPracticalsHub locale={loc} />
+            )}
+
+            {/* WAVES COMPREHENSIVE ASSESSMENT */}
+            {lesson.simulationType === 'waves-assessment' && (
+              <WavesAssessment locale={loc} />
+            )}
+
+            {/* IDEAL GAS & THERMODYNAMICS SIMULATION */}
+            {lesson.simulationType === 'ideal-gas-simulation' && (
+              <IdealGasThermodynamicsSimulation locale={loc} />
+            )}
+
+            {/* THERMAL PRACTICALS HUB (6 NIE investigations) */}
+            {lesson.simulationType === 'thermal-practicals' && (
+              <ThermalPracticalsHub locale={loc} />
+            )}
+
+            {/* THERMAL COMPREHENSIVE ASSESSMENT */}
+            {lesson.simulationType === 'thermal-assessment' && (
+              <ThermalAssessment locale={loc} />
+            )}
+
+            {/* ORBITAL MECHANICS & ESCAPE VELOCITY SIMULATION */}
+            {lesson.simulationType === 'orbital-mechanics-simulation' && (
+              <OrbitalMechanicsSimulation locale={loc} />
+            )}
+
+            {/* GRAVITATIONAL FIELD COMPREHENSIVE ASSESSMENT */}
+            {lesson.simulationType === 'gravitation-assessment' && (
+              <GravitationAssessment locale={loc} />
+            )}
+
+            {/* ELECTROSTATICS & CAPACITOR SIMULATION */}
+            {lesson.simulationType === 'electrostatics-simulation' && (
+              <ElectrostaticsSimulation locale={loc} />
+            )}
+
+            {/* ELECTROSTATICS COMPREHENSIVE ASSESSMENT */}
+            {lesson.simulationType === 'electrostatics-assessment' && (
+              <ElectrostaticsAssessment locale={loc} />
+            )}
+
+            {/* MAGNETIC FIELD & CYCLOTRON SIMULATION */}
+            {lesson.simulationType === 'magnetic-field-simulation' && (
+              <MagneticFieldSimulation locale={loc} />
+            )}
+
+            {/* MAGNETIC FIELD COMPREHENSIVE ASSESSMENT */}
+            {lesson.simulationType === 'magnetism-assessment' && (
+              <MagneticFieldAssessment locale={loc} />
+            )}
+
+            {/* CURRENT ELECTRICITY & TRANSFORMER SIMULATION */}
+            {lesson.simulationType === 'electricity-circuit-simulation' && (
+              <ElectricityCircuitSimulation locale={loc} />
+            )}
+
+            {/* CURRENT ELECTRICITY COMPREHENSIVE ASSESSMENT */}
+            {lesson.simulationType === 'electricity-assessment' && (
+              <CurrentElectricityAssessment locale={loc} />
+            )}
+
+            {/* CURRENT ELECTRICITY PRACTICALS HUB (6 NIE investigations) */}
+            {lesson.simulationType === 'electricity-practicals' && (
+              <ElectricityPracticalsHub locale={loc} />
+            )}
+
+            {/* ELECTRONICS & OP-AMP SIMULATION */}
+            {lesson.simulationType === 'electronics-simulation' && (
+              <ElectronicsSimulation locale={loc} />
+            )}
+
+            {/* ELECTRONICS COMPREHENSIVE ASSESSMENT */}
+            {lesson.simulationType === 'electronics-assessment' && (
+              <ElectronicsAssessment locale={loc} />
+            )}
+
+            {/* ELECTRONICS PRACTICALS HUB (3 NIE investigations) */}
+            {lesson.simulationType === 'electronics-practicals' && (
+              <ElectronicsPracticalsHub locale={loc} />
+            )}
+
+            {/* MATTER PROPERTIES PRACTICALS HUB */}
+            {lesson.simulationType === 'matter-properties-practicals' && (
+              <MatterPropertiesPracticalsHub locale={loc} />
+            )}
+
+            {/* MATTER PROPERTIES SIMULATION */}
+            {lesson.simulationType === 'matter-properties-simulation' && (
+              <MatterPropertiesSimulation locale={loc} />
+            )}
+
+            {/* MATTER PROPERTIES COMPREHENSIVE ASSESSMENT */}
+            {lesson.simulationType === 'matter-properties-assessment' && (
+              <MatterPropertiesAssessment locale={loc} />
+            )}
+
+            {/* QUANTUM & NUCLEAR PHENOMENA SIMULATION */}
+            {lesson.simulationType === 'quantum-nuclear-simulation' && (
+              <QuantumNuclearSimulation locale={loc} />
+            )}
+
+            {/* QUANTUM & NUCLEAR COMPREHENSIVE ASSESSMENT */}
+            {lesson.simulationType === 'quantum-nuclear-assessment' && (
+              <QuantumNuclearAssessment locale={loc} />
+            )}
           </section>
         )}
 
