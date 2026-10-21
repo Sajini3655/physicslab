@@ -9,6 +9,7 @@ import {
   SonometerPractical,
   ResonanceTubePractical,
   PrismRefractionPractical,
+  PrismCriticalAnglePractical,
   DiffractionGratingPractical,
   LensFocalLengthPractical,
 } from './index';
@@ -33,9 +34,10 @@ export type WavesTab =
   | 'spring'
   | 'sonometer'
   | 'resonance'
+  | 'prism_critical'
   | 'prism'
-  | 'grating'
-  | 'lens';
+  | 'lens'
+  | 'grating';
 
 export const WavesPracticalsHub: React.FC<WavesPracticalsHubProps> = ({
   locale = 'en',
@@ -57,9 +59,10 @@ export const WavesPracticalsHub: React.FC<WavesPracticalsHubProps> = ({
       springTab: '11. Helical Spring (Exp 11)',
       sonometerTab: '12 & 13. Sonometer (Exp 12–13)',
       resonanceTab: '14 & 15. Resonance Tube (Exp 14–15)',
-      prismTab: '17–19. Prism Refraction & Spectrometer',
-      gratingTab: '20. Diffraction Grating Spectrometer',
+      prismCriticalTab: '18. Prism Critical Angle (Exp 18)',
+      prismTab: '17, 19 & 20. Spectrometer & Prism (Exp 17, 19, 20)',
       lensTab: '21.1 & 21.2. Convex & Concave Lenses',
+      gratingTab: 'Additional: Diffraction Grating Spectrometer',
     },
     si: {
       hubTitle: 'උසස් පෙළ භෞතික විද්‍යා රසායනාගාරය: ඒකක 3 දෝලන සහ තරංග ප්‍රායෝගික පරීක්ෂණ',
@@ -69,9 +72,10 @@ export const WavesPracticalsHub: React.FC<WavesPracticalsHubProps> = ({
       springTab: '11. හෙලික්සීය දුන්න (පරීක්ෂණ 11)',
       sonometerTab: '12 සහ 13. තන්තුමානය (පරීක්ෂණ 12–13)',
       resonanceTab: '14 සහ 15. අනුනාද නළය (පරීක්ෂණ 14–15)',
-      prismTab: '17–19. ප්‍රිස්ම වර්තනය සහ වර්ණාවලීමානය',
-      gratingTab: '20. විවර්තන දැලිස වර්ණාවලීමානය',
+      prismCriticalTab: '18. ප්‍රිස්ම අවධි කෝණ ක්‍රමය (පරීක්ෂණ 18)',
+      prismTab: '17, 19 සහ 20. වර්ණාවලීමානය සහ ප්‍රිස්ම (පරීක්ෂණ 17, 19, 20)',
       lensTab: '21.1 සහ 21.2. උත්තල සහ අවතල කාච',
+      gratingTab: 'අතිරේක: විවර්තන දැලිස වර්ණාවලීමානය',
     },
   }[locale];
 
@@ -153,6 +157,20 @@ export const WavesPracticalsHub: React.FC<WavesPracticalsHubProps> = ({
 
           <Button
             size="sm"
+            variant={activeTab === 'prism_critical' ? 'default' : 'outline'}
+            onClick={() => setActiveTab('prism_critical')}
+            className={
+              activeTab === 'prism_critical'
+                ? 'bg-[#0F766E] hover:bg-[#0D655E] text-white shadow-sm'
+                : 'text-[#475569] border-[#DFE8EF] hover:bg-slate-50'
+            }
+          >
+            <Eye className="w-4 h-4 mr-1.5" />
+            {t.prismCriticalTab}
+          </Button>
+
+          <Button
+            size="sm"
             variant={activeTab === 'prism' ? 'default' : 'outline'}
             onClick={() => setActiveTab('prism')}
             className={
@@ -161,22 +179,8 @@ export const WavesPracticalsHub: React.FC<WavesPracticalsHubProps> = ({
                 : 'text-[#475569] border-[#DFE8EF] hover:bg-slate-50'
             }
           >
-            <Eye className="w-4 h-4 mr-1.5" />
+            <Scan className="w-4 h-4 mr-1.5" />
             {t.prismTab}
-          </Button>
-
-          <Button
-            size="sm"
-            variant={activeTab === 'grating' ? 'default' : 'outline'}
-            onClick={() => setActiveTab('grating')}
-            className={
-              activeTab === 'grating'
-                ? 'bg-[#0F766E] hover:bg-[#0D655E] text-white shadow-sm'
-                : 'text-[#475569] border-[#DFE8EF] hover:bg-slate-50'
-            }
-          >
-            <Sparkles className="w-4 h-4 mr-1.5" />
-            {t.gratingTab}
           </Button>
 
           <Button
@@ -192,6 +196,20 @@ export const WavesPracticalsHub: React.FC<WavesPracticalsHubProps> = ({
             <Scan className="w-4 h-4 mr-1.5" />
             {t.lensTab}
           </Button>
+
+          <Button
+            size="sm"
+            variant={activeTab === 'grating' ? 'default' : 'outline'}
+            onClick={() => setActiveTab('grating')}
+            className={
+              activeTab === 'grating'
+                ? 'bg-[#0F766E] hover:bg-[#0D655E] text-white shadow-sm'
+                : 'text-[#475569] border-[#DFE8EF] hover:bg-slate-50'
+            }
+          >
+            <Sparkles className="w-4 h-4 mr-1.5" />
+            {t.gratingTab}
+          </Button>
         </div>
       </div>
 
@@ -201,9 +219,10 @@ export const WavesPracticalsHub: React.FC<WavesPracticalsHubProps> = ({
         {activeTab === 'spring' && <HelicalSpringPractical locale={locale} />}
         {activeTab === 'sonometer' && <SonometerPractical locale={locale} />}
         {activeTab === 'resonance' && <ResonanceTubePractical locale={locale} />}
+        {activeTab === 'prism_critical' && <PrismCriticalAnglePractical locale={locale} />}
         {activeTab === 'prism' && <PrismRefractionPractical locale={locale} />}
-        {activeTab === 'grating' && <DiffractionGratingPractical locale={locale} />}
         {activeTab === 'lens' && <LensFocalLengthPractical locale={locale} />}
+        {activeTab === 'grating' && <DiffractionGratingPractical locale={locale} />}
       </div>
     </div>
   );

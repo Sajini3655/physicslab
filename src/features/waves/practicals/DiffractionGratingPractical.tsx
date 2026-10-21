@@ -128,7 +128,7 @@ export const DiffractionGratingPractical: React.FC<DiffractionGratingPracticalPr
 
   const t = {
     en: {
-      title: 'Practical: Wavelength of Light by Transmission Diffraction Grating',
+      title: 'Additional Investigation: Wavelength of Light by Transmission Diffraction Grating',
       aim: 'Aim: To determine the wavelengths of visible spectral emission lines using a plane transmission diffraction grating and a spectrometer adjusted for normal incidence.',
       apparatus: 'Apparatus: Spectrometer, plane diffraction grating (typically 300 or 600 lines/mm), mercury vapor lamp / sodium vapor lamp, dark enclosure, reading magnifier.',
       theoryTitle: 'Physical Principle & Grating Equation',
@@ -154,7 +154,7 @@ export const DiffractionGratingPractical: React.FC<DiffractionGratingPracticalPr
       submittedMsg: 'Practical record completed and saved to your laboratory log.',
     },
     si: {
-      title: 'ප්‍රායෝගික පරීක්ෂණය: විවර්තන දැලිසක් භාවිතයෙන් ආලෝකයේ තරංග ආයාමය සෙවීම',
+      title: 'අතිරේක පරීක්ෂණය: විවර්තන දැලිසක් භාවිතයෙන් ආලෝකයේ තරංග ආයාමය සෙවීම',
       aim: 'අරමුණ: අභිලම්බ පතනයට සීරුමාරු කළ වර්ණාවලීමානයක් සහ තල සම්ප්‍රේෂණ විවර්තන දැලිසක් භාවිතයෙන් දෘශ්‍ය වර්ණාවලි රේඛාවල තරංග ආයාම නිර්ණය කිරීම.',
       apparatus: 'උපකරණ: වර්ණාවලීමානය, තල විවර්තන දැලිස (300 හෝ 600 lines/mm), රසදිය වාෂ්ප ලාම්පුව / සෝඩියම් ලාම්පුව, අඳුරු කුටිය, විශාලක කාචය.',
       theoryTitle: 'භෞතික මූලධර්මය සහ දැලිස් සමීකරණය',

@@ -20,6 +20,8 @@ import {
 import {
   calculateLensFocalLengthDisplacement,
   calculateThinLensNoParallax,
+  calculateConcaveLensMirrorNoParallax,
+  calculateConcaveLensMirrorRegression,
 } from '../physics/calculations';
 import { usePracticalWork } from '@/shared/practicals';
 
@@ -44,6 +46,12 @@ interface ConcaveLensTrial {
   id: number;
   virtualDistUCm: string;
   realDistVCm: string;
+}
+
+interface ConcaveMirrorTrial {
+  id: number;
+  distUCm: string;
+  distVCm: string;
 }
 
 export const LensFocalLengthPractical: React.FC<LensFocalLengthPracticalProps> = ({
@@ -71,6 +79,7 @@ export const LensFocalLengthPractical: React.FC<LensFocalLengthPracticalProps> =
       subMode: 'convex_noparallax',
       nominalFocalLengthCm: '15.0',
       nominalConcaveFocalLengthCm: '30.0',
+      nominalConcaveMirrorFocalLengthCm: '-15.0',
       convexNoParallaxTrials: [
         { id: 1, distUCm: '25.0', distVCm: '37.5' },
         { id: 2, distUCm: '30.0', distVCm: '30.0' },
@@ -85,6 +94,13 @@ export const LensFocalLengthPractical: React.FC<LensFocalLengthPracticalProps> =
         { id: 4, screenDistDCm: '95.0', lensPos1Cm: '18.3', lensPos2Cm: '76.7' },
         { id: 5, screenDistDCm: '100.0', lensPos1Cm: '18.0', lensPos2Cm: '82.0' },
       ],
+      concaveMirrorTrials: [
+        { id: 1, distUCm: '20.0', distVCm: '8.57' },
+        { id: 2, distUCm: '25.0', distVCm: '9.38' },
+        { id: 3, distUCm: '30.0', distVCm: '10.00' },
+        { id: 4, distUCm: '40.0', distVCm: '10.91' },
+        { id: 5, distUCm: '50.0', distVCm: '11.54' },
+      ],
       concaveTrials: [
         { id: 1, virtualDistUCm: '15.0', realDistVCm: '30.0' },
         { id: 2, virtualDistUCm: '18.0', realDistVCm: '45.0' },
@@ -98,17 +114,23 @@ export const LensFocalLengthPractical: React.FC<LensFocalLengthPracticalProps> =
   });
 
   const [showSolution, setShowSolution] = useState(false);
+  const [eyeShiftMm, setEyeShiftMm] = useState(0);
 
-  // Normalise subMode: if legacy 'convex', map to 'convex_noparallax'
+  // Normalise subMode: backwards-compatible mapping
   const rawSubMode = observations.subMode || 'convex_noparallax';
-  const subMode: 'convex_noparallax' | 'convex_displacement' | 'concave' =
-    rawSubMode === 'convex' ? 'convex_noparallax' : (rawSubMode as 'convex_noparallax' | 'convex_displacement' | 'concave');
+  const subMode: 'convex_noparallax' | 'convex_displacement' | 'concave_mirror' | 'concave_auxiliary' =
+    rawSubMode === 'convex'
+      ? 'convex_noparallax'
+      : rawSubMode === 'concave'
+      ? 'concave_mirror'
+      : (rawSubMode as 'convex_noparallax' | 'convex_displacement' | 'concave_mirror' | 'concave_auxiliary');
 
-  const setSubMode = (m: 'convex_noparallax' | 'convex_displacement' | 'concave') =>
+  const setSubMode = (m: 'convex_noparallax' | 'convex_displacement' | 'concave_mirror' | 'concave_auxiliary') =>
     updateObservations({ subMode: m });
 
   const nominalFocalLengthCm = observations.nominalFocalLengthCm || '15.0';
   const nominalConcaveFocalLengthCm = observations.nominalConcaveFocalLengthCm || '30.0';
+  const nominalConcaveMirrorFocalLengthCm = observations.nominalConcaveMirrorFocalLengthCm || '-15.0';
 
   const convexNoParallaxTrials: ConvexNoParallaxTrial[] =
     observations.convexNoParallaxTrials || [
@@ -128,6 +150,15 @@ export const LensFocalLengthPractical: React.FC<LensFocalLengthPracticalProps> =
       { id: 5, screenDistDCm: '100.0', lensPos1Cm: '18.0', lensPos2Cm: '82.0' },
     ];
 
+  const concaveMirrorTrials: ConcaveMirrorTrial[] =
+    observations.concaveMirrorTrials || [
+      { id: 1, distUCm: '20.0', distVCm: '8.57' },
+      { id: 2, distUCm: '25.0', distVCm: '9.38' },
+      { id: 3, distUCm: '30.0', distVCm: '10.00' },
+      { id: 4, distUCm: '40.0', distVCm: '10.91' },
+      { id: 5, distUCm: '50.0', distVCm: '11.54' },
+    ];
+
   const concaveTrials: ConcaveLensTrial[] =
     observations.concaveTrials || [
       { id: 1, virtualDistUCm: '15.0', realDistVCm: '30.0' },
@@ -139,29 +170,42 @@ export const LensFocalLengthPractical: React.FC<LensFocalLengthPracticalProps> =
   const t = {
     en: {
       title: 'Practical 21.1 & 21.2: Determination of Focal Lengths of Convex and Concave Lenses',
-      aim: 'Aim: To determine the focal length of a convex lens by the official no-parallax method using optical pins and the displacement method (Exp 21.1), and a concave lens using an auxiliary convex lens combination with no-parallax (Exp 21.2).',
-      apparatus: 'Apparatus: Optical bench with uprights, optical pins (object pin & search pin), biconvex lens, biconcave lens, illuminated object gauze, receiving screen, metre scale.',
+      aim: 'Aim: To determine the focal length of a convex lens by the official no-parallax method and displacement method (Exp 21.1), and a concave lens using the official plane mirror strip no-parallax method and auxiliary convex lens combination (Exp 21.2).',
+      apparatus: 'Apparatus: Optical bench with uprights, optical pins (object pin & search pin), plane mirror strip, biconvex lens, biconcave lens, illuminated object gauze, receiving screen, metre scale.',
       modeConvexNoParallax: '21.1 Convex (No-Parallax Optical Pin Method)',
       modeConvexDisplacement: '21.1 Convex (Displacement Method: f = (D² - d²)/4D)',
-      modeConcave: '21.2 Concave (Auxiliary Lens No-Parallax)',
+      modeConcaveMirror: '21.2 Concave (Plane Mirror Strip No-Parallax - Official)',
+      modeConcaveAuxiliary: 'Additional: Concave (Auxiliary Convex Lens Combination)',
       theoryTitleConvexNoParallax: 'Convex Lens No-Parallax Method (Official Exp 21.1)',
       theoryTextConvexNoParallax: 'An object pin O is placed at distance u in front of a convex lens (u > f). An inverted real image I is formed on the opposite side. A search pin P is adjusted along the bench until there is no parallax between P and the inverted image tip.\nFrom thin lens formula: 1/v - (-1/u) = 1/f ⇒ 1/f = 1/v + 1/u ⇒ f = (u · v) / (u + v).',
       theoryTitleConvexDisplacement: 'Convex Lens Displacement Method (Supplementary Exp 21.1)',
       theoryTextConvexDisplacement: 'When screen distance D > 4f, two lens positions produce sharp real images on the screen. Let displacement between positions be d = |x₂ - x₁|. The focal length is given by: f = (D² - d²) / (4D). Eliminates index error and bench centering deviations.',
-      theoryTitleConcave: 'Concave Lens Auxiliary Lens Combination (Official Exp 21.2)',
+      theoryTitleConcaveMirror: 'Concave Lens Plane Mirror Strip Method (Official Exp 21.2)',
+      theoryTextConcaveMirror: 'A plane mirror strip is affixed across the lower half aperture of the concave lens. An object pin O is placed at distance u in front of the lens. Looking through the upper clear half, an erect, diminished virtual image I is observed at distance v in front of the lens.\nA search pin S is positioned in front of the lower mirror strip. By adjusting S along the bench, the reflection of S in the plane mirror is matched tip-to-tip with virtual image I until lateral parallax disappears upon moving the eye sideways.\nSince reflection distance equals search pin distance from mirror, image distance v is directly determined!\nUsing Cartesian convention (u < 0, v < 0, f < 0):\n1/v - 1/u = 1/f  ⟹  1/v = 1/u + 1/f\nPlotting 1/v against 1/u yields a straight line with slope +1.00 and Y-intercept c = 1/f < 0, giving f = 1/c ≈ -15.0 cm.',
+      theoryTitleConcave: 'Concave Lens Auxiliary Lens Combination (Supplementary Exp 21.2)',
       theoryTextConcave: 'A concave lens alone produces virtual images and cannot project onto a screen or be aligned with a physical search pin directly. An auxiliary convex lens L₁ forms a real image I₁ of object pin O (located using no-parallax).\nInserting concave lens L₂ between L₁ and I₁ makes I₁ act as a virtual object at distance u from L₂.\nThe diverging lens shifts the real image to I₂, located by search pin with no-parallax at distance v from L₂.\nFormula: 1/v - 1/u = 1/f₂ ⇒ |f₂| = (u · v) / (v - u).',
       procedureConvexNoParallax: 'Procedure: 1. Estimate f by distant window imaging. 2. Place object pin O at u > f. 3. Look through lens from opposite side, move search pin P until its tip aligns with the inverted image tip without parallax when moving the eye sideways. 4. Record u and v; compute f = (uv)/(u+v).',
       procedureConvexDisplacement: 'Procedure: 1. Set screen distance D > 4f (e.g. 80 cm). 2. Move lens to find magnified sharp image at x₁, then diminished sharp image at x₂. 3. Record displacement d = |x₂ - x₁| and compute f = (D² - d²)/(4D).',
+      procedureConcaveMirror: 'Procedure: 1. Affix plane mirror strip across lower half aperture of concave lens. 2. Place object pin O at distance u in front of upper half. 3. Look through upper half to locate virtual image I. 4. Place search pin S in front of lower mirror strip; move S until its mirror reflection coincides tip-to-tip with image I without parallax when shifting the eye sideways. 5. Record u and v for 5 object positions (20 to 50 cm). 6. Apply Cartesian signs (u < 0, v < 0), plot 1/v vs 1/u, and obtain focal length f from the vertical intercept.',
       procedureConcave: 'Procedure: 1. Focus illuminated pin with auxiliary convex lens to form real image I₁; locate position using search pin no-parallax. 2. Place concave lens between convex lens and I₁; measure distance u from concave lens to I₁. 3. Move search pin away to locate new real image I₂ with no-parallax; measure distance v from concave lens to I₂. 4. Compute |f₂| = (u·v)/(v - u).',
       modeSelector: 'Learning Mode:',
       guidedMode: 'Guided Mode (Hints & Auto-Calculation)',
       independentMode: 'Independent Practice (Manual Calculations & Check)',
+      eyePosition: 'Eye Lateral Position (Parallax Check):',
+      eyeCenter: 'Center (Aligned)',
       obsConvexNoParallaxTitle: 'Convex Lens No-Parallax Observations: Object Distance u & Image Distance v',
       obsConvexDisplacementTitle: 'Convex Lens Displacement Observations: (D² - d²)/(4D)',
-      obsConcaveTitle: 'Concave Lens Observations: Virtual Object Distance u & Real Image Distance v',
+      obsConcaveMirrorTitle: 'Official Exp 21.2 Concave Lens No-Parallax (Plane Mirror Strip) Observations & Cartesian Analysis',
+      obsConcaveTitle: 'Supplementary: Concave Lens Observations (Auxiliary Convex Lens Combination)',
+      graphTitle: 'Cartesian Plot: 1/v vs 1/u (Negative Quadrant)',
+      slopeLabel: 'Fitted Slope (m = Δ(1/v)/Δ(1/u)): ',
+      interceptLabel: 'Y-Intercept (c = 1/f): ',
+      focalFromGraph: 'Focal Length from Intercept (f = 1/c): ',
       trialCol: 'Trial',
       uCol: 'Object Distance u (cm)',
       vCol: 'Image Distance v (cm)',
+      signedUCol: 'Cartesian u (cm)',
+      signedVCol: 'Cartesian v (cm)',
       recipUCol: '1/u (cm⁻¹)',
       recipVCol: '1/v (cm⁻¹)',
       focalCol: 'Focal Length f (cm)',
@@ -174,6 +218,7 @@ export const LensFocalLengthPractical: React.FC<LensFocalLengthPracticalProps> =
       concaveFocalCol: 'Focal Length |f₂| (cm)',
       calcSummaryTitle: 'Analytical Summary & Benchmark Verification',
       meanFocalConvex: 'Mean Convex Focal Length (f):',
+      meanFocalConcaveMirror: 'Mean Concave Focal Length (Cartesian f):',
       meanFocalConcave: 'Mean Concave Focal Length (|f₂|):',
       nominalFocal: 'Nominal Benchmark Focal Length:',
       percentageDiff: 'Discrepancy:',
@@ -186,9 +231,9 @@ export const LensFocalLengthPractical: React.FC<LensFocalLengthPracticalProps> =
       q1Title: '1. How is the no-parallax condition identified between the search pin and the optical image?',
       q1Model: 'Model Answer: When moving the eye sideways from left to right, the tip of the inverted real image and the tip of the search pin must remain exactly coincident with zero relative lateral shift. If they shift relative to each other, parallax exists and the search pin must be moved along the bench.',
       q1Rubric: 'Rubric: Award 1 mark for moving eye sideways / zero relative shift; 1 mark for tip-to-tip lateral coincidence.',
-      q2Title: '2. Why cannot the focal length of a concave lens be determined directly using optical pins alone?',
-      q2Model: 'Model Answer: A concave lens is a diverging element that forms only virtual, diminished images for any real object. Since virtual rays diverge from behind the lens, a physical search pin cannot be co-located in space with the image without an auxiliary converging lens creating a virtual object.',
-      q2Rubric: 'Rubric: Award 1 mark for diverging lens / virtual image only; 1 mark for physical pin cannot coincide with virtual image in real space.',
+      q2Title: '2. In the plane mirror strip method for a concave lens (Exp 21.2), how does the mirror allow measuring image distance v directly?',
+      q2Model: 'Model Answer: The concave lens forms a virtual image in front of the lens. The plane mirror strip covers the lower half of the lens and forms a virtual reflection of the search pin placed in front of it. When the reflection coincides with the virtual image without parallax, the search pin distance to the mirror equals the virtual image distance v.',
+      q2Rubric: 'Rubric: Award 1 mark for plane mirror reflection matching virtual image; 1 mark for search pin distance to mirror = v.',
       q3Title: '3. In the convex lens displacement method, why must screen separation D strictly exceed 4f?',
       q3Model: 'Model Answer: From the conjugate foci lens equation u + v = D and uv = fD, solving for u gives u² - Du + fD = 0. The discriminant Δ = D(D - 4f) must be ≥ 0 for real roots. If D < 4f, the discriminant is negative, meaning no real image can be formed on the screen at any lens position.',
       q3Rubric: 'Rubric: Award 1 mark for discriminant Δ = D(D - 4f) ≥ 0; 1 mark for imaginary roots / no real image when D < 4f.',
@@ -201,29 +246,42 @@ export const LensFocalLengthPractical: React.FC<LensFocalLengthPracticalProps> =
     },
     si: {
       title: 'ප්‍රායෝගික පරීක්ෂණය 21.1 සහ 21.2: උත්තල සහ අවතල කාචවල නාභීය දුර නිර්ණය කිරීම',
-      aim: 'අරමුණ: දෘෂ්ටි විලාස වැළැක්වීමේ ක්‍රමයෙන් සහ විස්ථාපන ක්‍රමයෙන් උත්තල කාචයක නාභීය දුර සෙවීම (21.1) සහ ආධාරක උත්තල කාචයක් භාවිතයෙන් අවතල කාචයක නාභීය දුර සෙවීම (21.2).',
-      apparatus: 'උපකරණ: ප්‍රකාශ බංකුව, ප්‍රකාශ කූරු (වස්තු කූර සහ සෙවුම් කූර), උත්තල කාචය, අවතල කාචය, ආලෝකමත් වස්තුව (කම්බි දැල), සුදු තිරය, මීටර් රූල.',
+      aim: 'අරමුණ: දෘෂ්ටි විලාස වැළැක්වීමේ ක්‍රමයෙන් සහ විස්ථාපන ක්‍රමයෙන් උත්තල කාචයක නාභීය දුර සෙවීම (21.1) සහ නිල තල දර්පණ තීරු දෘෂ්ටි විලාස ක්‍රමයෙන් සහ ආධාරක උත්තල කාච සංයෝජනයෙන් අවතල කාචයක නාභීය දුර සෙවීම (21.2).',
+      apparatus: 'උපකරණ: ප්‍රකාශ බංකුව, ප්‍රකාශ කූරු (වස්තු කූර සහ සෙවුම් කූර), තල දර්පණ තීරුව, උත්තල කාචය, අවතල කාචය, ආලෝකමත් වස්තුව (කම්බි දැල), සුදු තිරය, මීටර් රූල.',
       modeConvexNoParallax: '21.1 උත්තල කාචය (දෘෂ්ටි විලාස වැළැක්වීමේ කූරු ක්‍රමය)',
       modeConvexDisplacement: '21.1 උත්තල කාචය (විස්ථාපන ක්‍රමය: f = (D² - d²)/4D)',
-      modeConcave: '21.2 අවතල කාචය (ආධාරක කාච සංයෝජනය)',
+      modeConcaveMirror: '21.2 අවතල කාචය (තල දර්පණ තීරු දෘෂ්ටි විලාස ක්‍රමය - නිල)',
+      modeConcaveAuxiliary: 'අතිරේක: අවතල කාචය (ආධාරක කාච සංයෝජනය)',
       theoryTitleConvexNoParallax: 'උත්තල කාච දෘෂ්ටි විලාස වැළැක්වීමේ ක්‍රමය (නිල පරීක්ෂණ 21.1)',
       theoryTextConvexNoParallax: 'උත්තල කාචයක් ඉදිරියෙන් u > f වන සේ වස්තු කූර O තැබූ විට අනෙක් පසින් යටිකුරු තාත්වික ප්‍රතිබිම්බයක් සෑදේ. සෙවුම් කූර P සහ ප්‍රතිබිම්බ තුඩ අතර දෘෂ්ටි විලාසය ඉවත් වන සේ P සකස් කරයි.\nකාච සූත්‍රය: 1/v - (-1/u) = 1/f ⇒ 1/f = 1/v + 1/u ⇒ f = (u · v) / (u + v).',
       theoryTitleConvexDisplacement: 'උත්තල කාච විස්ථාපන ක්‍රමය (අතිරේක පරීක්ෂණ 21.1)',
       theoryTextConvexDisplacement: 'D > 4f වන විට තිරය මත තියුණු ප්‍රතිබිම්බ ලැබෙන කාච පිහිටුම් දෙකක් පවතී. පිහිටුම් අතර විස්ථාපනය d = |x₂ - x₁| නම් නාභීය දුර f = (D² - d²) / (4D) වේ.',
-      theoryTitleConcave: 'අවතල කාච ආධාරක කාච සංයෝජන ක්‍රමය (නිල පරීක්ෂණ 21.2)',
+      theoryTitleConcaveMirror: 'අවතල කාච තල දර්පණ තීරු ක්‍රමය (නිල පරීක්ෂණ 21.2)',
+      theoryTextConcaveMirror: 'අවතල කාචයේ පහළ අඩ ආවරණය වන පරිදි තල දර්පණ තීරුවක් සවි කරයි. කාචය ඉදිරියෙන් දුර u හි වස්තු කූර O තබයි. ඉහළ පැහැදිලි අඩ තුළින් බැලූ විට කාචය ඉදිරියෙන් දුර v හි කුඩා, උඩුකුරු අතාත්වික ප්‍රතිබිම්බයක් I පෙනේ.\nපහළ දර්පණ තීරුව ඉදිරියෙන් සෙවුම් කූර S තබා එය සීරුමාරු කර, දර්පණයේ පෙනෙන S හි ප්‍රතිබිම්බය සහ ඉහළින් පෙනෙන I ප්‍රතිබිම්බය තුඩට තුඩ සමපාත කර ඇස දෙපසට චලනය කරමින් දෘෂ්ටි විලාසය ඉවත් කරයි.\nදර්පණයේ සිට S දුර = ප්‍රතිබිම්බ දුර v වේ!\nකාටීසීය ලකුණු සම්මුතිය අනුව (u < 0, v < 0, f < 0):\n1/v - 1/u = 1/f  ⟹  1/v = 1/u + 1/f\n1/v එදිරිව 1/u ප්‍රස්තාරය අනුක්‍රමණය +1.00 සහ Y අන්තඃඛණ්ඩය c = 1/f < 0 සහිත සරල රේඛාවක් ලබා දෙයි; f = 1/c ≈ -15.0 cm.',
+      theoryTitleConcave: 'අවතල කාච ආධාරක කාච සංයෝජන ක්‍රමය (අතිරේක පරීක්ෂණ 21.2)',
       theoryTextConcave: 'අවතල කාචයකින් තනිව තිරයක් මත තාත්වික ප්‍රතිබිම්බ සෑදිය නොහැක. ආධාරක උත්තල කාචයකින් සාදන තාත්වික ප්‍රතිබිම්බය I₁ අවතල කාචයට අතාත්වික වස්තුවක් (දුර u) වේ. සෙවුම් කූර මගින් නව තාත්වික ප්‍රතිබිම්බය I₂ (දුර v) ලබාගනී. 1/v - 1/u = 1/f₂ ⟹ |f₂| = (u × v) / (v - u).',
       procedureConvexNoParallax: 'ක්‍රමවේදය: 1. දළ නාභීය දුර සොයාගන්න. 2. u > f වන සේ වස්තු කූර තබන්න. 3. අනෙක් පසින් බලමින් ඇස දෙපසට චලනය කර දෘෂ්ටි විලාසය ඉවත් වන සේ සෙවුම් කූර P පිහිටුවන්න. 4. u සහ v මැන f = (uv)/(u+v) ගණනය කරන්න.',
       procedureConvexDisplacement: 'ක්‍රමවේදය: 1. D > 4f වන සේ තිරය තබන්න. 2. කාච පිහිටුම් x₁ සහ x₂ සටහන් කර d = |x₂ - x₁| ලබාගන්න. 3. f = (D² - d²)/(4D) ගණනය කරන්න.',
+      procedureConcaveMirror: 'ක්‍රමවේදය: 1. අවතල කාචයේ පහළ අඩ මත තල දර්පණ තීරුව සවි කරන්න. 2. කාචයට ඉදිරියෙන් u දුරින් වස්තු කූර O තබන්න. 3. ඉහළ අඩෙන් අතාත්වික ප්‍රතිබිම්බය I බලන්න. 4. පහළ දර්පණය ඉදිරියෙන් සෙවුම් කූර S තබා ඇස දෙපසට චලනය කරමින් දෘෂ්ටි විලාසය ඉවත් වන සේ S සකසන්න. 5. u සහ v මැනගන්න. 6. කාටීසීය ලකුණු යොදා 1/v එදිරිව 1/u ප්‍රස්තාරය ඇඳ Y අන්තඃඛණ්ඩයෙන් නාභීය දුර f සොයන්න.',
       procedureConcave: 'ක්‍රමවේදය: 1. ආධාරක උත්තල කාචයෙන් තාත්වික ප්‍රතිබිම්බය I₁ ලබාගෙන සෙවුම් කූරෙන් පිහිටුම සටහන් කරන්න. 2. අවතල කාචය අතරට තබා දුර u මනින්න. 3. නව ප්‍රතිබිම්බය I₂ සෙවුම් කූරෙන් ලබාගෙන දුර v මනින්න. 4. |f₂| = (uv)/(v - u) ගණනය කරන්න.',
       modeSelector: 'ඉගෙනුම් ආකාරය:',
       guidedMode: 'මඟපෙන්වන ලද ආකාරය (ස්වයංක්‍රීය ගණනය)',
       independentMode: 'ස්වාධීන පුහුණුව (ස්වයං ගණනය සහ පරීක්ෂාව)',
+      eyePosition: 'ඇස දෙපසට පිහිටුම (දෘෂ්ටි විලාස පරීක්ෂාව):',
+      eyeCenter: 'මැද (සමපාතයි)',
       obsConvexNoParallaxTitle: 'උත්තල කාච දෘෂ්ටි විලාස නිරීක්ෂණ: වස්තු දුර u සහ ප්‍රතිබිම්බ දුර v',
       obsConvexDisplacementTitle: 'උත්තල කාච විස්ථාපන නිරීක්ෂණ: (D² - d²)/(4D)',
-      obsConcaveTitle: 'අවතල කාච නිරීක්ෂණ: අතාත්වික වස්තු දුර u සහ තාත්වික ප්‍රතිබිම්බ දුර v',
+      obsConcaveMirrorTitle: 'නිල පරීක්ෂණ 21.2: අවතල කාච තල දර්පණ තීරු නිරීක්ෂණ සහ කාටීසීය ප්‍රස්තාරය',
+      obsConcaveTitle: 'අතිරේක: අවතල කාච නිරීක්ෂණ (ආධාරක උත්තල කාච සංයෝජනය)',
+      graphTitle: 'කාටීසීය ප්‍රස්තාර විශ්ලේෂණය: 1/v එදිරිව 1/u (සෘණ චතුර්ථකය)',
+      slopeLabel: 'අනුක්‍රමණය (m = Δ(1/v)/Δ(1/u)): ',
+      interceptLabel: 'Y අන්තඃඛණ්ඩය (c = 1/f): ',
+      focalFromGraph: 'අන්තඃඛණ්ඩයෙන් නාභීය දුර (f = 1/c): ',
       trialCol: 'වාරය',
       uCol: 'වස්තු දුර u (cm)',
       vCol: 'ප්‍රතිබිම්බ දුර v (cm)',
+      signedUCol: 'කාටීසීය u (cm)',
+      signedVCol: 'කාටීසීය v (cm)',
       recipUCol: '1/u (cm⁻¹)',
       recipVCol: '1/v (cm⁻¹)',
       focalCol: 'නාභීය දුර f (cm)',
@@ -236,6 +294,7 @@ export const LensFocalLengthPractical: React.FC<LensFocalLengthPracticalProps> =
       concaveFocalCol: 'නාභීය දුර |f₂| (cm)',
       calcSummaryTitle: 'විශ්ලේෂණ සාරාංශය සහ සත්‍යාපනය',
       meanFocalConvex: 'මධ්‍යන්‍ය උත්තල නාභීය දුර (f):',
+      meanFocalConcaveMirror: 'මධ්‍යන්‍ය අවතල නාභීය දුර (කාටීසීය f):',
       meanFocalConcave: 'මධ්‍යන්‍ය අවතල නාභීය දුර (|f₂|):',
       nominalFocal: 'නාමික නාභීය දුර:',
       percentageDiff: 'ප්‍රතිශත වෙනස:',
@@ -248,9 +307,9 @@ export const LensFocalLengthPractical: React.FC<LensFocalLengthPracticalProps> =
       q1Title: '1. සෙවුම් කූර සහ ප්‍රකාශ ප්‍රතිබිම්බය අතර දෘෂ්ටි විලාසය ඉවත් වූ බව හඳුනා ගන්නේ කෙසේද?',
       q1Model: 'ආදර්ශ පිළිතුර: ඇස දෙපසට (වමේ සිට දකුණට) චලනය කිරීමේදී, යටිකුරු ප්‍රතිබිම්බ තුඩ සහ සෙවුම් කූරේ තුඩ එකිනෙකට සාපේක්ෂව චලනය නොවී එකම රේඛාවේ රැඳී තිබේ නම් දෘෂ්ටි විලාසය ඉවත් වී ඇත.',
       q1Rubric: 'රූබ්රිකය: ඇස දෙපසට චලනය කිරීම/සාපේක්ෂ චලනයක් නොමැති වීමට ලකුණු 1; තුඩට තුඩ සමපාත වීමට ලකුණු 1.',
-      q2Title: '2. ප්‍රකාශ කූරු පමණක් යොදාගෙන අවතල කාචයක නාභීය දුර සෘජුව නිර්ණය කළ නොහැක්කේ ඇයි?',
-      q2Model: 'ආදර්ශ පිළිතුර: අවතල කාචයක් අපසාරී කාචයක් බැවින් තාත්වික වස්තු සඳහා සෑමවිටම අතාත්වික ප්‍රතිබිම්බ පමණක් සාදයි. අතාත්වික කිරණ අවකාශයේ සැබවින් ඡේදනය නොවන බැවින් ආධාරක අභිසාරී කාචයක් නොමැතිව භෞතික සෙවුම් කූරක් ප්‍රතිබිම්බය මත තැබිය නොහැක.',
-      q2Rubric: 'රූබ්රිකය: අපසාරී/අතාත්වික ප්‍රතිබිම්බ සෑදීමට ලකුණු 1; භෞතික කූරක් අතාත්වික ලක්ෂ්‍යයකට තැබිය නොහැකි වීමට ලකුණු 1.',
+      q2Title: '2. අවතල කාච තල දර්පණ තීරු ක්‍රමයේදී (21.2), ප්‍රතිබිම්බ දුර v සෘජුව මැනීමට දර්පණය උපකාරී වන්නේ කෙසේද?',
+      q2Model: 'ආදර්ශ පිළිතුර: අවතල කාචයකින් සෑදෙන අතාත්වික ප්‍රතිබිම්බය කාචය ඉදිරියෙන් පිහිටයි. කාචයේ පහළ අඩේ සවිකර ඇති තල දර්පණයෙන් සෙවුම් කූරේ අතාත්වික පරාවර්තනයක් සෑදේ. දෘෂ්ටි විලාසය ඉවත් වූ විට සෙවුම් කූරේ සිට දර්පණයට ඇති දුර, කාචයේ සිට අතාත්වික ප්‍රතිබිම්බයට ඇති දුර v ට සමාන වේ.',
+      q2Rubric: 'රූබ්රිකය: තල දර්පණ ප්‍රතිබිම්බය අතාත්වික ප්‍රතිබිම්බයට සමපාත වීමට ලකුණු 1; සෙවුම් කූරු දුර = ප්‍රතිබිම්බ දුර v වීමට ලකුණු 1.',
       q3Title: '3. විස්ථාපන ක්‍රමයේදී තිර පරතරය D > 4f කොන්දේසිය තෘප්ත විය යුත්තේ ඇයි?',
       q3Model: 'ආදර්ශ පිළිතුර: u + v = D සහ uv = fD මගින් ලැබෙන u² - Du + fD = 0 වර්ගජ සමීකරණයේ විවේචකය Δ = D(D - 4f) ≥ 0 විය යුතුය. D < 4f නම් විවේචකය සෘණ වී මනඃකල්පිත මූල ලැබේ; එනම් තිරය මත තාත්වික ප්‍රතිබිම්බ නොසෑදේ.',
       q3Rubric: 'රූබ්රිකය: විවේචකය Δ = D(D - 4f) ≥ 0 දැක්වීමට ලකුණු 1; D < 4f විට තාත්වික ප්‍රතිබිම්බ නොසෑදීමට ලකුණු 1.',
@@ -321,7 +380,48 @@ export const LensFocalLengthPractical: React.FC<LensFocalLengthPracticalProps> =
       ? validDisplacementFs.reduce((a, b) => a + b, 0) / validDisplacementFs.length
       : null;
 
-  // 3. Concave calculations: |f| = (u*v)/(v - u)
+  // 3. Concave Mirror calculations (Official Exp 21.2)
+  const updateConcaveMirrorTrial = (id: number, field: keyof ConcaveMirrorTrial, val: string) => {
+    const updated = concaveMirrorTrials.map((t) => (t.id === id ? { ...t, [field]: val } : t));
+    updateObservations({ concaveMirrorTrials: updated });
+  };
+
+  const calculatedConcaveMirrorTrials = concaveMirrorTrials.map((tr) => {
+    const u = parseFloat(tr.distUCm);
+    const v = parseFloat(tr.distVCm);
+    if (!isNaN(u) && !isNaN(v) && u > 0 && v > 0) {
+      const point = calculateConcaveLensMirrorNoParallax(u, v);
+      return {
+        ...tr,
+        signedU: point.signedUCm.toFixed(2),
+        signedV: point.signedVCm.toFixed(2),
+        recipU: point.recipUCm1.toFixed(4),
+        recipV: point.recipVCm1.toFixed(4),
+        fCm: point.focalLengthCm,
+      };
+    }
+    return { ...tr, signedU: null, signedV: null, recipU: null, recipV: null, fCm: null };
+  });
+
+  const validConcaveMirrorPoints = calculatedConcaveMirrorTrials
+    .filter((t) => t.fCm !== null)
+    .map((t) => ({ uCm: parseFloat(t.distUCm), vCm: parseFloat(t.distVCm) }));
+
+  const regressionConcaveMirror =
+    validConcaveMirrorPoints.length >= 2
+      ? calculateConcaveLensMirrorRegression(validConcaveMirrorPoints)
+      : null;
+
+  const validConcaveMirrorFs = calculatedConcaveMirrorTrials
+    .map((t) => t.fCm)
+    .filter((f): f is number => f !== null);
+
+  const meanConcaveMirrorFocal =
+    validConcaveMirrorFs.length > 0
+      ? validConcaveMirrorFs.reduce((a, b) => a + b, 0) / validConcaveMirrorFs.length
+      : null;
+
+  // 4. Concave Auxiliary calculations (Supplementary Exp 21.2): |f| = (u*v)/(v - u)
   const updateConcaveTrial = (id: number, field: keyof ConcaveLensTrial, val: string) => {
     const updated = concaveTrials.map((t) => (t.id === id ? { ...t, [field]: val } : t));
     updateObservations({ concaveTrials: updated });
@@ -347,6 +447,7 @@ export const LensFocalLengthPractical: React.FC<LensFocalLengthPracticalProps> =
 
   // Selected benchmark evaluations
   const nomConvexF = parseFloat(nominalFocalLengthCm) || 15.0;
+  const nomConcaveMirrorF = parseFloat(nominalConcaveMirrorFocalLengthCm) || -15.0;
   const nomConcaveF = parseFloat(nominalConcaveFocalLengthCm) || 30.0;
 
   const currentMeanFocal =
@@ -354,11 +455,19 @@ export const LensFocalLengthPractical: React.FC<LensFocalLengthPracticalProps> =
       ? meanNoParallaxFocal
       : subMode === 'convex_displacement'
       ? meanDisplacementFocal
+      : subMode === 'concave_mirror'
+      ? meanConcaveMirrorFocal
       : meanConcaveFocal;
 
-  const targetNominalF = subMode === 'concave' ? nomConcaveF : nomConvexF;
+  const targetNominalF =
+    subMode === 'convex_noparallax' || subMode === 'convex_displacement'
+      ? nomConvexF
+      : subMode === 'concave_mirror'
+      ? nomConcaveMirrorF
+      : nomConcaveF;
+
   const diffPercent =
-    currentMeanFocal !== null && targetNominalF > 0
+    currentMeanFocal !== null && targetNominalF !== 0
       ? Math.abs((currentMeanFocal - targetNominalF) / targetNominalF) * 100
       : null;
   const isPass = diffPercent !== null && diffPercent <= 3.0;
@@ -370,13 +479,32 @@ export const LensFocalLengthPractical: React.FC<LensFocalLengthPracticalProps> =
 
     const stuFocal = parseFloat(calculations.meanFocalLength || '');
     if (currentMeanFocal !== null) {
-      const isOk = !isNaN(stuFocal) && Math.abs(stuFocal - currentMeanFocal) <= 0.3;
-      results.meanFocalLength = isOk;
-      if (!isOk) {
-        feedback.meanFocalLength = {
-          en: `Calculated mean focal length should be approximately ${currentMeanFocal.toFixed(2)} cm.`,
-          si: `ගණනය කළ මධ්‍යන්‍ය නාභීය දුර ආසන්න වශයෙන් ${currentMeanFocal.toFixed(2)} cm විය යුතුය.`,
-        };
+      if (subMode === 'concave_mirror') {
+        if (!isNaN(stuFocal) && stuFocal > 0 && Math.abs(stuFocal - Math.abs(currentMeanFocal)) <= 0.5) {
+          results.meanFocalLength = false;
+          feedback.meanFocalLength = {
+            en: `Cartesian convention check: A diverging concave lens has a negative focal length: f ≈ ${currentMeanFocal.toFixed(2)} cm.`,
+            si: `කාටීසීය ලකුණු සම්මුතිය: අපසාරී අවතල කාචයක නාභීය දුර සෘණ අගයක් ගනී: f ≈ ${currentMeanFocal.toFixed(2)} cm.`,
+          };
+        } else {
+          const isOk = !isNaN(stuFocal) && Math.abs(stuFocal - currentMeanFocal) <= 0.5;
+          results.meanFocalLength = isOk;
+          if (!isOk) {
+            feedback.meanFocalLength = {
+              en: `Calculated mean focal length should be approximately ${currentMeanFocal.toFixed(2)} cm.`,
+              si: `ගණනය කළ මධ්‍යන්‍ය නාභීය දුර ආසන්න වශයෙන් ${currentMeanFocal.toFixed(2)} cm විය යුතුය.`,
+            };
+          }
+        }
+      } else {
+        const isOk = !isNaN(stuFocal) && Math.abs(stuFocal - currentMeanFocal) <= 0.3;
+        results.meanFocalLength = isOk;
+        if (!isOk) {
+          feedback.meanFocalLength = {
+            en: `Calculated mean focal length should be approximately ${currentMeanFocal.toFixed(2)} cm.`,
+            si: `ගණනය කළ මධ්‍යන්‍ය නාභීය දුර ආසන්න වශයෙන් ${currentMeanFocal.toFixed(2)} cm විය යුතුය.`,
+          };
+        }
       }
     }
 
@@ -404,6 +532,17 @@ export const LensFocalLengthPractical: React.FC<LensFocalLengthPracticalProps> =
           { id: 3, screenDistDCm: '90.0', lensPos1Cm: '18.7', lensPos2Cm: '71.3' },
           { id: 4, screenDistDCm: '95.0', lensPos1Cm: '18.3', lensPos2Cm: '76.7' },
           { id: 5, screenDistDCm: '100.0', lensPos1Cm: '18.0', lensPos2Cm: '82.0' },
+        ],
+      });
+    } else if (subMode === 'concave_mirror') {
+      loadSampleObservations({
+        nominalConcaveMirrorFocalLengthCm: '-15.0',
+        concaveMirrorTrials: [
+          { id: 1, distUCm: '20.0', distVCm: '8.57' },
+          { id: 2, distUCm: '25.0', distVCm: '9.38' },
+          { id: 3, distUCm: '30.0', distVCm: '10.00' },
+          { id: 4, distUCm: '40.0', distVCm: '10.91' },
+          { id: 5, distUCm: '50.0', distVCm: '11.54' },
         ],
       });
     } else {
@@ -450,6 +589,8 @@ export const LensFocalLengthPractical: React.FC<LensFocalLengthPracticalProps> =
                 ? t.theoryTitleConvexNoParallax
                 : subMode === 'convex_displacement'
                 ? t.theoryTitleConvexDisplacement
+                : subMode === 'concave_mirror'
+                ? t.theoryTitleConcaveMirror
                 : t.theoryTitleConcave}
             </span>
             <p className="whitespace-pre-line">
@@ -457,6 +598,8 @@ export const LensFocalLengthPractical: React.FC<LensFocalLengthPracticalProps> =
                 ? t.theoryTextConvexNoParallax
                 : subMode === 'convex_displacement'
                 ? t.theoryTextConvexDisplacement
+                : subMode === 'concave_mirror'
+                ? t.theoryTextConcaveMirror
                 : t.theoryTextConcave}
             </p>
           </div>
@@ -465,6 +608,8 @@ export const LensFocalLengthPractical: React.FC<LensFocalLengthPracticalProps> =
               ? t.procedureConvexNoParallax
               : subMode === 'convex_displacement'
               ? t.procedureConvexDisplacement
+              : subMode === 'concave_mirror'
+              ? t.procedureConcaveMirror
               : t.procedureConcave}
           </p>
 
@@ -517,12 +662,21 @@ export const LensFocalLengthPractical: React.FC<LensFocalLengthPracticalProps> =
             </Button>
             <Button
               size="sm"
-              variant={subMode === 'concave' ? 'default' : 'outline'}
+              variant={subMode === 'concave_mirror' ? 'default' : 'outline'}
               className="text-xs h-8 rounded-lg"
-              onClick={() => setSubMode('concave')}
+              onClick={() => setSubMode('concave_mirror')}
+            >
+              <Eye className="w-3.5 h-3.5 mr-1" />
+              {t.modeConcaveMirror}
+            </Button>
+            <Button
+              size="sm"
+              variant={subMode === 'concave_auxiliary' ? 'default' : 'outline'}
+              className="text-xs h-8 rounded-lg"
+              onClick={() => setSubMode('concave_auxiliary')}
             >
               <Scan className="w-3.5 h-3.5 mr-1" />
-              {t.modeConcave}
+              {t.modeConcaveAuxiliary}
             </Button>
           </div>
 
@@ -633,6 +787,90 @@ export const LensFocalLengthPractical: React.FC<LensFocalLengthPracticalProps> =
                 <line x1="30" y1="155" x2="300" y2="155" stroke="#1E293B" strokeWidth="1.2" />
                 <text x="165" y="170" textAnchor="middle" fontSize="9" fill="#1E293B" fontWeight="bold">Total Separation D (&gt; 4f)</text>
               </svg>
+            ) : subMode === 'concave_mirror' ? (
+              <div className="w-full max-w-lg space-y-3">
+                {/* Parallax Eye Shift Slider */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-2.5 rounded-xl bg-slate-50 dark:bg-slate-900/60 border border-[#DFE8EF] dark:border-[#1E334D]">
+                  <div className="flex items-center gap-2">
+                    <Eye className="w-4 h-4 text-[#0F766E]" />
+                    <span className="text-xs font-semibold text-[#14243A] dark:text-[#F8FAFC]">
+                      {t.eyePosition}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 flex-1 max-w-xs">
+                    <span className="text-[10px] text-[#64748B] shrink-0">-15mm</span>
+                    <input
+                      type="range"
+                      min="-15"
+                      max="15"
+                      step="1"
+                      value={eyeShiftMm}
+                      onChange={(e) => setEyeShiftMm(parseFloat(e.target.value))}
+                      className="w-full accent-[#0F766E]"
+                    />
+                    <span className="text-[10px] text-[#64748B] shrink-0">+15mm</span>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-xs h-6 px-2 text-[#0F766E]"
+                    onClick={() => setEyeShiftMm(0)}
+                  >
+                    {t.eyeCenter}
+                  </Button>
+                </div>
+
+                <svg viewBox="0 0 360 200" className="w-full h-auto">
+                  {/* Optical bench rail */}
+                  <line x1="20" y1="140" x2="340" y2="140" stroke="#94A3B8" strokeWidth="4" />
+
+                  {/* Object Pin O (Upper aperture, x = 60) */}
+                  <rect x="58" y="55" width="4" height="85" fill="#1E293B" />
+                  <polygon points="60,40 54,55 66,55" fill="#EF4444" />
+                  <text x="60" y="32" textAnchor="middle" fontSize="9" fill="#EF4444" fontWeight="bold">Object Pin O</text>
+
+                  {/* Virtual Image I (formed in upper half, x = 115) */}
+                  <g transform={`translate(${eyeShiftMm * 0.15}, 0)`}>
+                    <line x1="115" y1="65" x2="115" y2="105" stroke="#38BDF8" strokeWidth="2" strokeDasharray="3 2" />
+                    <polygon points="115,55 110,65 120,65" fill="#38BDF8" fillOpacity="0.8" />
+                    <text x="115" y="48" textAnchor="middle" fontSize="8" fill="#0284C7" fontWeight="bold">Image I</text>
+                  </g>
+
+                  {/* Search Pin S in front of lower plane mirror (x = 115) */}
+                  <rect x="113" y="100" width="4" height="40" fill="#10B981" />
+                  <polygon points="115,90 109,100 121,100" fill="#10B981" />
+                  <text x="115" y="132" textAnchor="middle" fontSize="8" fill="#10B981" fontWeight="bold">Search S</text>
+
+                  {/* Concave Lens (x = 180): Upper clear half */}
+                  <g transform="translate(180, 50)">
+                    {/* Upper clear aperture */}
+                    <path d="M 0 0 C -4 15 -4 30 0 45 L 8 45 C 4 30 4 15 8 0 Z" fill="#79B9E7" fillOpacity="0.4" stroke="#0284C7" strokeWidth="1.5" />
+                    {/* Lower half covered with plane mirror strip */}
+                    <path d="M 0 45 C -4 60 -4 75 0 90 L 8 90 C 4 75 4 60 8 45 Z" fill="#94A3B8" fillOpacity="0.3" stroke="#0284C7" strokeWidth="1.5" />
+                    <rect x="-3" y="45" width="4" height="45" fill="#CBD5E1" stroke="#475569" strokeWidth="1.2" />
+                    {/* Mounting stand */}
+                    <line x1="4" y1="90" x2="4" y2="95" stroke="#1E293B" strokeWidth="3" />
+                    <text x="4" y="-8" textAnchor="middle" fontSize="8" fill="#0284C7" fontWeight="bold">Concave Lens</text>
+                    <text x="-12" y="72" textAnchor="end" fontSize="7" fill="#475569" fontWeight="bold">Mirror Strip</text>
+                  </g>
+
+                  {/* Eye observer position at x = 310 */}
+                  <g transform={`translate(${310 + eyeShiftMm * 1.5}, 70)`}>
+                    <path d="M -15 0 Q 0 -12 15 0 Q 0 12 -15 0 Z" fill="#FFFFFF" stroke="#1E293B" strokeWidth="1.5" />
+                    <circle cx="0" cy="0" r="5" fill="#0F766E" />
+                    <circle cx="1" cy="-1" r="1.5" fill="#FFFFFF" />
+                    <text x="0" y="24" textAnchor="middle" fontSize="8" fill="#1E293B" fontWeight="bold">Eye</text>
+                  </g>
+
+                  {/* Distance dimension u: 60 to 180 */}
+                  <line x1="60" y1="165" x2="180" y2="165" stroke="#EF4444" strokeWidth="1.2" />
+                  <text x="120" y="177" textAnchor="middle" fontSize="9" fill="#EF4444" fontWeight="bold">u (Cartesian u &lt; 0)</text>
+
+                  {/* Distance dimension v: 115 to 180 */}
+                  <line x1="115" y1="150" x2="180" y2="150" stroke="#0F766E" strokeWidth="1.2" />
+                  <text x="147" y="146" textAnchor="middle" fontSize="8" fill="#0F766E" fontWeight="bold">v (&lt; 0)</text>
+                </svg>
+              </div>
             ) : (
               <svg viewBox="0 0 340 180" className="w-full max-w-md h-auto">
                 {/* Optical bench rail */}
@@ -888,8 +1126,255 @@ export const LensFocalLengthPractical: React.FC<LensFocalLengthPracticalProps> =
             </div>
           )}
 
-          {/* SubMode 3: Concave Lens Auxiliary Method */}
-          {subMode === 'concave' && (
+          {/* SubMode 3: Official Exp 21.2 Concave Lens (Plane Mirror Strip No-Parallax) */}
+          {subMode === 'concave_mirror' && (
+            <div className="space-y-4">
+              <div className="overflow-x-auto rounded-xl border border-[#DFE8EF] dark:border-[#1E334D]">
+                <table className="w-full text-left text-xs font-mono">
+                  <thead className="bg-[#F6FAFD] dark:bg-[#0B131E] border-b border-[#DFE8EF] dark:border-[#1E334D] text-[#14243A] dark:text-[#F8FAFC]">
+                    <tr>
+                      <th className="p-3 w-14">{t.trialCol}</th>
+                      <th className="p-3">{t.uCol}</th>
+                      <th className="p-3">{t.vCol}</th>
+                      <th className="p-3">{t.signedUCol}</th>
+                      <th className="p-3">{t.signedVCol}</th>
+                      <th className="p-3">{t.recipUCol}</th>
+                      <th className="p-3">{t.recipVCol}</th>
+                      <th className="p-3">{t.focalCol}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-[#DFE8EF] dark:divide-[#1E334D]">
+                    {calculatedConcaveMirrorTrials.map((tr) => (
+                      <tr key={tr.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50">
+                        <td className="p-3 font-bold text-center">{tr.id}</td>
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            value={tr.distUCm}
+                            onChange={(e) => updateConcaveMirrorTrial(tr.id, 'distUCm', e.target.value)}
+                            className="w-full px-2 py-1 rounded-md border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                          />
+                        </td>
+                        <td className="p-2">
+                          <input
+                            type="text"
+                            value={tr.distVCm}
+                            onChange={(e) => updateConcaveMirrorTrial(tr.id, 'distVCm', e.target.value)}
+                            className="w-full px-2 py-1 rounded-md border border-[#DFE8EF] dark:border-[#1E334D] bg-[#FFFFFF] dark:bg-[#111D2D]"
+                          />
+                        </td>
+                        <td className="p-3 text-[#EF4444]">{tr.signedU ?? '—'}</td>
+                        <td className="p-3 text-[#0F766E] dark:text-[#14B8A6]">{tr.signedV ?? '—'}</td>
+                        <td className="p-3 text-[#64748B]">{tr.recipU ?? '—'}</td>
+                        <td className="p-3 text-[#64748B]">{tr.recipV ?? '—'}</td>
+                        <td className="p-3 font-bold text-[#DB2777]">
+                          {tr.fCm !== null ? `${tr.fCm.toFixed(2)} cm` : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Cartesian Graph Plot SVG: 1/v vs 1/u */}
+              <div className="p-4 rounded-xl bg-[#F6FAFD] dark:bg-[#0B131E] border border-[#DFE8EF] dark:border-[#1E334D] space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span className="text-xs font-bold text-[#14243A] dark:text-[#F8FAFC]">
+                    {t.graphTitle}
+                  </span>
+                  {regressionConcaveMirror && (
+                    <div className="flex flex-wrap items-center gap-2 text-[11px] font-mono">
+                      <span className="px-2 py-0.5 rounded bg-emerald-100 dark:bg-emerald-950/60 text-emerald-800 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">
+                        {t.slopeLabel}{regressionConcaveMirror.slope.toFixed(3)}
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-teal-100 dark:bg-teal-950/60 text-teal-800 dark:text-teal-300 border border-teal-300 dark:border-teal-800">
+                        {t.interceptLabel}{regressionConcaveMirror.intercept.toFixed(4)} cm⁻¹
+                      </span>
+                      <span className="px-2 py-0.5 rounded bg-pink-100 dark:bg-pink-950/60 text-pink-800 dark:text-pink-300 font-bold border border-pink-300 dark:border-pink-800">
+                        {t.focalFromGraph}{regressionConcaveMirror.focalLengthCm.toFixed(2)} cm
+                      </span>
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-center overflow-x-auto">
+                  <svg viewBox="0 0 380 210" className="w-full max-w-lg h-auto font-mono text-[8px]">
+                    {/* Plot area background */}
+                    <rect x="45" y="20" width="310" height="160" fill="#FFFFFF" stroke="#CBD5E1" strokeWidth="1" />
+
+                    {/* Grid lines */}
+                    {[0, 1, 2, 3, 4].map((i) => {
+                      const yVal = 20 + i * 40;
+                      return (
+                        <line key={`gy-${i}`} x1="45" y1={yVal} x2="355" y2={yVal} stroke="#E2E8F0" strokeWidth="0.8" strokeDasharray="2 2" />
+                      );
+                    })}
+                    {[0, 1, 2, 3, 4, 5].map((i) => {
+                      const xVal = 45 + i * 62;
+                      return (
+                        <line key={`gx-${i}`} x1={xVal} y1="20" x2={xVal} y2="180" stroke="#E2E8F0" strokeWidth="0.8" strokeDasharray="2 2" />
+                      );
+                    })}
+
+                    {/* Axis Y at x = 355 (x = 0) */}
+                    <line x1="355" y1="20" x2="355" y2="180" stroke="#1E293B" strokeWidth="1.5" />
+                    {/* Axis X at y = 20 (y = 0) */}
+                    <line x1="45" y1="20" x2="355" y2="20" stroke="#1E293B" strokeWidth="1.5" />
+
+                    {/* Axis labels */}
+                    <text x="200" y="200" textAnchor="middle" fontSize="9" fill="#1E293B" fontWeight="bold">
+                      1/u (cm⁻¹) [Cartesian u &lt; 0]
+                    </text>
+                    <text x="18" y="100" textAnchor="middle" fontSize="9" fill="#1E293B" fontWeight="bold" transform="rotate(-90 18 100)">
+                      1/v (cm⁻¹) [Cartesian v &lt; 0]
+                    </text>
+
+                    {/* Ticks on X-axis: -0.06 to 0.00 */}
+                    <text x="45" y="192" textAnchor="middle" fill="#64748B">-0.06</text>
+                    <text x="148" y="192" textAnchor="middle" fill="#64748B">-0.04</text>
+                    <text x="252" y="192" textAnchor="middle" fill="#64748B">-0.02</text>
+                    <text x="355" y="192" textAnchor="middle" fill="#64748B">0.00</text>
+
+                    {/* Ticks on Y-axis: -0.14 to 0.00 */}
+                    <text x="40" y="183" textAnchor="end" fill="#64748B">-0.14</text>
+                    <text x="40" y="127" textAnchor="end" fill="#64748B">-0.09</text>
+                    <text x="40" y="70" textAnchor="end" fill="#64748B">-0.04</text>
+                    <text x="40" y="24" textAnchor="end" fill="#64748B">0.00</text>
+
+                    {/* Fitted Regression line */}
+                    {regressionConcaveMirror && (
+                      <line
+                        x1="65"
+                        y1={20 + ((-0.056 * regressionConcaveMirror.slope + regressionConcaveMirror.intercept) / -0.14) * 160}
+                        x2="355"
+                        y2={20 + (regressionConcaveMirror.intercept / -0.14) * 160}
+                        stroke="#0F766E"
+                        strokeWidth="2"
+                      />
+                    )}
+
+                    {/* Intercept marker on Y axis (c = 1/f) */}
+                    {regressionConcaveMirror && (
+                      <g>
+                        <circle
+                          cx="355"
+                          cy={20 + (regressionConcaveMirror.intercept / -0.14) * 160}
+                          r="4"
+                          fill="#DB2777"
+                        />
+                        <text
+                          x="350"
+                          y={15 + (regressionConcaveMirror.intercept / -0.14) * 160}
+                          textAnchor="end"
+                          fill="#DB2777"
+                          fontWeight="bold"
+                          fontSize="8"
+                        >
+                          c = 1/f ({regressionConcaveMirror.intercept.toFixed(4)})
+                        </text>
+                      </g>
+                    )}
+
+                    {/* Plotted Data Points */}
+                    {calculatedConcaveMirrorTrials.map((tr) => {
+                      if (!tr.recipU || !tr.recipV) return null;
+                      const uR = parseFloat(tr.recipU);
+                      const vR = parseFloat(tr.recipV);
+                      if (isNaN(uR) || isNaN(vR)) return null;
+
+                      // Map uR [-0.06, 0.00] -> [45, 355]
+                      const px = 45 + ((uR - (-0.06)) / 0.06) * 310;
+                      // Map vR [-0.14, 0.00] -> [180, 20]
+                      const py = 20 + (vR / -0.14) * 160;
+
+                      return (
+                        <g key={tr.id}>
+                          <line x1={px - 3} y1={py - 3} x2={px + 3} y2={py + 3} stroke="#EF4444" strokeWidth="1.5" />
+                          <line x1={px - 3} y1={py + 3} x2={px + 3} y2={py - 3} stroke="#EF4444" strokeWidth="1.5" />
+                          <circle cx={px} cy={py} r="3" fill="none" stroke="#EF4444" strokeWidth="1" />
+                        </g>
+                      );
+                    })}
+                  </svg>
+                </div>
+              </div>
+
+              {/* Analytical Summary Card */}
+              <div className="p-4 rounded-xl bg-[#F0FDFA] dark:bg-[#042F2E] border border-[#99F6E4] dark:border-[#115E59] space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <span className="text-xs font-bold text-[#0F766E] dark:text-[#14B8A6] block">
+                    {t.calcSummaryTitle}
+                  </span>
+                  {mode === 'independent' && (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        className="text-xs h-7 bg-[#0F766E] hover:bg-[#0D655E] text-white"
+                        onClick={handleCheckCalculations}
+                      >
+                        <CheckCircle2 className="w-3 h-3 mr-1" /> {t.checkCalcs}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-xs h-7 text-[#0F766E]"
+                        onClick={() => setShowSolution(!showSolution)}
+                      >
+                        <HelpCircle className="w-3 h-3 mr-1" /> {showSolution ? t.hideSolution : t.revealSolution}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono">
+                  <div className="p-3 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                    <span className="text-[10px] text-[#64748B] block font-sans">{t.meanFocalConcaveMirror}</span>
+                    {mode === 'guided' || showSolution ? (
+                      <span className="text-base font-bold text-[#DB2777]">
+                        {meanConcaveMirrorFocal !== null ? `${meanConcaveMirrorFocal.toFixed(2)} cm` : '—'}
+                      </span>
+                    ) : (
+                      <input
+                        type="text"
+                        value={calculations.meanFocalLength || ''}
+                        onChange={(e) => updateCalculation('meanFocalLength', e.target.value)}
+                        placeholder="f (cm, e.g. -15.0)"
+                        className="w-full px-1.5 py-0.5 rounded border border-[#DFE8EF] dark:border-[#1E334D] text-xs font-mono"
+                      />
+                    )}
+                  </div>
+                  <div className="p-3 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                    <span className="text-[10px] text-[#64748B] block font-sans">{t.nominalFocal}</span>
+                    <span className="text-base font-bold text-[#14243A] dark:text-[#F8FAFC]">
+                      {nomConcaveMirrorF.toFixed(1)} cm
+                    </span>
+                  </div>
+                  <div className="p-3 rounded-lg bg-[#FFFFFF]/80 dark:bg-[#111D2D]/80 border border-[#99F6E4]/60">
+                    <span className="text-[10px] text-[#64748B] block font-sans">{t.percentageDiff}</span>
+                    <span className="text-base font-bold text-[#0F766E] dark:text-[#14B8A6]">
+                      {diffPercent !== null ? `${diffPercent.toFixed(2)}%` : '—'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className={`p-3 rounded-lg flex items-center gap-2 text-xs font-semibold ${
+                  isPass
+                    ? 'bg-emerald-100/70 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300'
+                    : 'bg-amber-100/70 text-amber-800 dark:bg-amber-950/40 dark:text-amber-300'
+                }`}>
+                  {isPass ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  ) : (
+                    <AlertCircle className="w-4 h-4 text-amber-600 shrink-0" />
+                  )}
+                  <span>{isPass ? t.verdictPass : t.verdictFail}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* SubMode 4: Concave Lens Auxiliary Method (Supplementary Exp 21.2) */}
+          {subMode === 'concave_auxiliary' && (
             <div className="space-y-4">
               <div className="overflow-x-auto rounded-xl border border-[#DFE8EF] dark:border-[#1E334D]">
                 <table className="w-full text-left text-xs font-mono">
