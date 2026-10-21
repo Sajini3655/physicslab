@@ -1,10 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Locale } from '@/shared/curriculum';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { CloudRain, RotateCcw, Database, CheckCircle2, AlertCircle, Droplets, Sparkles } from 'lucide-react';
+import { usePracticalWork } from '@/shared/practicals';
 
 interface HumidityDewPointPracticalProps {
   locale?: Locale;
@@ -13,11 +14,29 @@ interface HumidityDewPointPracticalProps {
 export const HumidityDewPointPractical: React.FC<HumidityDewPointPracticalProps> = ({
   locale = 'en',
 }) => {
-  // Inputs: room temp, dew appearance, dew disappearance
-  const [roomTemp, setRoomTemp] = useState<string>('30.0');
-  const [dewAppearanceTemp, setDewAppearanceTemp] = useState<string>('23.6');
-  const [dewDisappearanceTemp, setDewDisappearanceTemp] = useState<string>('24.4');
-  const [surfaceMisted, setSurfaceMisted] = useState<boolean>(false);
+  const {
+    observations,
+    updateObservations,
+    reset,
+  } = usePracticalWork({
+    experimentId: 'exp-29-humidity',
+    defaultObservations: {
+      roomTemp: '30.0',
+      dewAppearanceTemp: '23.6',
+      dewDisappearanceTemp: '24.4',
+      surfaceMisted: false,
+    },
+  });
+
+  const roomTemp = observations.roomTemp !== undefined ? observations.roomTemp : '30.0';
+  const dewAppearanceTemp = observations.dewAppearanceTemp !== undefined ? observations.dewAppearanceTemp : '23.6';
+  const dewDisappearanceTemp = observations.dewDisappearanceTemp !== undefined ? observations.dewDisappearanceTemp : '24.4';
+  const surfaceMisted = observations.surfaceMisted !== undefined ? observations.surfaceMisted : false;
+
+  const setRoomTemp = (val: string) => updateObservations({ roomTemp: val });
+  const setDewAppearanceTemp = (val: string) => updateObservations({ dewAppearanceTemp: val });
+  const setDewDisappearanceTemp = (val: string) => updateObservations({ dewDisappearanceTemp: val });
+  const setSurfaceMisted = (val: boolean) => updateObservations({ surfaceMisted: val });
 
   const t = {
     en: {
@@ -99,10 +118,7 @@ export const HumidityDewPointPractical: React.FC<HumidityDewPointPracticalProps>
   };
 
   const handleReset = () => {
-    setRoomTemp('');
-    setDewAppearanceTemp('');
-    setDewDisappearanceTemp('');
-    setSurfaceMisted(false);
+    reset();
   };
 
   return (

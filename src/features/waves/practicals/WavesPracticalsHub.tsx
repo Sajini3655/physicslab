@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Locale } from '@/shared/curriculum';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,6 +12,8 @@ import {
 } from './index';
 import { Music, Waves, Eye, Sparkles, Scan, FlaskConical } from 'lucide-react';
 
+import { usePracticalWork } from '@/shared/practicals';
+
 interface WavesPracticalsHubProps {
   locale?: Locale;
 }
@@ -19,7 +21,18 @@ interface WavesPracticalsHubProps {
 export const WavesPracticalsHub: React.FC<WavesPracticalsHubProps> = ({
   locale = 'en',
 }) => {
-  const [activeTab, setActiveTab] = useState<'sonometer' | 'resonance' | 'prism' | 'grating' | 'lens'>('sonometer');
+  const { observations, updateObservations } = usePracticalWork({
+    experimentId: 'exp-waves-hub',
+    defaultObservations: { activeTab: 'sonometer' },
+  });
+  const activeTab = (observations.activeTab || 'sonometer') as
+    | 'sonometer'
+    | 'resonance'
+    | 'prism'
+    | 'grating'
+    | 'lens';
+  const setActiveTab = (tab: 'sonometer' | 'resonance' | 'prism' | 'grating' | 'lens') =>
+    updateObservations({ activeTab: tab });
 
   const t = {
     en: {

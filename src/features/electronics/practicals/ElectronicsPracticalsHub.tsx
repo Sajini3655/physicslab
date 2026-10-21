@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Locale } from '@/shared/curriculum';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -14,6 +14,7 @@ import {
   Sliders,
   Plus,
 } from 'lucide-react';
+import { usePracticalWork } from '@/shared/practicals';
 
 interface ElectronicsPracticalsHubProps {
   locale?: Locale;
@@ -22,8 +23,6 @@ interface ElectronicsPracticalsHubProps {
 export const ElectronicsPracticalsHub: React.FC<ElectronicsPracticalsHubProps> = ({
   locale = 'en',
 }) => {
-  const [activeTab, setActiveTab] = useState<'diode' | 'transistor' | 'logicGates'>('diode');
-
   // Practical 1: Diode Characteristics (Exp 35)
   const defaultDiodeData = [
     { voltageV: 0.20, currentMa: 0.0, dynamicResOhm: 9999 },
@@ -34,7 +33,6 @@ export const ElectronicsPracticalsHub: React.FC<ElectronicsPracticalsHubProps> =
     { voltageV: 0.75, currentMa: 25.0, dynamicResOhm: 3.0 },
     { voltageV: 0.80, currentMa: 60.0, dynamicResOhm: 1.4 },
   ];
-  const [diodeData, setDiodeData] = useState(defaultDiodeData);
 
   // Practical 2: CE Transistor Characteristics (Exp 36)
   const defaultTransistorData = [
@@ -44,13 +42,44 @@ export const ElectronicsPracticalsHub: React.FC<ElectronicsPracticalsHubProps> =
     { baseCurrentUa: 40, collectorCurrentMa: 4.88, beta: 122 },
     { baseCurrentUa: 50, collectorCurrentMa: 6.05, beta: 121 },
   ];
-  const [transistorData, setTransistorData] = useState(defaultTransistorData);
-  const [transistorMode, setTransistorMode] = useState<'transfer' | 'output'>('transfer');
-  const [probeIb, setProbeIb] = useState<number>(25);
 
-  // Practical 3: Logic Gate Identification (Exp 37)
-  const [logicInputs, setLogicInputs] = useState<{ a: number; b: number }>({ a: 0, b: 0 });
-  const [gateType, setGateType] = useState<'AND' | 'OR' | 'NAND' | 'NOR' | 'XOR'>('NAND');
+  const {
+    observations,
+    updateObservations,
+  } = usePracticalWork({
+    experimentId: 'exp-electronics-hub',
+    defaultObservations: {
+      activeTab: 'diode',
+      diodeData: defaultDiodeData,
+      transistorData: defaultTransistorData,
+      transistorMode: 'transfer',
+      probeIb: 25,
+      logicInputs: { a: 0, b: 0 },
+      gateType: 'NAND',
+    },
+  });
+
+  const activeTab = (observations.activeTab || 'diode') as 'diode' | 'transistor' | 'logicGates';
+  const diodeData: typeof defaultDiodeData = observations.diodeData || defaultDiodeData;
+  const transistorData: typeof defaultTransistorData = observations.transistorData || defaultTransistorData;
+  const transistorMode = (observations.transistorMode || 'transfer') as 'transfer' | 'output';
+  const probeIb: number = observations.probeIb !== undefined ? observations.probeIb : 25;
+  const logicInputs: { a: number; b: number } = observations.logicInputs || { a: 0, b: 0 };
+  const gateType = (observations.gateType || 'NAND') as 'AND' | 'OR' | 'NAND' | 'NOR' | 'XOR';
+
+  const setActiveTab = (tab: 'diode' | 'transistor' | 'logicGates') => updateObservations({ activeTab: tab });
+  const setDiodeData = (data: typeof defaultDiodeData) => updateObservations({ diodeData: data });
+  const setTransistorData = (data: typeof defaultTransistorData | ((prev: typeof defaultTransistorData) => typeof defaultTransistorData)) => {
+    const next = typeof data === 'function' ? data(transistorData) : data;
+    updateObservations({ transistorData: next });
+  };
+  const setTransistorMode = (m: 'transfer' | 'output') => updateObservations({ transistorMode: m });
+  const setProbeIb = (ib: number) => updateObservations({ probeIb: ib });
+  const setLogicInputs = (inputs: { a: number; b: number } | ((prev: { a: number; b: number }) => { a: number; b: number })) => {
+    const next = typeof inputs === 'function' ? inputs(logicInputs) : inputs;
+    updateObservations({ logicInputs: next });
+  };
+  const setGateType = (gt: 'AND' | 'OR' | 'NAND' | 'NOR' | 'XOR') => updateObservations({ gateType: gt });
 
   const computeGateOutput = (a: number, b: number, type: string): number => {
     switch (type) {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Locale } from '@/shared/curriculum';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,6 +12,8 @@ import {
 } from './index';
 import { FlaskConical, GitBranch, Scale, Waves, Droplets, Ship } from 'lucide-react';
 
+import { usePracticalWork } from '@/shared/practicals';
+
 interface MechanicsPracticalsHubProps {
   locale?: Locale;
 }
@@ -19,7 +21,17 @@ interface MechanicsPracticalsHubProps {
 export const MechanicsPracticalsHub: React.FC<MechanicsPracticalsHubProps> = ({
   locale = 'en',
 }) => {
-  const [activeTab, setActiveTab] = useState<'force' | 'moments' | 'utube' | 'hares' | 'testtube'>('force');
+  const { observations, updateObservations } = usePracticalWork({
+    experimentId: 'exp-mechanics-hub',
+    defaultObservations: { activeTab: 'force' },
+  });
+  const activeTab = (observations.activeTab || 'force') as
+    | 'force'
+    | 'moments'
+    | 'utube'
+    | 'hares'
+    | 'testtube';
+  const setActiveTab = (tab: 'force' | 'moments' | 'utube' | 'hares' | 'testtube') => updateObservations({ activeTab: tab });
 
   const t = {
     en: {

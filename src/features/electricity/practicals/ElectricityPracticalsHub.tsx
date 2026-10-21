@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Locale } from '@/shared/curriculum';
 import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
@@ -11,6 +11,7 @@ import {
   CheckCircle2,
   FileSpreadsheet,
 } from 'lucide-react';
+import { usePracticalWork } from '@/shared/practicals';
 
 interface ElectricityPracticalsHubProps {
   locale?: Locale;
@@ -19,10 +20,6 @@ interface ElectricityPracticalsHubProps {
 export const ElectricityPracticalsHub: React.FC<ElectricityPracticalsHubProps> = ({
   locale = 'en',
 }) => {
-  const [activeTab, setActiveTab] = useState<'dryCell' | 'metreBridge' | 'compareEmf' | 'potInternalR'>(
-    'dryCell'
-  );
-
   // Practical 1: Dry Cell Internal Resistance (Exp 31)
   const defaultDryCellData = [
     { currentA: 0.10, voltageV: 1.40 },
@@ -31,7 +28,6 @@ export const ElectricityPracticalsHub: React.FC<ElectricityPracticalsHubProps> =
     { currentA: 0.40, voltageV: 1.10 },
     { currentA: 0.50, voltageV: 1.00 },
   ];
-  const [dryCellData, setDryCellData] = useState(defaultDryCellData);
 
   // Practical 2: Metre Bridge Temp Coeff of Resistance (Exp 32)
   const defaultMetreBridgeData = [
@@ -41,7 +37,6 @@ export const ElectricityPracticalsHub: React.FC<ElectricityPracticalsHubProps> =
     { tempC: 70.0, balanceLengthCm: 55.3, wireResistanceOhm: 12.37 },
     { tempC: 85.0, balanceLengthCm: 56.6, wireResistanceOhm: 13.04 },
   ];
-  const [metreBridgeData, setMetreBridgeData] = useState(defaultMetreBridgeData);
   const standardResistorOhm = 10.0;
 
   // Practical 3: Potentiometer EMF Comparison (Exp 33)
@@ -50,7 +45,6 @@ export const ElectricityPracticalsHub: React.FC<ElectricityPracticalsHubProps> =
     { trial: 2, cell1LenCm: 54.0, cell2LenCm: 72.5, ratio: 0.745 },
     { trial: 3, cell1LenCm: 54.4, cell2LenCm: 73.0, ratio: 0.745 },
   ];
-  const [potEmfData, setPotEmfData] = useState(defaultPotEmfData);
 
   // Practical 4: Potentiometer Internal Resistance (Exp 34)
   const openCircuitLengthCm = 75.0;
@@ -61,7 +55,37 @@ export const ElectricityPracticalsHub: React.FC<ElectricityPracticalsHubProps> =
     { shuntResistorOhm: 8.0, balanceLengthCm: 64.29, internalResistanceOhm: 1.33 },
     { shuntResistorOhm: 10.0, balanceLengthCm: 66.18, internalResistanceOhm: 1.33 },
   ];
-  const [potInternalRData, setPotInternalRData] = useState(defaultPotInternalRData);
+
+  const {
+    observations,
+    updateObservations,
+  } = usePracticalWork({
+    experimentId: 'exp-electricity-hub',
+    defaultObservations: {
+      activeTab: 'dryCell',
+      dryCellData: defaultDryCellData,
+      metreBridgeData: defaultMetreBridgeData,
+      potEmfData: defaultPotEmfData,
+      potInternalRData: defaultPotInternalRData,
+    },
+  });
+
+  const activeTab = (observations.activeTab || 'dryCell') as
+    | 'dryCell'
+    | 'metreBridge'
+    | 'compareEmf'
+    | 'potInternalR';
+  const dryCellData: typeof defaultDryCellData = observations.dryCellData || defaultDryCellData;
+  const metreBridgeData: typeof defaultMetreBridgeData = observations.metreBridgeData || defaultMetreBridgeData;
+  const potEmfData: typeof defaultPotEmfData = observations.potEmfData || defaultPotEmfData;
+  const potInternalRData: typeof defaultPotInternalRData = observations.potInternalRData || defaultPotInternalRData;
+
+  const setActiveTab = (tab: 'dryCell' | 'metreBridge' | 'compareEmf' | 'potInternalR') =>
+    updateObservations({ activeTab: tab });
+  const setDryCellData = (data: typeof defaultDryCellData) => updateObservations({ dryCellData: data });
+  const setMetreBridgeData = (data: typeof defaultMetreBridgeData) => updateObservations({ metreBridgeData: data });
+  const setPotEmfData = (data: typeof defaultPotEmfData) => updateObservations({ potEmfData: data });
+  const setPotInternalRData = (data: typeof defaultPotInternalRData) => updateObservations({ potInternalRData: data });
 
   const t = {
     en: {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import { Locale } from '@/shared/curriculum';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,6 +12,8 @@ import {
 } from '../practicals';
 import { FlaskConical, Target, Disc, CircleDot, Microscope, Scale } from 'lucide-react';
 
+import { usePracticalWork } from '@/shared/practicals';
+
 interface MeasurementPracticalsHubProps {
   locale?: Locale;
 }
@@ -19,7 +21,18 @@ interface MeasurementPracticalsHubProps {
 export const MeasurementPracticalsHub: React.FC<MeasurementPracticalsHubProps> = ({
   locale = 'en',
 }) => {
-  const [activeTab, setActiveTab] = useState<'vernier' | 'micrometer' | 'spherometer' | 'microscope' | 'density'>('vernier');
+  const { observations, updateObservations } = usePracticalWork({
+    experimentId: 'exp-measurement-hub',
+    defaultObservations: { activeTab: 'vernier' },
+  });
+  const activeTab = (observations.activeTab || 'vernier') as
+    | 'vernier'
+    | 'micrometer'
+    | 'spherometer'
+    | 'microscope'
+    | 'density';
+  const setActiveTab = (tab: 'vernier' | 'micrometer' | 'spherometer' | 'microscope' | 'density') =>
+    updateObservations({ activeTab: tab });
 
   const t = {
     en: {
