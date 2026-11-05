@@ -9,7 +9,7 @@ import {
 } from '@/shared/curriculum';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { PracticeSection } from '@/components/PracticeSection';
-import { SimulationDevHarness } from '@/features/simulation';
+import { LessonSimulationWorkspace } from '@/features/simulation';
 import {
   MeasurementPracticalsHub,
   UnitAssessment,
@@ -70,7 +70,6 @@ import {
 } from '@/features/quantum-nuclear';
 import { Link } from '@/i18n/routing';
 import { routing } from '@/i18n/routing';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { LessonProgressActions } from '@/components/LessonProgressActions';
 import {
   Atom,
@@ -133,7 +132,6 @@ export default async function LessonPage({ params }: LessonPageProps) {
   const tCurriculum = await getTranslations('Curriculum');
   const tSim = await getTranslations('Simulation');
   const tVal = await getTranslations('Validation');
-  const tHome = await getTranslations('HomePage');
 
   const { previous, next } = getAdjacentLessons(unitSlug, lessonSlug);
   const isDevelopment = process.env.NODE_ENV === 'development';
@@ -173,6 +171,12 @@ export default async function LessonPage({ params }: LessonPageProps) {
     step1Validate: tSim('step1Validate'),
     step2Confirm: tSim('step2Confirm'),
     stepFixIssues: tSim('stepFixIssues'),
+    studentScenarioActive: tSim('studentScenarioActive'),
+    noConfirmedScenarioTitle: tSim('noConfirmedScenarioTitle'),
+    noConfirmedScenarioDesc: tSim('noConfirmedScenarioDesc'),
+    corruptedScenarioNotice: tSim('corruptedScenarioNotice'),
+    enterQuestionCta: tSim('enterQuestionCta'),
+    returnToReview: tSim('returnToReview'),
     controls: {
       play: tSim('controls.play'),
       pause: tSim('controls.pause'),
@@ -483,37 +487,11 @@ export default async function LessonPage({ params }: LessonPageProps) {
                   )}
                 </div>
 
-                {isDevelopment ? (
-                  <SimulationDevHarness
-                    simulationLabels={simulationLabels}
-                    validationLabels={validationLabels}
-                  />
-                ) : (
-                  <Card className="bg-[#FFFFFF] dark:bg-[#111D2D] border border-[#DFE8EF] dark:border-[#1E334D] shadow-sm rounded-2xl overflow-hidden max-w-lg mx-auto">
-                    <CardHeader className="p-6 pb-3 border-b border-[#DFE8EF] dark:border-[#1E334D] bg-[#F6FAFD]/60 dark:bg-[#0B131E]/60">
-                      <div className="flex items-center gap-2.5">
-                        <BookOpen className="w-5 h-5 text-[#0F766E] dark:text-[#14B8A6]" />
-                        <CardTitle className="text-base font-semibold text-[#14243A] dark:text-[#F8FAFC]">
-                          {tHome('moduleTitle')}
-                        </CardTitle>
-                      </div>
-                    </CardHeader>
-                    <CardContent className="p-6 space-y-4">
-                      <p className="text-sm text-[#475569] dark:text-[#94A3B8] leading-relaxed">
-                        {tHome('description')}
-                      </p>
-                      <div className="p-3 bg-[#F6FAFD] dark:bg-[#0B131E] rounded-xl border border-[#DFE8EF] dark:border-[#1E334D] text-xs text-[#64748B] dark:text-[#94A3B8] leading-relaxed">
-                        {tHome('productionStudentFlowNotice')}
-                      </div>
-                      <div className="pt-1 flex items-center justify-between">
-                        <span className="inline-flex items-center rounded-full border border-[#99F6E4] bg-[#F0FDFA] dark:bg-[#042F2E] px-3 py-0.5 text-xs font-semibold text-[#0F766E] dark:text-[#14B8A6]">
-                          {tHome('status')}
-                        </span>
-                        <span className="text-xs text-[#64748B] font-mono">s = u × t</span>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
+                <LessonSimulationWorkspace
+                  simulationLabels={simulationLabels}
+                  validationLabels={validationLabels}
+                  isDevelopment={isDevelopment}
+                />
               </>
             )}
 

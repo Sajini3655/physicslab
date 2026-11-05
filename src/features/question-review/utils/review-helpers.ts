@@ -1,17 +1,22 @@
 import {
   UniformMotionDraftSchema,
   UniformMotionCandidateSchema,
+  ConfirmedUniformMotionScenarioSchema,
   type UniformMotionDraft,
+  type ConfirmedUniformMotionScenario,
   type DisplacementUnit,
   type VelocityUnit,
   type TimeUnit,
 } from '@/shared/scenarios/uniform-motion';
+import { validateUniformMotion } from '@/features/simulation/physics/engine';
 import type {
   StoredScenarioReview,
   CandidateReadinessResult,
+  LocalizedValidationIssue,
 } from '../types';
 
 export const REVIEW_STORAGE_KEY = 'physicslab_scenario_review_v1';
+export const CONFIRMED_SCENARIO_STORAGE_KEY = 'physicslab_confirmed_scenario_v1';
 
 export interface ParseNumberResult {
   isValid: boolean;
@@ -488,4 +493,152 @@ export function clearStoredReview(): void {
     if (!storage) return;
     storage.removeItem(REVIEW_STORAGE_KEY);
   } catch {}
+}
+
+/**
+ * Saves a confirmed scenario snapshot to sessionStorage for simulation handoff.
+ */
+export function saveConfirmedScenario(confirmed: ConfirmedUniformMotionScenario): boolean {
+  try {
+    const storage = getSessionStorage();
+    if (!storage) return false;
+    const validated = ConfirmedUniformMotionScenarioSchema.safeParse(confirmed);
+    if (!validated.success) return false;
+    storage.setItem(CONFIRMED_SCENARIO_STORAGE_KEY, JSON.stringify(validated.data));
+    return true;
+  } catch {
+    return false;
+  }
+}
+
+/**
+ * Loads and strictly validates a confirmed scenario snapshot from sessionStorage.
+ * Verifies schema shape and runs deterministic physical validation before returning.
+ * Returns null if data is missing, malformed, or physically invalid.
+ */
+export function loadConfirmedScenario(): ConfirmedUniformMotionScenario | null {
+  try {
+    const storage = getSessionStorage();
+    if (!storage) return null;
+    const raw = storage.getItem(CONFIRMED_SCENARIO_STORAGE_KEY);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    const validated = ConfirmedUniformMotionScenarioSchema.safeParse(parsed);
+    if (!validated.success) return null;
+
+    const confirmed = validated.data;
+    // Re-verify deterministic physical validation to ensure integrity
+    const valResult = validateUniformMotion(confirmed.scenario);
+    if (
+      !valResult.isValid ||
+      valResult.scenarioId !== confirmed.scenario.scenarioId ||
+      valResult.revision !== confirmed.scenario.revision ||
+      confirmed.confirmationId !== confirmed.scenario.scenarioId ||
+      confirmed.confirmedRevision !== confirmed.scenario.revision
+    ) {
+      return null;
+    }
+
+    return confirmed;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Safely removes confirmed scenario snapshot from sessionStorage.
+ */
+export function clearConfirmedScenario(): void {
+  try {
+    const storage = getSessionStorage();
+    if (!storage) return;
+    storage.removeItem(CONFIRMED_SCENARIO_STORAGE_KEY);
+  } catch {}
+}
+
+/**
+ * Maps raw physical validation issues into localized messages with associated target fields where possible.
+ */
+export function localizeAndMapValidationIssues(
+  issues: Array<{ code: string; message: string }>,
+  tVal: (key: string) => string
+): LocalizedValidationIssue[] {
+  return issues.map((issue) => {
+    const code = issue.code;
+    let field: LocalizedValidationIssue['field'] = 'general';
+    let messageKey: string | null = null;
+
+    switch (code) {
+      case 'INVALID_TARGET':
+        field = 'target';
+        messageKey = 'invalidTarget';
+        break;
+      case 'NEGATIVE_TIME':
+        field = 't';
+        messageKey = 'negativeTime';
+        break;
+      case 'SIGN_MISMATCH':
+        field = 't';
+        messageKey = 'signMismatch';
+        break;
+      case 'INDETERMINATE_TIME':
+        field = 't';
+        messageKey = 'indeterminateTime';
+        break;
+      case 'INDETERMINATE_VELOCITY':
+        field = 'u';
+        messageKey = 'indeterminateVelocity';
+        break;
+      case 'IMPOSSIBLE_STATIONARY_DISPLACEMENT':
+        field = 's';
+        messageKey = 'impossibleStationaryDisplacement';
+        break;
+      case 'IMPOSSIBLE_ZERO_DURATION_DISPLACEMENT':
+        field = 's';
+        messageKey = 'impossibleZeroDurationDisplacement';
+        break;
+      case 'NON_FINITE_VALUE':
+        messageKey = 'nonFiniteValue';
+        if (/displacement/i.test(issue.message)) field = 's';
+        else if (/velocity/i.test(issue.message)) field = 'u';
+        else if (/time/i.test(issue.message)) field = 't';
+        break;
+      case 'MISSING_QUANTITY':
+        if (/displacement/i.test(issue.message)) {
+          field = 's';
+          messageKey = 'missingDisplacement';
+        } else if (/velocity/i.test(issue.message)) {
+          field = 'u';
+          messageKey = 'missingVelocity';
+        } else if (/time/i.test(issue.message)) {
+          field = 't';
+          messageKey = 'missingTime';
+        }
+        break;
+      case 'UNSUPPORTED_UNIT':
+        messageKey = 'unsupportedUnit';
+        break;
+      case 'DIVISION_BY_ZERO':
+        messageKey = 'divisionByZero';
+        break;
+      default:
+        break;
+    }
+
+    let message = issue.message;
+    if (messageKey) {
+      try {
+        const translated = tVal(messageKey);
+        if (translated) message = translated;
+      } catch {
+        message = issue.message;
+      }
+    }
+
+    return {
+      code,
+      field,
+      message,
+    };
+  });
 }

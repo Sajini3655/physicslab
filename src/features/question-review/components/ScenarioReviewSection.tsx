@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import {
   AlertCircle,
+  AlertTriangle,
   CheckCircle2,
   HelpCircle,
   Compass,
@@ -16,8 +17,17 @@ import {
   Sparkles,
   RefreshCw,
   Info,
+  Play,
+  RotateCcw,
+  ArrowRight,
 } from 'lucide-react';
-import type { UniformMotionDraft } from '@/shared/scenarios/uniform-motion';
+import type {
+  UniformMotionDraft,
+  ConfirmedUniformMotionScenario,
+  PhysicsValidationResult,
+} from '@/shared/scenarios/uniform-motion';
+import { UniformMotionSimulation } from '@/features/simulation';
+import { Link } from '@/i18n/routing';
 import {
   generateScenarioDescription,
   computeCandidateReadiness,
@@ -26,6 +36,7 @@ import {
   updateDraftTarget,
   updateDraftQuantityValue,
   updateDraftQuantityUnit,
+  localizeAndMapValidationIssues,
 } from '../utils/review-helpers';
 
 interface ScenarioReviewSectionProps {
@@ -37,9 +48,18 @@ interface ScenarioReviewSectionProps {
     t?: string;
   };
   uiLocale: 'en' | 'si';
+  validationResult: PhysicsValidationResult | null;
+  isValidating: boolean;
+  confirmedScenario: ConfirmedUniformMotionScenario | null;
+  isConfirming: boolean;
+  isSimulating: boolean;
   onUpdateDraft: (newDraft: UniformMotionDraft) => void;
   onUpdateTemporaryValue: (field: 's' | 'u' | 't', val: string) => void;
   onReinterpret: () => void;
+  onValidate: () => void;
+  onConfirm: () => void;
+  onStartSimulation: () => void;
+  onResetSimulation: () => void;
 }
 
 export function ScenarioReviewSection({
@@ -47,14 +67,76 @@ export function ScenarioReviewSection({
   isStale,
   temporaryValues,
   uiLocale,
+  validationResult,
+  isValidating,
+  confirmedScenario,
+  isConfirming,
+  isSimulating,
   onUpdateDraft,
   onUpdateTemporaryValue,
   onReinterpret,
+  onValidate,
+  onConfirm,
+  onStartSimulation,
+  onResetSimulation,
 }: ScenarioReviewSectionProps) {
   const t = useTranslations('ScenarioReview');
+  const tVal = useTranslations('Validation');
+  const tSim = useTranslations('Simulation');
 
   const readiness = computeCandidateReadiness(draft, isStale);
   const summaryDescription = generateScenarioDescription(draft, uiLocale);
+
+  const isCandidateCurrent =
+    readiness.candidate !== null &&
+    validationResult !== null &&
+    validationResult.scenarioId === readiness.candidate.scenarioId &&
+    validationResult.revision === readiness.candidate.revision;
+
+  const isConfirmedCurrent =
+    confirmedScenario !== null &&
+    readiness.candidate !== null &&
+    confirmedScenario.scenario.scenarioId === readiness.candidate.scenarioId &&
+    confirmedScenario.confirmedRevision === readiness.candidate.revision;
+
+  const mappedValidationIssues =
+    validationResult && !validationResult.isValid && isCandidateCurrent
+      ? localizeAndMapValidationIssues(validationResult.issues, (k) => tVal(k))
+      : [];
+
+  const getValidationIssuesForField = (field: 's' | 'u' | 't' | 'target') => {
+    return mappedValidationIssues.filter((i) => i.field === field);
+  };
+
+  const simulationLabels = {
+    title: tSim('title'),
+    subtitle: tSim('subtitle'),
+    scenarioDetails: tSim('scenarioDetails'),
+    question: tSim('question'),
+    object: tSim('object'),
+    axis: tSim('axis'),
+    givenValues: tSim('givenValues'),
+    targetUnknown: tSim('targetUnknown'),
+    displacement: tSim('displacement'),
+    velocity: tSim('velocity'),
+    time: tSim('time'),
+    unknownValue: tSim('unknownValue'),
+    origin: tSim('origin'),
+    startPoint: tSim('startPoint'),
+    endPoint: tSim('endPoint'),
+    visibilityNotice: tSim('visibilityNotice'),
+    controls: {
+      play: tSim('controls.play'),
+      pause: tSim('controls.pause'),
+      resume: tSim('controls.resume'),
+      replay: tSim('controls.replay'),
+      reset: tSim('controls.reset'),
+      speed: tSim('controls.speed'),
+      progress: tSim('controls.progress'),
+      completed: tSim('controls.completed'),
+      ready: tSim('controls.ready'),
+    },
+  };
 
   const handleObjectChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const updated = updateDraftObject(draft, e.target.value);
@@ -137,6 +219,30 @@ export function ScenarioReviewSection({
             >
               <AlertCircle className="w-3.5 h-3.5" />
               {t('statusStale')}
+            </span>
+          ) : isConfirmedCurrent ? (
+            <span
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#F0FDFA] dark:bg-[#042F2E] text-[#0F766E] dark:text-[#14B8A6] border border-[#99F6E4] dark:border-[#115E59]"
+              role="status"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              {t('statusConfirmed')}
+            </span>
+          ) : isCandidateCurrent && validationResult?.isValid ? (
+            <span
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#F0FDFA] dark:bg-[#042F2E] text-[#0F766E] dark:text-[#14B8A6] border border-[#99F6E4] dark:border-[#115E59]"
+              role="status"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              {t('statusPhysicalValid')}
+            </span>
+          ) : isCandidateCurrent && validationResult && !validationResult.isValid ? (
+            <span
+              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-300 dark:border-rose-800"
+              role="status"
+            >
+              <AlertTriangle className="w-3.5 h-3.5" />
+              {t('statusPhysicalInvalid')}
             </span>
           ) : readiness.isReady ? (
             <span
@@ -287,6 +393,11 @@ export function ScenarioReviewSection({
                   <SelectItem value="t">{t('targetTime')}</SelectItem>
                 </SelectContent>
               </Select>
+              {getValidationIssuesForField('target').map((issue, idx) => (
+                <p key={idx} className="text-xs text-destructive font-medium mt-1">
+                  {issue.message}
+                </p>
+              ))}
             </div>
           </div>
         </CardContent>
@@ -393,6 +504,12 @@ export function ScenarioReviewSection({
                 {c.message}
               </p>
             ))}
+
+            {getValidationIssuesForField('s').map((issue, idx) => (
+              <p key={idx} className="text-xs text-destructive font-medium mt-1">
+                {issue.message}
+              </p>
+            ))}
           </CardContent>
         </Card>
 
@@ -491,6 +608,12 @@ export function ScenarioReviewSection({
             {getFieldClarifications('u').map((c, i) => (
               <p key={i} className="text-xs text-amber-600 dark:text-amber-400 mt-1">
                 {c.message}
+              </p>
+            ))}
+
+            {getValidationIssuesForField('u').map((issue, idx) => (
+              <p key={idx} className="text-xs text-destructive font-medium mt-1">
+                {issue.message}
               </p>
             ))}
           </CardContent>
@@ -599,6 +722,12 @@ export function ScenarioReviewSection({
                 {c.message}
               </p>
             ))}
+
+            {getValidationIssuesForField('t').map((issue, idx) => (
+              <p key={idx} className="text-xs text-destructive font-medium mt-1">
+                {issue.message}
+              </p>
+            ))}
           </CardContent>
         </Card>
       </div>
@@ -652,6 +781,261 @@ export function ScenarioReviewSection({
           )}
         </div>
       </div>
+
+      {/* Physical Validation Issues Alert Banner */}
+      {validationResult && !validationResult.isValid && isCandidateCurrent && (
+        <div
+          className="p-4 rounded-xl border border-destructive/40 bg-destructive/10 text-destructive text-sm space-y-2"
+          role="alert"
+          aria-live="polite"
+        >
+          <div className="font-semibold flex items-center gap-2">
+            <AlertTriangle className="w-4 h-4 shrink-0 text-destructive" />
+            <span>{t('validationIssuesTitle')}</span>
+          </div>
+          <ul className="space-y-1 pl-5 list-disc text-xs sm:text-sm text-foreground/90">
+            {mappedValidationIssues.map((issue, idx) => (
+              <li key={idx} className="leading-relaxed">
+                {issue.message}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      {/* Lifecycle Action Area */}
+      <div className="p-4 sm:p-5 rounded-xl border bg-card text-card-foreground shadow-xs flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="space-y-1">
+          <p className="font-semibold text-sm">
+            {isConfirmedCurrent
+              ? t('statusConfirmed')
+              : validationResult?.isValid && isCandidateCurrent
+              ? t('statusPhysicalValid')
+              : validationResult && !validationResult.isValid && isCandidateCurrent
+              ? t('statusPhysicalInvalid')
+              : readiness.isReady
+              ? t('statusReady')
+              : t('statusDraft')}
+          </p>
+          <p className="text-xs text-muted-foreground">
+            {isConfirmedCurrent
+              ? t('statusConfirmedDesc')
+              : validationResult?.isValid && isCandidateCurrent
+              ? t('statusPhysicalValidDesc')
+              : validationResult && !validationResult.isValid && isCandidateCurrent
+              ? t('statusPhysicalInvalidDesc')
+              : readiness.isReady
+              ? t('statusReadyDesc')
+              : t('statusDraftDesc')}
+          </p>
+        </div>
+
+        <div className="flex flex-wrap items-center gap-2.5 shrink-0">
+          <Button
+            type="button"
+            variant="default"
+            onClick={onValidate}
+            disabled={!readiness.isReady || isStale || isValidating}
+            aria-busy={isValidating}
+            className="min-h-[42px] px-4 font-semibold rounded-xl"
+          >
+            {isValidating ? (
+              <>
+                <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                {t('checkingScenario')}
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4 mr-2" />
+                {t('checkScenario')}
+              </>
+            )}
+          </Button>
+
+          {isConfirmedCurrent && (
+            <Button
+              type="button"
+              variant="default"
+              onClick={onStartSimulation}
+              className="min-h-[42px] px-4 bg-[#0F766E] hover:bg-[#0D655E] text-white font-semibold rounded-xl shadow-xs"
+            >
+              <Play className="w-4 h-4 mr-1.5" />
+              {t('startSimulation')}
+            </Button>
+          )}
+
+          {isSimulating && (
+            <Button
+              type="button"
+              variant="outline"
+              size="default"
+              onClick={onResetSimulation}
+              className="min-h-[42px] px-3 text-xs rounded-xl"
+            >
+              <RotateCcw className="w-3.5 h-3.5 mr-1" />
+              {t('resetSimulation')}
+            </Button>
+          )}
+        </div>
+      </div>
+
+      {/* Explicit Student Confirmation Card */}
+      {validationResult?.isValid && isCandidateCurrent && !isConfirmedCurrent && readiness.candidate && (
+        <Card className="rounded-xl border-2 border-emerald-300 dark:border-emerald-800 bg-emerald-50/40 dark:bg-emerald-950/20 shadow-xs">
+          <CardHeader className="p-4 sm:p-5 pb-2">
+            <CardTitle className="text-base font-semibold text-emerald-900 dark:text-emerald-200 flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
+              <span>{t('confirmationCardTitle')}</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-4 sm:p-5 pt-2 space-y-4">
+            <p className="text-sm text-foreground/90 leading-relaxed font-medium">
+              {t('confirmationNotice')}
+            </p>
+
+            {/* Concise Scenario Snapshot Summary (No calculated target disclosed) */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 p-3.5 rounded-lg bg-background/90 border border-border/80 text-xs sm:text-sm">
+              <div>
+                <span className="text-muted-foreground block text-[11px] uppercase tracking-wider">{t('objectLabel')}</span>
+                <span className="font-semibold capitalize text-foreground">{readiness.candidate.object}</span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block text-[11px] uppercase tracking-wider">{t('axisLabel')}</span>
+                <span className="font-semibold text-foreground">
+                  {readiness.candidate.axis.direction}{' '}
+                  {readiness.candidate.axis.direction.toLowerCase().includes('left') ||
+                  readiness.candidate.axis.direction.toLowerCase().includes('west') ||
+                  readiness.candidate.axis.direction.toLowerCase().includes('-x')
+                    ? '←'
+                    : '→'}
+                </span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block text-[11px] uppercase tracking-wider">
+                  {readiness.candidate.target === 's'
+                    ? `${t('velocityLabel')} / ${t('timeLabel')}`
+                    : readiness.candidate.target === 'u'
+                    ? `${t('displacementLabel')} / ${t('timeLabel')}`
+                    : `${t('displacementLabel')} / ${t('velocityLabel')}`}
+                </span>
+                <span className="font-mono font-medium text-foreground">
+                  {readiness.candidate.s.type === 'given' && `s: ${readiness.candidate.s.value > 0 ? '+' : ''}${readiness.candidate.s.value} ${readiness.candidate.s.unit} `}
+                  {readiness.candidate.u.type === 'given' && `u: ${readiness.candidate.u.value > 0 ? '+' : ''}${readiness.candidate.u.value} ${readiness.candidate.u.unit} `}
+                  {readiness.candidate.t.type === 'given' && `t: ${readiness.candidate.t.value} ${readiness.candidate.t.unit}`}
+                </span>
+              </div>
+              <div>
+                <span className="text-muted-foreground block text-[11px] uppercase tracking-wider">{t('targetLabel')}</span>
+                <span className="font-semibold text-primary">
+                  {readiness.candidate.target === 's'
+                    ? t('targetDisplacement')
+                    : readiness.candidate.target === 'u'
+                    ? t('targetVelocity')
+                    : t('targetTime')}{' '}
+                  (?)
+                </span>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-emerald-200 dark:border-emerald-900/60">
+              <span className="text-xs text-muted-foreground max-w-md">
+                {t('editAfterConfirmationNotice')}
+              </span>
+              <Button
+                type="button"
+                variant="default"
+                onClick={onConfirm}
+                disabled={isConfirming}
+                aria-busy={isConfirming}
+                className="min-h-[42px] px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-xl shadow-xs"
+              >
+                {isConfirming ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    {t('confirmingScenario')}
+                  </>
+                ) : (
+                  <>
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    {t('confirmScenario')}
+                  </>
+                )}
+              </Button>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Confirmed Banner with Simulation Action */}
+      {isConfirmedCurrent && (
+        <Card className="rounded-xl border border-[#99F6E4] dark:border-[#115E59] bg-[#F0FDFA] dark:bg-[#042F2E] shadow-xs">
+          <CardContent className="p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div className="flex items-start gap-3">
+              <CheckCircle2 className="w-5 h-5 text-[#0F766E] dark:text-[#14B8A6] shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-sm text-[#0F766E] dark:text-[#14B8A6]">
+                  {t('statusConfirmed')}
+                </p>
+                <p className="text-xs text-[#475569] dark:text-[#CBD5E1] mt-0.5">
+                  {t('statusConfirmedDesc')}
+                </p>
+                <p className="text-[11px] text-[#B45309] dark:text-[#FBBF24] mt-1 font-medium">
+                  {t('editAfterConfirmationNotice')}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex flex-wrap items-center gap-3 shrink-0">
+              <Button
+                type="button"
+                variant="default"
+                onClick={onStartSimulation}
+                className="min-h-[42px] px-5 bg-[#0F766E] hover:bg-[#0D655E] text-white font-semibold rounded-xl shadow-xs cursor-pointer"
+              >
+                <Play className="w-4 h-4 mr-2" />
+                {t('startSimulation')}
+              </Button>
+              <Link
+                href="/units/mechanics/rectilinear-motion-uniform-velocity#simulation-activity"
+                className="inline-flex items-center gap-1.5 px-3 py-2 text-xs font-semibold text-[#0F766E] dark:text-[#14B8A6] hover:underline"
+              >
+                <span>{t('openInLesson')}</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </Link>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Interactive Simulation View */}
+      {isSimulating && isConfirmedCurrent && confirmedScenario && (
+        <div id="interactive-simulation" className="space-y-4 pt-4 border-t border-border">
+          <div className="flex items-center justify-between">
+            <div className="space-y-0.5">
+              <h3 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-[#0F766E]" />
+                <span>{tSim('title')}</span>
+              </h3>
+              <p className="text-xs text-muted-foreground">{tSim('subtitle')}</p>
+            </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="sm"
+              onClick={onResetSimulation}
+              className="text-xs rounded-xl"
+            >
+              <RotateCcw className="w-3.5 h-3.5 mr-1" />
+              {t('resetSimulation')}
+            </Button>
+          </div>
+          <UniformMotionSimulation
+            scenario={confirmedScenario}
+            showInfoPanel={false}
+            labels={simulationLabels}
+          />
+        </div>
+      )}
     </section>
   );
 }
